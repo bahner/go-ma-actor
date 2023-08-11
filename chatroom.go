@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 
+	"github.com/bahner/go-myspace/message"
 	"github.com/libp2p/go-libp2p/core/peer"
 
 	pubsub "github.com/libp2p/go-libp2p-pubsub"
@@ -17,7 +18,7 @@ const ChatRoomBufSize = 128
 // messages are pushed to the Messages channel.
 type ChatRoom struct {
 	// Messages is a channel of messages received from other peers in the chat room
-	Messages chan *ChatMessage
+	Messages chan *message.Message
 
 	ctx   context.Context
 	ps    *pubsub.PubSub
@@ -27,13 +28,6 @@ type ChatRoom struct {
 	roomName string
 	self     peer.ID
 	nick     string
-}
-
-// ChatMessage gets converted to/from JSON and sent in the body of pubsub messages.
-type ChatMessage struct {
-	Message    string
-	SenderID   string
-	SenderNick string
 }
 
 // JoinChatRoom tries to subscribe to the PubSub topic for the room name, returning
@@ -59,7 +53,7 @@ func JoinChatRoom(ctx context.Context, ps *pubsub.PubSub, selfID peer.ID, nickna
 		self:     selfID,
 		nick:     nickname,
 		roomName: roomName,
-		Messages: make(chan *ChatMessage, ChatRoomBufSize),
+		Messages: make(chan *message.Message, ChatRoomBufSize),
 	}
 
 	// start reading messages from the subscription in a loop
@@ -68,12 +62,10 @@ func JoinChatRoom(ctx context.Context, ps *pubsub.PubSub, selfID peer.ID, nickna
 }
 
 // Publish sends a message to the pubsub topic.
-func (cr *ChatRoom) Publish(message string) error {
-	m := ChatMessage{
-		Message:    message,
-		SenderID:   cr.self.Pretty(),
-		SenderNick: cr.nick,
-	}
+func (cr *ChatRoom) Publish(msg string) error {
+
+	m := message.New(cr.self.Pretty(), cr.nick, []byte(msg))
+	// m := message.New(cr.self, cr.topic, message)
 	msgBytes, err := json.Marshal(m)
 	if err != nil {
 		return err
@@ -97,7 +89,7 @@ func (cr *ChatRoom) readLoop() {
 		if msg.ReceivedFrom == cr.self {
 			continue
 		}
-		cm := new(ChatMessage)
+		cm := new(message.Message)
 		err = json.Unmarshal(msg.Data, cm)
 		if err != nil {
 			continue

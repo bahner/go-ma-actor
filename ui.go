@@ -7,6 +7,8 @@ import (
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
+
+	"github.com/bahner/go-myspace/message"
 )
 
 // ChatUI is a Text User Interface (TUI) for a ChatRoom.
@@ -133,9 +135,9 @@ func (ui *ChatUI) refreshPeers() {
 
 // displayChatMessage writes a ChatMessage from the room to the message window,
 // with the sender's nick highlighted in green.
-func (ui *ChatUI) displayChatMessage(cm *ChatMessage) {
-	prompt := withColor("green", fmt.Sprintf("<%s>:", cm.SenderNick))
-	fmt.Fprintf(ui.msgW, "%s %s\n", prompt, cm.Message)
+func (ui *ChatUI) displayChatMessage(cm *message.Message) {
+	prompt := withColor("green", fmt.Sprintf("<%s>:", cm.From))
+	fmt.Fprintf(ui.msgW, "%s %s\n", prompt, cm.Data)
 }
 
 // displaySelfMessage writes a message from ourself to the message window,
