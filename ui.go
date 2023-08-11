@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"time"
@@ -16,6 +17,7 @@ import (
 // mode. You can quit with Ctrl-C, or by typing "/quit" into the
 // chat prompt.
 type ChatUI struct {
+	ctx       context.Context
 	cr        *ChatRoom
 	app       *tview.Application
 	peersList *tview.TextView
@@ -27,7 +29,7 @@ type ChatUI struct {
 
 // NewChatUI returns a new ChatUI struct that controls the text UI.
 // It won't actually do anything until you call Run().
-func NewChatUI(cr *ChatRoom) *ChatUI {
+func NewChatUI(ctx context.Context, cr *ChatRoom) *ChatUI {
 	app := tview.NewApplication()
 
 	// make a text view to contain our chat messages
@@ -95,6 +97,7 @@ func NewChatUI(cr *ChatRoom) *ChatUI {
 	app.SetRoot(flex, true)
 
 	return &ChatUI{
+		ctx:       ctx,
 		cr:        cr,
 		app:       app,
 		peersList: peersList,
@@ -121,7 +124,7 @@ func (ui *ChatUI) end() {
 // refreshPeers pulls the list of peers currently in the chat room and
 // displays the last 8 chars of their peer id in the Peers panel in the ui.
 func (ui *ChatUI) refreshPeers() {
-	peers := ui.cr.ListPeers()
+	peers := ui.cr.topic.ListPeers()
 
 	// clear is thread-safe
 	ui.peersList.Clear()
@@ -158,6 +161,7 @@ func (ui *ChatUI) handleEvents() {
 		select {
 		case input := <-ui.inputCh:
 			// when the user types in a line, publish it to the chat room and print to the message window
+			// inputBytes := []byte(input)
 			err := ui.cr.Publish(input)
 			if err != nil {
 				printErr("publish error: %s", err)

@@ -19,7 +19,6 @@ var (
 )
 
 func main() {
-
 	ctx := context.Background()
 
 	log = logrus.New()
@@ -32,29 +31,23 @@ func main() {
 	go initPubSubService(ctx, wg, h)
 	wg.Wait()
 
-	// join the chat room, ps is now initialized.
-	chatroom, err := newChatRoom(ctx, ps, nick, room)
-	if err != nil {
-		panic(err)
-	}
-	cr, err := joinChatRoom(chatroom)
+	// create and join the chat room, ps is now initialized.
+	cr, err := newChatRoom(ctx, ps, nick, room)
 	if err != nil {
 		panic(err)
 	}
 
 	// draw the UI
-	ui := NewChatUI(cr)
+	ui := NewChatUI(ctx, cr)
 	if err := ui.Run(); err != nil {
 		printErr("error running text UI: %s", err)
 	}
 }
 
-// printErr is like fmt.Printf, but writes to stderr.
 func printErr(m string, args ...interface{}) {
 	fmt.Fprintf(os.Stderr, m, args...)
 }
 
-// shortID returns the last 8 chars of a base58-encoded peer id.
 func shortID(p peer.ID) string {
 	pretty := p.Pretty()
 	return pretty[len(pretty)-8:]
