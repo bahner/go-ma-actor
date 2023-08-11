@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"sync"
-	"time"
 
 	"github.com/bahner/go-myspace/p2p/host"
 	"github.com/bahner/go-myspace/p2p/pubsub"
@@ -13,12 +12,6 @@ import (
 
 	"github.com/libp2p/go-libp2p/core/peer"
 )
-
-// DiscoveryInterval is how often we re-publish our mDNS records.
-const DiscoveryInterval = time.Hour
-
-// DiscoveryServiceTag is used in our mDNS advertisements to discover other chat peers.
-const DiscoveryServiceTag = "myspace"
 
 var (
 	ps  *pubsub.Service
@@ -36,11 +29,15 @@ func main() {
 	h := host.New()
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
-	initPubSubService(ctx, wg, h)
+	go initPubSubService(ctx, wg, h)
 	wg.Wait()
 
-	// join the chat room
-	cr, err := JoinChatRoom(ctx, ps.Sub, h.Node.ID(), nick, room)
+	// join the chat room, ps is now initialized.
+	chatroom, err := newChatRoom(ctx, ps, nick, room)
+	if err != nil {
+		panic(err)
+	}
+	cr, err := joinChatRoom(chatroom)
 	if err != nil {
 		panic(err)
 	}

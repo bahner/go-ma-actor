@@ -7,6 +7,7 @@ import (
 	"github.com/bahner/go-myspace/message"
 	"github.com/libp2p/go-libp2p/core/peer"
 
+	p2pPupsub "github.com/bahner/go-myspace/p2p/pubsub"
 	pubsub "github.com/libp2p/go-libp2p-pubsub"
 )
 
@@ -30,35 +31,43 @@ type ChatRoom struct {
 	nick     string
 }
 
-// JoinChatRoom tries to subscribe to the PubSub topic for the room name, returning
+func newChatRoom(ctx context.Context, ps *p2pPupsub.Service, nickname string, roomName string) (*ChatRoom, error) {
+
+	id := ps.Host.Node.ID()
+
+	return &ChatRoom{
+		ctx:      ctx,
+		ps:       ps.Sub,
+		roomName: roomName,
+		self:     id,
+		nick:     nickname,
+	}, nil
+}
+
+// joinChatRoom tries to subscribe to the PubSub topic for the room name, returning
 // a ChatRoom on success.
-func JoinChatRoom(ctx context.Context, ps *pubsub.PubSub, selfID peer.ID, nickname string, roomName string) (*ChatRoom, error) {
+func joinChatRoom(c *ChatRoom) (*ChatRoom, error) {
 	// join the pubsub topic
-	topic, err := ps.Join(topicName(roomName))
+	topic, err := ps.Sub.Join(c.roomName)
 	if err != nil {
 		return nil, err
 	}
+	log.Info("Entered room: ", c.roomName)
 
 	// and subscribe to it
 	sub, err := topic.Subscribe()
 	if err != nil {
 		return nil, err
 	}
+	log.Infof("Subscribed to room: %s", c.roomName)
 
-	cr := &ChatRoom{
-		ctx:      ctx,
-		ps:       ps,
-		topic:    topic,
-		sub:      sub,
-		self:     selfID,
-		nick:     nickname,
-		roomName: roomName,
-		Messages: make(chan *message.Message, ChatRoomBufSize),
-	}
+	c.topic = topic
+	c.sub = sub
+	c.Messages = make(chan *message.Message, ChatRoomBufSize)
 
 	// start reading messages from the subscription in a loop
-	go cr.readLoop()
-	return cr, nil
+	go c.readLoop()
+	return c, nil
 }
 
 // Publish sends a message to the pubsub topic.
@@ -74,7 +83,7 @@ func (cr *ChatRoom) Publish(msg string) error {
 }
 
 func (cr *ChatRoom) ListPeers() []peer.ID {
-	return cr.ps.ListPeers(topicName(cr.roomName))
+	return cr.topic.ListPeers()
 }
 
 // readLoop pulls messages from the pubsub topic and pushes them onto the Messages channel.
@@ -85,6 +94,7 @@ func (cr *ChatRoom) readLoop() {
 			close(cr.Messages)
 			return
 		}
+
 		// only forward messages delivered by others
 		if msg.ReceivedFrom == cr.self {
 			continue
@@ -97,8 +107,4 @@ func (cr *ChatRoom) readLoop() {
 		// send valid messages onto the Messages channel
 		cr.Messages <- cm
 	}
-}
-
-func topicName(roomName string) string {
-	return "chat-room:" + roomName
 }
