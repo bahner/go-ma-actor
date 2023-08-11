@@ -9,7 +9,7 @@ go run .
 
 # or, build and run separately
 go build .
-./go-myspace-chat
+./go-myspace-client
 ```
 
 To set a nickname, use the `-nick` flag:
