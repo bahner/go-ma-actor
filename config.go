@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"flag"
 
 	"github.com/sirupsen/logrus"
@@ -15,7 +14,7 @@ var (
 	room       string = env.Get("GO_MYSPACE_ROOM", "mytopic")
 )
 
-func Init(ctx context.Context) {
+func initConfig() {
 
 	// Flags - user configurations
 	flag.StringVar(&logLevel, "loglevel", logLevel, "Loglevel to use for application")

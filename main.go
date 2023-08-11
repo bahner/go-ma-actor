@@ -31,6 +31,8 @@ func main() {
 
 	log = logrus.New()
 
+	initConfig()
+
 	h := host.New()
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
