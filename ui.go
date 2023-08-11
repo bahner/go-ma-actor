@@ -302,7 +302,7 @@ func (ui *ChatUI) getStatusHost() string {
 
 func (ui *ChatUI) triggerDiscovery() {
 
-	go ui.cr.ps.Host.StartPeerDiscovery(ui.ctx, rendezvous)
+	go ui.cr.ps.Host.StartPeerDiscovery(ui.ctx, rendezvous, serviceName)
 	ui.displaySystemMessage("Discovery process started...")
 }
 
