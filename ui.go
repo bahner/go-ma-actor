@@ -2,8 +2,10 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
+	"strings"
 	"time"
 
 	"github.com/gdamore/tcell/v2"
@@ -21,6 +23,7 @@ type ChatUI struct {
 	cr        *ChatRoom
 	app       *tview.Application
 	peersList *tview.TextView
+	msgBox    *tview.TextView
 
 	msgW    io.Writer
 	inputCh chan string
@@ -102,6 +105,7 @@ func NewChatUI(ctx context.Context, cr *ChatRoom) *ChatUI {
 		app:       app,
 		peersList: peersList,
 		msgW:      msgBox,
+		msgBox:    msgBox,
 		inputCh:   inputCh,
 		doneCh:    make(chan struct{}, 1),
 	}
@@ -160,20 +164,16 @@ func (ui *ChatUI) handleEvents() {
 	for {
 		select {
 		case input := <-ui.inputCh:
-			// when the user types in a line, publish it to the chat room and print to the message window
-			// inputBytes := []byte(input)
-			err := ui.cr.Publish(input)
-			if err != nil {
-				printErr("publish error: %s", err)
+			if strings.HasPrefix(input, "/") {
+				ui.handleCommands(input)
+			} else {
+				ui.handleChatMessage(input)
 			}
-			ui.displaySelfMessage(input)
 
 		case m := <-ui.cr.Messages:
-			// when we receive a message from the chat room, print it to the message window
 			ui.displayChatMessage(m)
 
 		case <-peerRefreshTicker.C:
-			// refresh the list of peers in the chat room periodically
 			ui.refreshPeers()
 
 		case <-ui.cr.ctx.Done():
@@ -185,7 +185,152 @@ func (ui *ChatUI) handleEvents() {
 	}
 }
 
+func (ui *ChatUI) handleCommands(input string) {
+	args := strings.Split(input, " ")
+
+	switch args[0] {
+	case "/status":
+		ui.handleStatusCommand(args)
+	case "/discover":
+		ui.triggerDiscovery()
+	case "/enter":
+		ui.handleEnterCommand(args)
+	case "/nick":
+		ui.handleNickCommand(args)
+	case "/refresh":
+		ui.app.Draw()
+	default:
+		ui.displaySystemMessage("Unknown command: " + args[0])
+	}
+}
+
+func (ui *ChatUI) handleEnterCommand(args []string) {
+	if len(args) > 1 {
+		ui.changeTopic(args[1])
+	} else {
+		ui.displaySystemMessage("Usage: /enter [new_topic_name]")
+	}
+}
+
+func (ui *ChatUI) handleNickCommand(args []string) {
+
+	if len(args) > 1 {
+		nick := args[1]
+		ui.cr.nick = nick
+	} else {
+		ui.displaySystemMessage("Usage: /enter [new_topic_name]")
+	}
+}
+
+func (ui *ChatUI) handleStatusCommand(args []string) {
+	if len(args) > 1 {
+		switch args[1] {
+		case "sub":
+			ui.displaySystemMessage("Fetching subscription status...")
+			// Logic to fetch and display subscription status here
+		case "topic":
+			ui.displaySystemMessage("Fetching topic status...")
+			// Logic to fetch and display topic status here
+		case "host":
+			ui.displaySystemMessage("Fetching host status...")
+			// Logic to fetch and display host status here
+		default:
+			ui.displaySystemMessage("Unknown status type: " + args[1])
+		}
+	} else {
+		ui.displaySystemMessage("Usage: /status [sub|topic|host]")
+	}
+}
+
+func (ui *ChatUI) handleChatMessage(input string) {
+	// Wrapping the string message into the message.Message structure
+
+	msgBytes, err := json.Marshal(input)
+	msg := message.New(ui.cr.roomName, ui.cr.roomName, msgBytes)
+
+	// FIXME. This should be done in the message.New function
+	m, err := json.Marshal(msg)
+	if err != nil {
+		printErr("message serialization error: %s", err)
+		return
+	}
+
+	// Serialize this structure to JSON
+	if err != nil {
+		printErr("message serialization error: %s", err)
+		return
+	}
+
+	err = ui.cr.topic.Publish(ui.ctx, m)
+	if err != nil {
+		printErr("publish error: %s", err)
+	}
+	ui.displaySelfMessage(input)
+}
+
+// Remaining methods like refreshPeers, displayChatMessage, etc., stay unchanged
+
 // withColor wraps a string with color tags for display in the messages text box.
 func withColor(color, msg string) string {
 	return fmt.Sprintf("[%s]%s[-]", color, msg)
+}
+
+// displayStatusMessage writes a status message to the message window.
+func (ui *ChatUI) displayStatusMessage(msg string) {
+	prompt := withColor("cyan", "<STATUS>:")
+	fmt.Fprintf(ui.msgW, "%s %s\n", prompt, msg)
+}
+
+func (ui *ChatUI) getStatusSub() string {
+	// Return whatever status you'd like about the subscription.
+	// Just an example below:
+	return fmt.Sprintf("Subscription Status: Active")
+}
+
+func (ui *ChatUI) getStatusTopic() string {
+	// Return whatever status you'd like about the topic.
+	// Fetching peers as an example below:
+	peers := ui.cr.ListPeers()
+	return fmt.Sprintf("Topic Status: %s | Peers: %v", ui.cr.roomName, peers)
+}
+
+func (ui *ChatUI) getStatusHost() string {
+	// Return whatever status you'd like about the host.
+	// Just an example below:
+	return fmt.Sprintf("Host ID: %s", ui.cr.self.Pretty())
+}
+
+func (ui *ChatUI) triggerDiscovery() {
+
+	go ui.cr.ps.Host.StartPeerDiscovery(ui.ctx, rendezvous)
+	ui.displaySystemMessage("Discovery process started...")
+}
+
+func (ui *ChatUI) displaySystemMessage(msg string) {
+	prompt := withColor("cyan", "[SYSTEM]:")
+	fmt.Fprintf(ui.msgW, "%s %s\n", prompt, msg)
+}
+
+func (ui *ChatUI) changeTopic(newTopic string) {
+	// Create a new chatroom instance with the new topic
+	newChatRoom, err := newChatRoom(ui.ctx, ps, ui.cr.nick, newTopic)
+	if err != nil {
+		ui.displaySystemMessage(fmt.Sprintf("Failed to join the new topic '%s': %s", newTopic, err))
+		return
+	}
+
+	// If successful, assign the new chatroom instance to ui.cr
+	ui.cr = newChatRoom
+	// ui.msgW.SetTitle(fmt.Sprintf("Topic: %s", newTopic))
+	ui.msgBox.SetTitle("Room: " + newTopic)
+
+	// Optionally, if you have resources that need to be released from the old chatroom, do it here.
+
+	// Notify the user
+	ui.displaySystemMessage(fmt.Sprintf("Entered the new chatroom: %s", newTopic))
+
+	// Update the peers list
+	ui.refreshPeers()
+
+	ui.app.Draw()
 }

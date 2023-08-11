@@ -17,7 +17,7 @@ const ChatRoomBufSize = 128
 type ChatRoom struct {
 	Messages chan *message.Message
 	ctx      context.Context
-	ps       *pubsub.PubSub
+	ps       *p2pPupsub.Service
 	topic    *pubsub.Topic
 	sub      *pubsub.Subscription
 	roomName string
@@ -28,7 +28,7 @@ type ChatRoom struct {
 func newChatRoom(ctx context.Context, ps *p2pPupsub.Service, nickname, roomName string) (*ChatRoom, error) {
 	cr := &ChatRoom{
 		ctx:      ctx,
-		ps:       ps.Sub,
+		ps:       ps,
 		roomName: roomName,
 		self:     ps.Host.Node.ID(),
 		nick:     nickname,
@@ -45,7 +45,7 @@ func newChatRoom(ctx context.Context, ps *p2pPupsub.Service, nickname, roomName 
 func (cr *ChatRoom) join() error {
 	var err error
 
-	cr.topic, err = cr.ps.Join(cr.roomName)
+	cr.topic, err = cr.ps.Sub.Join(cr.roomName)
 	if err != nil {
 		return fmt.Errorf("failed to join room: %v", err)
 	}
