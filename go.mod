@@ -3,7 +3,7 @@ module github.com/bahner/go-myspace-client
 go 1.20
 
 require (
-	github.com/bahner/go-myspace v0.0.0-20230810234056-598753a9d505
+	github.com/bahner/go-myspace v0.0.0-20230811002213-b1f41c0adcbd
 	github.com/gdamore/tcell/v2 v2.6.0
 	github.com/libp2p/go-libp2p v0.29.2
 	github.com/libp2p/go-libp2p-pubsub v0.9.3
