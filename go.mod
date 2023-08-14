@@ -1,13 +1,14 @@
 module github.com/bahner/go-myspace-client
 
-go 1.20
+go 1.19
 
 require (
-	github.com/bahner/go-myspace v0.0.0-20230811042203-3c84357fc76d
+	github.com/bahner/go-myspace v0.0.0-20230814230116-44ec3a05552c
 	github.com/gdamore/tcell/v2 v2.6.0
 	github.com/libp2p/go-libp2p v0.29.2
 	github.com/libp2p/go-libp2p-pubsub v0.9.3
-	github.com/rivo/tview v0.0.0-20230621164836-6cc0565babaf
+	github.com/mr-tron/base58 v1.2.0
+	github.com/rivo/tview v0.0.0-20230814110005-ccc2c8119703
 	github.com/sirupsen/logrus v1.9.3
 	go.deanishe.net/env v0.5.1
 )
@@ -75,7 +76,6 @@ require (
 	github.com/mikioh/tcpinfo v0.0.0-20190314235526-30a79bb1804b // indirect
 	github.com/mikioh/tcpopt v0.0.0-20190314235656-172688c1accc // indirect
 	github.com/minio/sha256-simd v1.0.1 // indirect
-	github.com/mr-tron/base58 v1.2.0 // indirect
 	github.com/multiformats/go-base32 v0.1.0 // indirect
 	github.com/multiformats/go-base36 v0.2.0 // indirect
 	github.com/multiformats/go-multiaddr v0.10.1 // indirect

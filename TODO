@@ -1,0 +1,11 @@
+## Bugs
+* fix redraw of ui when issuing commands
+* redirect logs from stdout to file
+
+## Features
+* integrate ipld
+  - store message as ipld
+  - sign dagcid
+* integrate ipns
+  - publish did with key
+

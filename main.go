@@ -10,6 +10,7 @@ import (
 	"github.com/bahner/go-myspace/p2p/pubsub"
 	"github.com/sirupsen/logrus"
 
+	"github.com/libp2p/go-libp2p"
 	"github.com/libp2p/go-libp2p/core/peer"
 )
 
@@ -33,7 +34,15 @@ func main() {
 
 	initConfig()
 
+	if *generate {
+		generateEd25519Key()
+	}
+
+	identity := createIdentity(secret)
+
 	h := host.New()
+	h.AddOption(libp2p.Identity(identity))
+	h.AddOption(libp2p.ListenAddrStrings())
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
 	go initPubSubService(ctx, wg, h)

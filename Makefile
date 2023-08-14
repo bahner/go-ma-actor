@@ -3,7 +3,7 @@
 NAME = go-myspace-client
 MODULE_NAME = github.com/bahner/go-myspace-client
 
-GO ?= go
+GO ?= go1.19
 PREFIX ?= /usr/local
 
 ifneq (,$(wildcard ./.env))
