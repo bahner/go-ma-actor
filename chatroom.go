@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 
-	// FIXME missing from go-myspace. Fix there
 	"github.com/bahner/go-myspace/message"
 	"github.com/libp2p/go-libp2p/core/peer"
 
