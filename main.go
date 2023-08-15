@@ -7,6 +7,7 @@ import (
 	"sync"
 
 	"github.com/bahner/go-myspace/p2p/host"
+	"github.com/bahner/go-myspace/p2p/key"
 	"github.com/bahner/go-myspace/p2p/pubsub"
 	"github.com/sirupsen/logrus"
 
@@ -34,11 +35,7 @@ func main() {
 
 	initConfig()
 
-	if *generate {
-		generateEd25519Key()
-	}
-
-	identity := createIdentity(secret)
+	identity := key.CreateIdentity(secret)
 
 	h := host.New()
 	h.AddOption(libp2p.Identity(identity))

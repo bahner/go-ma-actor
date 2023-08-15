@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 
+	"github.com/bahner/go-myspace/p2p/key"
 	"github.com/sirupsen/logrus"
 	"go.deanishe.net/env"
 )
@@ -31,6 +32,11 @@ func initConfig() {
 	flag.StringVar(&secret, "identity", secret, "Base58 encoded secret key used to identofy the client. You.")
 
 	flag.Parse()
+
+	// If just to generate a secret key, do it and exit
+	if *generate {
+		key.PrintEd25519KeyAndExit()
+	}
 
 	// Init logger
 	log = logrus.New()
