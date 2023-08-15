@@ -63,7 +63,7 @@ func (cr *ChatRoom) join() error {
 }
 
 func (cr *ChatRoom) Publish(content string) error {
-	m := message.New(cr.self.Pretty(), cr.nick, []byte(content))
+	m := message.New(cr.self.Pretty(), cr.topic.String(), []byte(content))
 	msgBytes, err := json.Marshal(m)
 	if err != nil {
 		return fmt.Errorf("failed to marshal message: %v", err)

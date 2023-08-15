@@ -2,6 +2,8 @@ package main
 
 import (
 	"flag"
+	"fmt"
+	"os"
 
 	"github.com/bahner/go-myspace/p2p/key"
 	"github.com/sirupsen/logrus"
@@ -17,6 +19,7 @@ var (
 	secret      string = env.Get("GO_MYSPACE_CLIENT_IDENTITY", "")
 
 	generate *bool
+	genenv   *bool
 )
 
 func initConfig() {
@@ -29,11 +32,18 @@ func initConfig() {
 	flag.StringVar(&room, "room", room, "Room to join. This is obviously a TODO as we need more.")
 
 	generate = flag.Bool("generate", false, "Generate a new private key, prints it and exit the program.")
+	generate = flag.Bool("genenv", false, "Generates a new environment file with a new private key.")
 	flag.StringVar(&secret, "identity", secret, "Base58 encoded secret key used to identofy the client. You.")
 
 	flag.Parse()
 
 	// If just to generate a secret key, do it and exit
+	if *genenv {
+		k := key.GenerateSecretKey()
+		fmt.Println("export GO_MYSPACE_CLIENT_IDENTITY=" + k)
+		os.Exit(0)
+	}
+
 	if *generate {
 		key.PrintEd25519KeyAndExit()
 	}
