@@ -1,6 +1,6 @@
-# github.com/bahner/go-myspace-client
+# github.com/bahner/go-space-thumb
 
-This is go-myspace-client based on [an example from go-libp2p][src].
+This is go-space-thumb based on [an example from go-libp2p][src].
 
 Now you can either run with `go run`, or build and run the binary:
 
@@ -9,20 +9,20 @@ go run . -identity foobar -room myTopic
 
 # or, build and run separately
 go build .
- export GO_MYSPACE_CLIENT_IDENTITY=fooBar
-./go-myspace-client  -room myTopic
+ export GO_MA_ACTOR_IDENTITY=fooBar
+./go-space-thumb  -room myTopic
 ```
 
 ## Configuration
 
-type `./go-myspace-client -help`. Most config settings can be set with environment variables, as follows:
+type `./go-space-thumb -help`. Most config settings can be set with environment variables, as follows:
 
 ```bash
-export GO_MYSPACE_CLIENT_LOG_LEVEL="error"
-export GO_MYSPACE_CLIENT_RENDEZVOUS="myspace"
-export GO_MYSPACE_CLIENT_SERVICE_NAME="myspace"
-export GO_MYSPACE_CLIENT_ROOM="mytopic"
-export GO_MYSPACE_CLIENT_IDENTITY="myBase58EncodedPrivkeyGeneratedByGenerate"
+export GO_MA_ACTOR_LOG_LEVEL="error"
+export GO_MA_ACTOR_RENDEZVOUS="space"
+export GO_MA_ACTOR_SERVICE_NAME="space"
+export GO_MA_ACTOR_ROOM="mytopic"
+export GO_MA_ACTOR_IDENTITY="myBase58EncodedPrivkeyGeneratedByGenerate"
 ```
 
 ## Identity
@@ -35,13 +35,13 @@ Just don't store somewhere insecure. It's your future identity.
 
 ```bash
 unset HISTFILE
- export GO_MYSPACE_CLIENT_IDENTITY=FooBarABCDEFbase58
+ export GO_MA_ACTOR_IDENTITY=FooBarABCDEFbase58
 ```
 
 or specified on the command line:
 
 ```bash
-./go-myspace-client -identity FooBarABCDEFbase58
+./go-space-thumb -identity FooBarABCDEFbase58
 ```
 
 The first is the best. (Noticed that in most shells the empty space before the command, means that the line isn't saved in history.)

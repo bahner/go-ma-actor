@@ -2,58 +2,48 @@ package main
 
 import (
 	"flag"
-	"fmt"
-	"os"
-	"sync"
 
-	"github.com/bahner/go-myspace/p2p/key"
-	"github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"go.deanishe.net/env"
 )
 
 var (
-	logLevel    string = env.Get("GO_MYSPACE_CLIENT_LOG_LEVEL", "error")
-	rendezvous  string = env.Get("GO_MYSPACE_CLIENT_RENDEZVOUS", "myspace")
-	serviceName string = env.Get("GO_MYSPACE_CLIENT_SERVICE_NAME", "myspace")
+	logLevel    string = env.Get("GO_MA_ACTOR_LOG_LEVEL", "error")
+	rendezvous  string = env.Get("GO_MA_ACTOR_RENDEZVOUS", "/ma/0.0.1")
+	serviceName string = env.Get("GO_MA_ACTOR_SERVICE_NAME", "/ma/0.0.1")
 	nick        string = env.Get("USER", "ghost")
-	room        string = env.Get("GO_MYSPACE_CLIENT_ROOM", "mytopic")
-	secret      string = env.Get("GO_MYSPACE_CLIENT_IDENTITY", "")
+	topic       string = env.Get("GO_MA_ACTOR_ROOM", "mytopic")
+	keyset      string = env.Get("GO_MA_ACTOR_IDENTITY", "")
 
 	generate *bool
 	genenv   *bool
+	publish  *bool
 )
 
-func initConfig(wg *sync.WaitGroup) {
-
-	defer wg.Done()
+func initConfig() {
 
 	// Flags - user configurations
 	flag.StringVar(&logLevel, "loglevel", logLevel, "Loglevel to use for application")
 	flag.StringVar(&rendezvous, "rendezvous", rendezvous, "Unique string to identify group of nodes. Share this with your friends to let them connect with you")
 	flag.StringVar(&serviceName, "servicename", serviceName, "serviceName to use for MDNS discovery")
 	flag.StringVar(&nick, "nick", nick, "Cosmetic nick to use")
-	flag.StringVar(&room, "room", room, "Room to join. This is obviously a TODO as we need more.")
+	flag.StringVar(&topic, "topic", topic, "Room (topic) to join. This is obviously a TODO as we need more.")
+
+	// The secret sauce. Use or generate a new one.
+	flag.StringVar(&keyset, "identity", keyset, "Base58 encoded secret key used to identify the client. You.")
 
 	generate = flag.Bool("generate", false, "Generate a new private key, prints it and exit the program.")
-	genenv = flag.Bool("genenv", false, "Generates a new environment file with a new private key.")
-	flag.StringVar(&secret, "identity", secret, "Base58 encoded secret key used to identofy the client. You.")
+	genenv = flag.Bool("genenv", false, "Generates a new environment file with a new private key to stdout")
+	publish = flag.Bool("publish", false, "Publishes keyset to IPFS when using genenv or generate")
 
 	flag.Parse()
 
-	// If just to generate a secret key, do it and exit
-	if *genenv {
-		k := key.GenerateSecretKey()
-		fmt.Println("export GO_MYSPACE_CLIENT_IDENTITY=" + k)
-		os.Exit(0)
-	}
-
-	if *generate {
-		key.PrintEd25519KeyAndExit()
+	if *generate || *genenv {
+		generateKeyset(nick, *generate)
 	}
 
 	// Init logger
-	log = logrus.New()
-	level, err := logrus.ParseLevel(logLevel)
+	level, err := log.ParseLevel(logLevel)
 	if err != nil {
 		log.Fatal(err)
 	}

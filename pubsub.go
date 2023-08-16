@@ -4,13 +4,11 @@ import (
 	"context"
 	"sync"
 
-	"github.com/bahner/go-myspace/p2p/host"
-	"github.com/bahner/go-myspace/p2p/pubsub"
+	"github.com/bahner/go-space/p2p/host"
+	"github.com/bahner/go-space/p2p/pubsub"
 )
 
-func initPubSubService(ctx context.Context, wg *sync.WaitGroup, h *host.P2pHost) {
-
-	defer wg.Done()
+func createAndInitPubSubService(ctx context.Context, h *host.Host) (*pubsub.Service, error) {
 
 	// Start libp2p node and discover peers
 	h.Init(ctx)
@@ -19,14 +17,11 @@ func initPubSubService(ctx context.Context, wg *sync.WaitGroup, h *host.P2pHost)
 
 	discoveryWg.Add(2)
 	go host.DiscoverDHTPeers(ctx, discoveryWg, h.Node, rendezvous)
-	go host.DiscoverMDNSPeers(ctx, discoveryWg, h.Node, serviceName)
+	go host.DiscoverMDNSPeers(ctx, discoveryWg, h.Node, rendezvous)
 	discoveryWg.Wait()
 
-	ps = pubsub.New(h)
+	ps := pubsub.New(h)
 	ps.Start(ctx)
 
-}
-
-func GetPubSubService() *pubsub.Service {
-	return ps
+	return ps, nil
 }

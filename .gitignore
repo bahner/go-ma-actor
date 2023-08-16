@@ -19,5 +19,7 @@
 
 # Go workspace file
 go.work
-go-myspace-client
-go-myspace-client*
+go-space-thumb
+go-space-thumb*
+.env
+*secret

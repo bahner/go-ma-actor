@@ -1,9 +1,9 @@
 #!/usr/bin/make -ef
 
-NAME = go-myspace-client
-MODULE_NAME = github.com/bahner/go-myspace-client
+NAME = go-ma-actor
+MODULE_NAME = github.com/bahner/go-ma-actor
 
-GO ?= go1.20.7
+GO ?= go
 PREFIX ?= /usr/local
 
 ifneq (,$(wildcard ./.env))
@@ -29,7 +29,7 @@ clean:
 
 console:
 	docker-compose up -d
-	docker attach go-myspace-pubsub_myspace_1
+	docker attach go-space-pubsub_space_1
 
 distclean: clean
 	rm -f $(shell git ls-files --exclude-standard --others)

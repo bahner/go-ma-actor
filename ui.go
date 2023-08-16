@@ -11,16 +11,17 @@ import (
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 
-	"github.com/bahner/go-myspace/message"
+	"github.com/bahner/go-ma/message"
 )
 
-// ChatUI is a Text User Interface (TUI) for a ChatRoom.
+// ChatUI is a Text User Interface (TUI) for a Room.
 // The Run method will draw the UI to the terminal in "fullscreen"
 // mode. You can quit with Ctrl-C, or by typing "/quit" into the
 // chat prompt.
 type ChatUI struct {
 	ctx       context.Context
-	cr        *ChatRoom
+	r         *Room
+	a         *Actor
 	app       *tview.Application
 	peersList *tview.TextView
 	msgBox    *tview.TextView
@@ -32,14 +33,14 @@ type ChatUI struct {
 
 // NewChatUI returns a new ChatUI struct that controls the text UI.
 // It won't actually do anything until you call Run().
-func NewChatUI(ctx context.Context, cr *ChatRoom) *ChatUI {
+func NewChatUI(ctx context.Context, r *Room, a *Actor) *ChatUI {
 	app := tview.NewApplication()
 
 	// make a text view to contain our chat messages
 	msgBox := tview.NewTextView()
 	msgBox.SetDynamicColors(true)
 	msgBox.SetBorder(true)
-	msgBox.SetTitle(fmt.Sprintf("Room: %s", cr.roomName))
+	msgBox.SetTitle(fmt.Sprintf("Room: %s", r.roomName))
 
 	// text views are io.Writers, but they don't automatically refresh.
 	// this sets a change handler to force the app to redraw when we get
@@ -51,7 +52,7 @@ func NewChatUI(ctx context.Context, cr *ChatRoom) *ChatUI {
 	// an input field for typing messages into
 	inputCh := make(chan string, 32)
 	input := tview.NewInputField().
-		SetLabel(cr.nick + " > ").
+		SetLabel(r.nick + " > ").
 		SetFieldWidth(0).
 		SetFieldBackgroundColor(tcell.ColorBlack)
 
@@ -101,7 +102,8 @@ func NewChatUI(ctx context.Context, cr *ChatRoom) *ChatUI {
 
 	return &ChatUI{
 		ctx:       ctx,
-		cr:        cr,
+		r:         r,
+		a:         a,
 		app:       app,
 		peersList: peersList,
 		msgW:      msgBox,
@@ -128,7 +130,7 @@ func (ui *ChatUI) end() {
 // refreshPeers pulls the list of peers currently in the chat room and
 // displays the last 8 chars of their peer id in the Peers panel in the ui.
 func (ui *ChatUI) refreshPeers() {
-	peers := ui.cr.topic.ListPeers()
+	peers := ui.r.to.ListPeers()
 
 	// clear is thread-safe
 	ui.peersList.Clear()
@@ -150,7 +152,7 @@ func (ui *ChatUI) displayChatMessage(cm *message.Message) {
 // displaySelfMessage writes a message from ourself to the message window,
 // with our nick highlighted in yellow.
 func (ui *ChatUI) displaySelfMessage(msg string) {
-	prompt := withColor("yellow", fmt.Sprintf("<%s>:", ui.cr.nick))
+	prompt := withColor("yellow", fmt.Sprintf("<%s>:", ui.r.nick))
 	fmt.Fprintf(ui.msgW, "%s %s\n", prompt, msg)
 }
 
@@ -170,13 +172,13 @@ func (ui *ChatUI) handleEvents() {
 				ui.handleChatMessage(input)
 			}
 
-		case m := <-ui.cr.Messages:
+		case m := <-ui.r.Messages:
 			ui.displayChatMessage(m)
 
 		case <-peerRefreshTicker.C:
 			ui.refreshPeers()
 
-		case <-ui.cr.ctx.Done():
+		case <-ui.r.ctx.Done():
 			return
 
 		case <-ui.doneCh:
@@ -216,7 +218,7 @@ func (ui *ChatUI) handleNickCommand(args []string) {
 
 	if len(args) > 1 {
 		nick := args[1]
-		ui.cr.nick = nick
+		ui.r.nick = nick
 	} else {
 		ui.displaySystemMessage("Usage: /enter [new_topic_name]")
 	}
@@ -246,7 +248,7 @@ func (ui *ChatUI) handleChatMessage(input string) {
 	// Wrapping the string message into the message.Message structure
 
 	msgBytes, err := json.Marshal(input)
-	msg := message.New(ui.cr.roomName, ui.cr.roomName, msgBytes)
+	msg := message.New(ui.r.roomName, ui.r.roomName, msgBytes)
 
 	// FIXME. This should be done in the message.New function
 	m, err := json.Marshal(msg)
@@ -261,7 +263,7 @@ func (ui *ChatUI) handleChatMessage(input string) {
 		return
 	}
 
-	err = ui.cr.topic.Publish(ui.ctx, m)
+	err = ui.r.to.Publish(ui.ctx, m)
 	if err != nil {
 		printErr("publish error: %s", err)
 	}
@@ -290,19 +292,19 @@ func (ui *ChatUI) getStatusSub() string {
 func (ui *ChatUI) getStatusTopic() string {
 	// Return whatever status you'd like about the topic.
 	// Fetching peers as an example below:
-	peers := ui.cr.ListPeers()
-	return fmt.Sprintf("Topic Status: %s | Peers: %v", ui.cr.roomName, peers)
+	peers := ui.r.ListPeers()
+	return fmt.Sprintf("Topic Status: %s | Peers: %v", ui.r.roomName, peers)
 }
 
 func (ui *ChatUI) getStatusHost() string {
 	// Return whatever status you'd like about the host.
 	// Just an example below:
-	return fmt.Sprintf("Host ID: %s", ui.cr.self.Pretty())
+	return fmt.Sprintf("Host ID: %s", ui.r.self.Pretty())
 }
 
 func (ui *ChatUI) triggerDiscovery() {
 
-	go ui.cr.ps.Host.StartPeerDiscovery(ui.ctx, rendezvous, serviceName)
+	go ui.r.ps.Host.StartPeerDiscovery(ui.ctx, rendezvous, serviceName)
 	ui.displaySystemMessage("Discovery process started...")
 }
 
@@ -312,22 +314,22 @@ func (ui *ChatUI) displaySystemMessage(msg string) {
 }
 
 func (ui *ChatUI) changeTopic(newTopic string) {
-	// Create a new chatroom instance with the new topic
-	newChatRoom, err := newChatRoom(ui.ctx, ps, ui.cr.nick, newTopic)
+	// Create a new Room instance with the new topic
+	newRoom, err := newRoom(ui.ctx, ps, ui.r.nick, newTopic)
 	if err != nil {
 		ui.displaySystemMessage(fmt.Sprintf("Failed to join the new topic '%s': %s", newTopic, err))
 		return
 	}
 
-	// If successful, assign the new chatroom instance to ui.cr
-	ui.cr = newChatRoom
+	// If successful, assign the new Room instance to ui.cr
+	ui.r = newRoom
 	// ui.msgW.SetTitle(fmt.Sprintf("Topic: %s", newTopic))
 	ui.msgBox.SetTitle("Room: " + newTopic)
 
-	// Optionally, if you have resources that need to be released from the old chatroom, do it here.
+	// Optionally, if you have resources that need to be released from the old Room, do it here.
 
 	// Notify the user
-	ui.displaySystemMessage(fmt.Sprintf("Entered the new chatroom: %s", newTopic))
+	ui.displaySystemMessage(fmt.Sprintf("Entered the new Room: %s", newTopic))
 
 	// Update the peers list
 	ui.refreshPeers()
