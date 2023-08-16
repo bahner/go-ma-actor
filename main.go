@@ -9,6 +9,7 @@ import (
 	"github.com/bahner/go-myspace/p2p/host"
 	"github.com/bahner/go-myspace/p2p/key"
 	"github.com/bahner/go-myspace/p2p/pubsub"
+	"github.com/ipfs/boxo/ipns"
 	"github.com/sirupsen/logrus"
 
 	"github.com/libp2p/go-libp2p"
@@ -22,28 +23,27 @@ var (
 
 func main() {
 	ctx := context.Background()
+	wg := &sync.WaitGroup{}
 
-	log = logrus.New()
-	f, err := os.OpenFile("go-myspace-client.log", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0755)
-	if err != nil {
-		log.Fatalf("Could not open log file: %v", err)
-	}
-	defer f.Close()
-
-	// Set the log output to the file
-	log.SetOutput(f)
-
-	initConfig()
+	wg.Add(1)
+	initConfig(wg)
+	wg.Wait()
 
 	identity := key.CreateIdentity(secret)
 
 	h := host.New()
 	h.AddOption(libp2p.Identity(identity))
 	h.AddOption(libp2p.ListenAddrStrings())
-	wg := &sync.WaitGroup{}
+
 	wg.Add(1)
 	go initPubSubService(ctx, wg, h)
+	log.Debug("Waiting for pubsub service to initialize")
 	wg.Wait()
+	log.Debug("Pubsub service initialized")
+
+	// Generate name from peer ID
+	ipnsName := ipns.NameFromPeer(h.Node.ID())
+	log.Infof("Client IPNS name: %s", ipnsName)
 
 	// create and join the chat room, ps is now initialized.
 	cr, err := newChatRoom(ctx, ps, nick, room)

@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"sync"
 
 	"github.com/bahner/go-myspace/p2p/key"
 	"github.com/sirupsen/logrus"
@@ -22,7 +23,9 @@ var (
 	genenv   *bool
 )
 
-func initConfig() {
+func initConfig(wg *sync.WaitGroup) {
+
+	defer wg.Done()
 
 	// Flags - user configurations
 	flag.StringVar(&logLevel, "loglevel", logLevel, "Loglevel to use for application")
@@ -32,7 +35,7 @@ func initConfig() {
 	flag.StringVar(&room, "room", room, "Room to join. This is obviously a TODO as we need more.")
 
 	generate = flag.Bool("generate", false, "Generate a new private key, prints it and exit the program.")
-	generate = flag.Bool("genenv", false, "Generates a new environment file with a new private key.")
+	genenv = flag.Bool("genenv", false, "Generates a new environment file with a new private key.")
 	flag.StringVar(&secret, "identity", secret, "Base58 encoded secret key used to identofy the client. You.")
 
 	flag.Parse()

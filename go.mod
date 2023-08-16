@@ -5,6 +5,7 @@ go 1.20
 require (
 	github.com/bahner/go-myspace v0.0.0-20230815231400-6a8f39c9aac7
 	github.com/gdamore/tcell/v2 v2.6.0
+	github.com/ipfs/boxo v0.11.0
 	github.com/libp2p/go-libp2p v0.29.2
 	github.com/libp2p/go-libp2p-pubsub v0.9.3
 	github.com/rivo/tview v0.0.0-20230814110005-ccc2c8119703
@@ -41,7 +42,6 @@ require (
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/hashicorp/golang-lru/v2 v2.0.2 // indirect
 	github.com/huin/goupnp v1.2.0 // indirect
-	github.com/ipfs/boxo v0.10.0 // indirect
 	github.com/ipfs/go-cid v0.4.1 // indirect
 	github.com/ipfs/go-datastore v0.6.0 // indirect
 	github.com/ipfs/go-log v1.0.5 // indirect

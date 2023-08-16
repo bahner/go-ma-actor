@@ -8,6 +8,7 @@ import (
 	"github.com/bahner/go-myspace/message"
 	"github.com/libp2p/go-libp2p/core/peer"
 
+	"github.com/bahner/go-myspace/p2p/key"
 	p2pPupsub "github.com/bahner/go-myspace/p2p/pubsub"
 	pubsub "github.com/libp2p/go-libp2p-pubsub"
 )
@@ -63,11 +64,14 @@ func (cr *ChatRoom) join() error {
 }
 
 func (cr *ChatRoom) Publish(content string) error {
+
 	m := message.New(cr.self.Pretty(), cr.topic.String(), []byte(content))
+	m.Sign(key.ExtractSecretKey(secret))
 	msgBytes, err := json.Marshal(m)
 	if err != nil {
 		return fmt.Errorf("failed to marshal message: %v", err)
 	}
+	log.Debugf("Publishing message: %s", string(msgBytes))
 
 	if err = cr.topic.Publish(cr.ctx, msgBytes); err != nil {
 		return fmt.Errorf("failed to publish message: %v", err)
@@ -95,7 +99,7 @@ func (cr *ChatRoom) readLoop() {
 
 		cm := new(message.Message)
 		if err := json.Unmarshal(msg.Data, cm); err != nil {
-			// Optionally log the error
+			log.Debugf("Failed to unmarshal message: %v", err)
 			continue
 		}
 

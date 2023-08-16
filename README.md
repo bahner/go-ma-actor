@@ -14,6 +14,7 @@ go build .
 ```
 
 ## Configuration
+
 type `./go-myspace-client -help`. Most config settings can be set with environment variables, as follows:
 
 ```bash
