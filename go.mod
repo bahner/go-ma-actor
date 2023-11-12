@@ -1,13 +1,13 @@
 module github.com/bahner/go-ma-actor
 
-go 1.21.3
+go 1.21.4
 
 require (
-	github.com/bahner/go-ma v0.0.0-20231103011925-ef17def80b19
+	github.com/bahner/go-ma v0.0.0-20231113013031-f885d61e9a08
 	github.com/bahner/go-space v0.0.0-20231030191946-a78651000d09
 	github.com/gdamore/tcell/v2 v2.6.0
-	github.com/libp2p/go-libp2p v0.32.0
-	github.com/libp2p/go-libp2p-pubsub v0.9.3
+	github.com/libp2p/go-libp2p v0.32.1
+	github.com/libp2p/go-libp2p-pubsub v0.10.0
 	github.com/rivo/tview v0.0.0-20231102183219-1b91b8131c43
 	github.com/sirupsen/logrus v1.9.3
 	go.deanishe.net/env v0.5.1
@@ -44,7 +44,7 @@ require (
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/hashicorp/golang-lru/v2 v2.0.5 // indirect
 	github.com/huin/goupnp v1.3.0 // indirect
-	github.com/ipfs/boxo v0.14.0 // indirect
+	github.com/ipfs/boxo v0.15.0 // indirect
 	github.com/ipfs/go-cid v0.4.1 // indirect
 	github.com/ipfs/go-datastore v0.6.0 // indirect
 	github.com/ipfs/go-ipfs-api v0.7.0 // indirect
@@ -121,14 +121,14 @@ require (
 	go.uber.org/mock v0.3.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.26.0 // indirect
-	golang.org/x/crypto v0.14.0 // indirect
+	golang.org/x/crypto v0.15.0 // indirect
 	golang.org/x/exp v0.0.0-20231006140011-7918f672742d // indirect
 	golang.org/x/mod v0.13.0 // indirect
 	golang.org/x/net v0.17.0 // indirect
 	golang.org/x/sync v0.4.0 // indirect
-	golang.org/x/sys v0.13.0 // indirect
-	golang.org/x/term v0.13.0 // indirect
-	golang.org/x/text v0.13.0 // indirect
+	golang.org/x/sys v0.14.0 // indirect
+	golang.org/x/term v0.14.0 // indirect
+	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/tools v0.14.0 // indirect
 	gonum.org/v1/gonum v0.13.0 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect

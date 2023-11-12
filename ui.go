@@ -20,8 +20,8 @@ import (
 // chat prompt.
 type ChatUI struct {
 	ctx       context.Context
-	r         *Room
 	a         *Actor
+	r         *Room
 	app       *tview.Application
 	peersList *tview.TextView
 	msgBox    *tview.TextView
@@ -40,7 +40,7 @@ func NewChatUI(ctx context.Context, r *Room, a *Actor) *ChatUI {
 	msgBox := tview.NewTextView()
 	msgBox.SetDynamicColors(true)
 	msgBox.SetBorder(true)
-	msgBox.SetTitle(fmt.Sprintf("Room: %s", r.roomName))
+	msgBox.SetTitle(fmt.Sprintf("Room: %s", r.nick))
 
 	// text views are io.Writers, but they don't automatically refresh.
 	// this sets a change handler to force the app to redraw when we get
@@ -102,7 +102,6 @@ func NewChatUI(ctx context.Context, r *Room, a *Actor) *ChatUI {
 
 	return &ChatUI{
 		ctx:       ctx,
-		r:         r,
 		a:         a,
 		app:       app,
 		peersList: peersList,
@@ -127,26 +126,26 @@ func (ui *ChatUI) end() {
 	ui.doneCh <- struct{}{}
 }
 
-// refreshPeers pulls the list of peers currently in the chat room and
-// displays the last 8 chars of their peer id in the Peers panel in the ui.
-func (ui *ChatUI) refreshPeers() {
-	peers := ui.r.to.ListPeers()
+// // refreshPeers pulls the list of peers currently in the chat room and
+// // displays the last 8 chars of their peer id in the Peers panel in the ui.
+// func (ui *ChatUI) refreshPeers() {
+// 	peers := ui.a.ps.Host.Node.Peerstore().Peers()
 
-	// clear is thread-safe
-	ui.peersList.Clear()
+// 	// clear is thread-safe
+// 	ui.peersList.Clear()
 
-	for _, p := range peers {
-		fmt.Fprintln(ui.peersList, shortID(p))
-	}
+// 	for _, p := range peers {
+// 		fmt.Fprintln(ui.peersList, shortID(p))
+// 	}
 
-	ui.app.Draw()
-}
+// 	ui.app.Draw()
+// }
 
 // displayChatMessage writes a ChatMessage from the room to the message window,
 // with the sender's nick highlighted in green.
 func (ui *ChatUI) displayChatMessage(cm *message.Message) {
 	prompt := withColor("green", fmt.Sprintf("<%s>:", cm.From))
-	fmt.Fprintf(ui.msgW, "%s %s\n", prompt, cm.Data)
+	fmt.Fprintf(ui.msgW, "%s %s\n", prompt, cm.Body)
 }
 
 // displaySelfMessage writes a message from ourself to the message window,
@@ -172,13 +171,13 @@ func (ui *ChatUI) handleEvents() {
 				ui.handleChatMessage(input)
 			}
 
-		case m := <-ui.r.Messages:
+		case m := <-ui.a.ears:
 			ui.displayChatMessage(m)
 
-		case <-peerRefreshTicker.C:
-			ui.refreshPeers()
+		// case <-peerRefreshTicker.C:
+		// 	ui.refreshPeers()
 
-		case <-ui.r.ctx.Done():
+		case <-ui.ctx.Done():
 			return
 
 		case <-ui.doneCh:
@@ -244,30 +243,32 @@ func (ui *ChatUI) handleStatusCommand(args []string) {
 	}
 }
 
-func (ui *ChatUI) handleChatMessage(input string) {
+func (ui *ChatUI) handleChatMessage(input string) error {
 	// Wrapping the string message into the message.Message structure
 
 	msgBytes, err := json.Marshal(input)
-	msg := message.New(ui.r.roomName, ui.r.roomName, msgBytes)
+	if err != nil {
+		return fmt.Errorf("message serialization error: %s", err)
+	}
+
+	msg, err := message.New(ui.r.nick, ui.r.nick, string(msgBytes), "application/json")
+	if err != nil {
+		return fmt.Errorf("message creation error: %s", err)
+	}
 
 	// FIXME. This should be done in the message.New function
 	m, err := json.Marshal(msg)
 	if err != nil {
-		printErr("message serialization error: %s", err)
-		return
+		return fmt.Errorf("message serialization error: %s", err)
 	}
 
-	// Serialize this structure to JSON
+	err = ui.r.Topic.Publish(ui.ctx, m)
 	if err != nil {
-		printErr("message serialization error: %s", err)
-		return
-	}
-
-	err = ui.r.to.Publish(ui.ctx, m)
-	if err != nil {
-		printErr("publish error: %s", err)
+		return fmt.Errorf("publish error: %s", err)
 	}
 	ui.displaySelfMessage(input)
+
+	return nil
 }
 
 // Remaining methods like refreshPeers, displayChatMessage, etc., stay unchanged
@@ -277,34 +278,34 @@ func withColor(color, msg string) string {
 	return fmt.Sprintf("[%s]%s[-]", color, msg)
 }
 
-// displayStatusMessage writes a status message to the message window.
-func (ui *ChatUI) displayStatusMessage(msg string) {
-	prompt := withColor("cyan", "<STATUS>:")
-	fmt.Fprintf(ui.msgW, "%s %s\n", prompt, msg)
-}
+// // displayStatusMessage writes a status message to the message window.
+// func (ui *ChatUI) displayStatusMessage(msg string) {
+// 	prompt := withColor("cyan", "<STATUS>:")
+// 	fmt.Fprintf(ui.msgW, "%s %s\n", prompt, msg)
+// }
 
-func (ui *ChatUI) getStatusSub() string {
-	// Return whatever status you'd like about the subscription.
-	// Just an example below:
-	return fmt.Sprintf("Subscription Status: Active")
-}
+// func (ui *ChatUI) getStatusSub() string {
+// 	// Return whatever status you'd like about the subscription.
+// 	// Just an example below:
+// 	return fmt.Sprintf("Subscription Status: Active")
+// }
 
-func (ui *ChatUI) getStatusTopic() string {
-	// Return whatever status you'd like about the topic.
-	// Fetching peers as an example below:
-	peers := ui.r.ListPeers()
-	return fmt.Sprintf("Topic Status: %s | Peers: %v", ui.r.roomName, peers)
-}
+// func (ui *ChatUI) getStatusTopic() string {
+// 	// Return whatever status you'd like about the topic.
+// 	// Fetching peers as an example below:
+// 	peers := ui.r.Topic.ListPeers()
+// 	return fmt.Sprintf("Topic Status: %s | Peers: %v", ui.r.nick, peers)
+// }
 
-func (ui *ChatUI) getStatusHost() string {
-	// Return whatever status you'd like about the host.
-	// Just an example below:
-	return fmt.Sprintf("Host ID: %s", ui.r.self.Pretty())
-}
+// func (ui *ChatUI) getStatusHost() string {
+// 	// Return whatever status you'd like about the host.
+// 	// Just an example below:
+// 	return fmt.Sprintf("Host ID: %s", ps.Host.Node.ID())
+// }
 
 func (ui *ChatUI) triggerDiscovery() {
 
-	go ui.r.ps.Host.StartPeerDiscovery(ui.ctx, rendezvous, serviceName)
+	go ps.Host.StartPeerDiscovery(ui.ctx, rendezvous, serviceName)
 	ui.displaySystemMessage("Discovery process started...")
 }
 
@@ -313,26 +314,21 @@ func (ui *ChatUI) displaySystemMessage(msg string) {
 	fmt.Fprintf(ui.msgW, "%s %s\n", prompt, msg)
 }
 
-func (ui *ChatUI) changeTopic(newTopic string) {
+func (ui *ChatUI) changeTopic(d string) {
+
 	// Create a new Room instance with the new topic
-	newRoom, err := newRoom(ui.ctx, ps, ui.r.nick, newTopic)
+	room, err := NewRoom(d)
 	if err != nil {
-		ui.displaySystemMessage(fmt.Sprintf("Failed to join the new topic '%s': %s", newTopic, err))
+		ui.displaySystemMessage(fmt.Sprintf("Failed to create the new topic '%s': %s", d, err))
 		return
 	}
-
 	// If successful, assign the new Room instance to ui.cr
-	ui.r = newRoom
+	ui.r = room
 	// ui.msgW.SetTitle(fmt.Sprintf("Topic: %s", newTopic))
-	ui.msgBox.SetTitle("Room: " + newTopic)
-
-	// Optionally, if you have resources that need to be released from the old Room, do it here.
+	ui.msgBox.SetTitle("Room: " + ui.r.nick)
 
 	// Notify the user
-	ui.displaySystemMessage(fmt.Sprintf("Entered the new Room: %s", newTopic))
-
-	// Update the peers list
-	ui.refreshPeers()
+	ui.displaySystemMessage(fmt.Sprintf("Entered the new Room: %s", ui.r.nick))
 
 	ui.app.Draw()
 }
