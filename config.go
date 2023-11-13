@@ -6,17 +6,19 @@ import (
 	"github.com/bahner/go-ma/key/set"
 	"github.com/bahner/go-space/p2p/host"
 	"github.com/bahner/go-space/p2p/pubsub"
+	nanoid "github.com/matoous/go-nanoid/v2"
 	log "github.com/sirupsen/logrus"
 	"go.deanishe.net/env"
 )
 
 var (
-	logLevel    string = env.Get("GO_MA_ACTOR_LOG_LEVEL", "error")
-	rendezvous  string = env.Get("GO_MA_ACTOR_RENDEZVOUS", "/ma/0.0.1")
-	serviceName string = env.Get("GO_MA_ACTOR_SERVICE_NAME", "/ma/0.0.1")
-	nick        string = env.Get("USER", "ghost")
-	room        string = env.Get("GO_MA_ACTOR_ROOM", "mytopic")
-	keyset      string = env.Get("GO_MA_ACTOR_KEYSET", "")
+	randomNick, _        = nanoid.New()
+	logLevel      string = env.Get("GO_MA_ACTOR_LOG_LEVEL", "error")
+	rendezvous    string = env.Get("GO_MA_ACTOR_RENDEZVOUS", "/ma/0.0.1")
+	serviceName   string = env.Get("GO_MA_ACTOR_SERVICE_NAME", "/ma/0.0.1")
+	nick          string = env.Get("USER", randomNick)
+	room          string = env.Get("GO_MA_ACTOR_ROOM", "mytopic")
+	keyset        string = env.Get("GO_MA_ACTOR_KEYSET", "")
 
 	generate     *bool
 	genenv       *bool
@@ -40,8 +42,8 @@ func initConfig() {
 	// The secret sauce. Use or generate a new one.
 	flag.StringVar(&keyset, "keyset", keyset, "Base58 encoded secret key used to identify the client. You.")
 
-	generate = flag.Bool("generate", false, "Generate a new private key, prints it and exit the program.")
-	genenv = flag.Bool("genenv", false, "Generates a new environment file with a new private key to stdout")
+	generate = flag.Bool("generate", false, "Generates one-time keyset and uses it")
+	genenv = flag.Bool("genenv", false, "Generates a keyset and prints it to stdout and uses it")
 	publish = flag.Bool("publish", false, "Publishes keyset to IPFS when using genenv or generate")
 	forcePublish = flag.Bool("force-publish", false, "Force publish even if keyset is already published")
 
@@ -57,7 +59,7 @@ func initConfig() {
 
 	// Generate a new keyset if requested
 	if *generate || *genenv {
-		generateKeyset(nick)
+		keyset = generateKeyset(nick)
 	}
 
 	// Assign the identity
@@ -70,5 +72,11 @@ func initConfig() {
 		log.Fatalf("Failed to unpack keyset: %v", err)
 	}
 	identity = &unpackedKeyset
+
+	// Publish the keyset if requested
+	if *publish || *forcePublish {
+		publishKeyset(identity)
+	}
+
 	log.Debug("Unpacked keyset and set it to actor.")
 }
