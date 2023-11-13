@@ -3,8 +3,8 @@ package main
 import (
 	"flag"
 
+	"github.com/bahner/go-ma"
 	"github.com/bahner/go-ma/key/set"
-	"github.com/bahner/go-space/p2p/host"
 	"github.com/bahner/go-space/p2p/pubsub"
 	nanoid "github.com/matoous/go-nanoid/v2"
 	log "github.com/sirupsen/logrus"
@@ -14,10 +14,10 @@ import (
 var (
 	randomNick, _        = nanoid.New()
 	logLevel      string = env.Get("GO_MA_ACTOR_LOG_LEVEL", "error")
-	rendezvous    string = env.Get("GO_MA_ACTOR_RENDEZVOUS", "/ma/0.0.1")
-	serviceName   string = env.Get("GO_MA_ACTOR_SERVICE_NAME", "/ma/0.0.1")
+	rendezvous    string = env.Get("GO_MA_ACTOR_RENDEZVOUS", ma.RENDEZVOUS)
+	serviceName   string = env.Get("GO_MA_ACTOR_SERVICE_NAME", ma.RENDEZVOUS)
 	nick          string = env.Get("USER", randomNick)
-	room          string = env.Get("GO_MA_ACTOR_ROOM", "mytopic")
+	room          string = env.Get("GO_MA_ACTOR_ROOM", "closet")
 	keyset        string = env.Get("GO_MA_ACTOR_KEYSET", "")
 
 	generate     *bool
@@ -26,7 +26,6 @@ var (
 	forcePublish *bool
 
 	identity *set.Keyset
-	node     *host.Host
 	ps       *pubsub.Service
 )
 

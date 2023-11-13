@@ -59,15 +59,18 @@ func initActor(k *set.Keyset) (*Actor, error) {
 	}
 
 	// We can now
-	recvTopic, err := ps.Sub.Join(node.Node.ID().String()) // The ipnskey is the id of the actor.
+	log.Debugf("new_actor: Joining to topic: %s", room)
+	recvTopic, err := ps.Sub.Join(room)
 	if err != nil {
 		return nil, fmt.Errorf("new_actor: Failed to join topic: %v", err)
 	}
 
+	log.Debugf("new_actor: Subscribing to topic: %s", room)
 	a.From, err = recvTopic.Subscribe()
 	if err != nil {
 		return nil, fmt.Errorf("new_actor: Failed to subscribe to topic: %v", err)
 	}
 
+	log.Debugf("new_actor: Actor initialized: %s", a.DID.Fragment)
 	return a, nil
 }
