@@ -1,14 +1,14 @@
-module github.com/bahner/go-ma-actor
+module github.com/bahner/go-home
 
-go 1.21.4
+go 1.21
 
 require (
-	github.com/bahner/go-ma v0.0.0-20231113043616-c67b8430a629
-	github.com/bahner/go-space v0.0.0-20231030191946-a78651000d09
+	github.com/bahner/go-ma v0.0.3-0.20231120152939-51cf67625bba
 	github.com/gdamore/tcell/v2 v2.6.0
 	github.com/libp2p/go-libp2p v0.32.1
 	github.com/libp2p/go-libp2p-pubsub v0.10.0
-	github.com/rivo/tview v0.0.0-20231102183219-1b91b8131c43
+	github.com/matoous/go-nanoid/v2 v2.0.0
+	github.com/rivo/tview v0.0.0-20231115183240-7c9e464bac02
 	github.com/sirupsen/logrus v1.9.3
 	go.deanishe.net/env v0.5.1
 )
@@ -70,10 +70,8 @@ require (
 	github.com/libp2p/go-netroute v0.2.1 // indirect
 	github.com/libp2p/go-reuseport v0.4.0 // indirect
 	github.com/libp2p/go-yamux/v4 v4.0.1 // indirect
-	github.com/libp2p/zeroconf/v2 v2.2.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/marten-seemann/tcp v0.0.0-20210406111302-dfbc87cc63fd // indirect
-	github.com/matoous/go-nanoid/v2 v2.0.0 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-runewidth v0.0.14 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect

@@ -4,48 +4,65 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/bahner/go-space/p2p/host"
+	"github.com/bahner/go-home/actor"
+	"github.com/bahner/go-home/config"
+	"github.com/bahner/go-home/room"
+	"github.com/bahner/go-ma/p2p"
 	"github.com/libp2p/go-libp2p"
+
 	log "github.com/sirupsen/logrus"
 )
 
+const nodeListenPort = "4001"
+
 func main() {
+	config.Init()
+
 	ctx := context.Background()
+	ctxTimeout, cancel := context.WithTimeout(ctx, config.GetDiscoveryTimeout())
+	defer cancel()
 
-	initConfig()
-	log.Infof("Intializing actor with identity: %s", identity.IPNSKey.DID)
+	actorKeyset := config.GetActorKeyset()
+	roomKeyset := config.GetRoomKeyset()
+	// cborData, _ := actorKeyset.IPNSKey.MarshalCBOR()
+	// fmt.Printf("actorKeyset: %s\n", cborData)
+	// os.Exit(0)
 
-	// Create the node from the keyset.
-	log.Debug("Creating p2p host from identity ...")
-	node := host.New()
-	node.AddOption(libp2p.Identity(identity.IPNSKey.PrivKey))
-	// node.AddOption(libp2p.ListenAddrStrings(
-	// 	"/ip4/0.0.0.0/tcp/0",
-	// 	"/ip4/0.0.0.0/udp/0",
-	// 	"/ip6/::/tcp/0",
-	// 	"/ip6/::/udp/0"))
-	log.Debugf("node: %v", node)
-	// the discoveryProcess return nil, so no need to check.
-	log.Debug("Initializing subscription service ...")
-	ps = initSubscriptionService(ctx, node)
+	log.Infof("Intializing actor with identity: %s", actorKeyset.IPNSKey.DID)
 
-	a, err := initActor(identity)
+	// Conifgure libp2p from here only
+	libp2pOpts := []libp2p.Option{
+		libp2p.ListenAddrStrings(getListenAddrStrings(nodeListenPort)...),
+		libp2p.Identity(actorKeyset.IPNSKey.PrivKey),
+	}
+
+	node, ps, err := p2p.Init(ctxTimeout, libp2pOpts...)
+	if err != nil {
+		panic(fmt.Sprintf("Failed to initialize p2p: %v", err))
+	}
+
+	a, err := actor.NewFromKeyset(ctx, ps, actorKeyset, config.GetForcePublish())
 	if err != nil {
 		panic(fmt.Sprintf("Failed to create actor: %v", err))
 	}
-	log.Infof("Actor initialized: %s", a.DID.Fragment)
+	log.Infof("Actor initialized: %s", a.Entity.DID.Fragment)
 
-	// Publish the identity to IPFS.
+	ra, err := actor.NewFromKeyset(ctx, ps, roomKeyset, config.GetForcePublish())
+	if err != nil {
+		panic(fmt.Sprintf("Failed to create room actor: %v", err))
+	}
 
-	r, err := NewRoom(room)
+	r, err := room.New(ra)
 	if err != nil {
 		panic(fmt.Sprintf("Failed to create room: %v", err))
 	}
+	log.Debugf("Room initialized: %s", r.Entity.DID.Fragment)
 
-	r.Enter(a)
+	a.Enter(r.Entity.DID.String())
 
 	// Draw the UI.
-	ui := NewChatUI(ctx, r, a)
+	log.Debugf("Starting text UI")
+	ui := NewChatUI(ctx, node, ps, r, a)
 	if err := ui.Run(); err != nil {
 		log.Errorf("error running text UI: %s", err)
 	}

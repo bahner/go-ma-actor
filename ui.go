@@ -8,10 +8,14 @@ import (
 	"strings"
 	"time"
 
+	"github.com/bahner/go-home/actor"
+	"github.com/bahner/go-home/room"
+	"github.com/bahner/go-ma/msg"
+	"github.com/bahner/go-ma/p2p"
 	"github.com/gdamore/tcell/v2"
+	pubsub "github.com/libp2p/go-libp2p-pubsub"
+	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/rivo/tview"
-
-	"github.com/bahner/go-ma/message"
 )
 
 // ChatUI is a Text User Interface (TUI) for a Room.
@@ -20,8 +24,10 @@ import (
 // chat prompt.
 type ChatUI struct {
 	ctx       context.Context
-	a         *Actor
-	r         *Room
+	ps        *pubsub.PubSub
+	n         host.Host
+	a         *actor.Actor
+	r         *room.Room
 	app       *tview.Application
 	peersList *tview.TextView
 	msgBox    *tview.TextView
@@ -33,14 +39,15 @@ type ChatUI struct {
 
 // NewChatUI returns a new ChatUI struct that controls the text UI.
 // It won't actually do anything until you call Run().
-func NewChatUI(ctx context.Context, r *Room, a *Actor) *ChatUI {
+func NewChatUI(ctx context.Context, n host.Host, ps *pubsub.PubSub, r *room.Room, a *actor.Actor) *ChatUI {
 	app := tview.NewApplication()
+	roomNick := r.Entity.DID.Fragment
 
 	// make a text view to contain our chat messages
 	msgBox := tview.NewTextView()
 	msgBox.SetDynamicColors(true)
 	msgBox.SetBorder(true)
-	msgBox.SetTitle(fmt.Sprintf("Room: %s", r.nick))
+	msgBox.SetTitle(fmt.Sprintf("Room: %s", roomNick))
 
 	// text views are io.Writers, but they don't automatically refresh.
 	// this sets a change handler to force the app to redraw when we get
@@ -52,7 +59,7 @@ func NewChatUI(ctx context.Context, r *Room, a *Actor) *ChatUI {
 	// an input field for typing messages into
 	inputCh := make(chan string, 32)
 	input := tview.NewInputField().
-		SetLabel(r.nick + " > ").
+		SetLabel(roomNick + " > ").
 		SetFieldWidth(0).
 		SetFieldBackgroundColor(tcell.ColorBlack)
 
@@ -102,6 +109,9 @@ func NewChatUI(ctx context.Context, r *Room, a *Actor) *ChatUI {
 
 	return &ChatUI{
 		ctx:       ctx,
+		n:         n,
+		ps:        ps,
+		r:         r,
 		a:         a,
 		app:       app,
 		peersList: peersList,
@@ -143,7 +153,7 @@ func (ui *ChatUI) end() {
 
 // displayChatMessage writes a ChatMessage from the room to the message window,
 // with the sender's nick highlighted in green.
-func (ui *ChatUI) displayChatMessage(cm *message.Message) {
+func (ui *ChatUI) displayChatMessage(cm *msg.Message) {
 	prompt := withColor("green", fmt.Sprintf("<%s>:", cm.From))
 	fmt.Fprintf(ui.msgW, "%s %s\n", prompt, cm.Body)
 }
@@ -151,7 +161,7 @@ func (ui *ChatUI) displayChatMessage(cm *message.Message) {
 // displaySelfMessage writes a message from ourself to the message window,
 // with our nick highlighted in yellow.
 func (ui *ChatUI) displaySelfMessage(msg string) {
-	prompt := withColor("yellow", fmt.Sprintf("<%s>:", ui.r.nick))
+	prompt := withColor("yellow", fmt.Sprintf("<%s>:", ui.r.Entity.DID.Fragment))
 	fmt.Fprintf(ui.msgW, "%s %s\n", prompt, msg)
 }
 
@@ -171,7 +181,7 @@ func (ui *ChatUI) handleEvents() {
 				ui.handleChatMessage(input)
 			}
 
-		case m := <-ui.a.ears:
+		case m := <-ui.a.Messages:
 			ui.displayChatMessage(m)
 
 		// case <-peerRefreshTicker.C:
@@ -196,8 +206,6 @@ func (ui *ChatUI) handleCommands(input string) {
 		ui.triggerDiscovery()
 	case "/enter":
 		ui.handleEnterCommand(args)
-	case "/nick":
-		ui.handleNickCommand(args)
 	case "/refresh":
 		ui.app.Draw()
 	default:
@@ -208,16 +216,6 @@ func (ui *ChatUI) handleCommands(input string) {
 func (ui *ChatUI) handleEnterCommand(args []string) {
 	if len(args) > 1 {
 		ui.changeTopic(args[1])
-	} else {
-		ui.displaySystemMessage("Usage: /enter [new_topic_name]")
-	}
-}
-
-func (ui *ChatUI) handleNickCommand(args []string) {
-
-	if len(args) > 1 {
-		nick := args[1]
-		ui.r.nick = nick
 	} else {
 		ui.displaySystemMessage("Usage: /enter [new_topic_name]")
 	}
@@ -244,14 +242,14 @@ func (ui *ChatUI) handleStatusCommand(args []string) {
 }
 
 func (ui *ChatUI) handleChatMessage(input string) error {
-	// Wrapping the string message into the message.Message structure
+	// Wrapping the string message into the msg.Message structure
 
 	msgBytes, err := json.Marshal(input)
 	if err != nil {
 		return fmt.Errorf("message serialization error: %s", err)
 	}
 
-	msg, err := message.New(ui.r.nick, ui.r.nick, string(msgBytes), "application/json")
+	msg, err := msg.New(ui.r.Entity.DID.Fragment, ui.r.Entity.DID.Fragment, string(msgBytes), "application/json")
 	if err != nil {
 		return fmt.Errorf("message creation error: %s", err)
 	}
@@ -262,7 +260,7 @@ func (ui *ChatUI) handleChatMessage(input string) error {
 		return fmt.Errorf("message serialization error: %s", err)
 	}
 
-	err = ui.r.Topic.Publish(ui.ctx, m)
+	err = ui.r.Public.Publish(ui.ctx, m)
 	if err != nil {
 		return fmt.Errorf("publish error: %s", err)
 	}
@@ -294,7 +292,7 @@ func withColor(color, msg string) string {
 // 	// Return whatever status you'd like about the topic.
 // 	// Fetching peers as an example below:
 // 	peers := ui.r.Topic.ListPeers()
-// 	return fmt.Sprintf("Topic Status: %s | Peers: %v", ui.r.nick, peers)
+// 	return fmt.Sprintf("Topic Status: %s | Peers: %v", ui.r.Entity.DID.Fragment, peers)
 // }
 
 // func (ui *ChatUI) getStatusHost() string {
@@ -305,7 +303,8 @@ func withColor(color, msg string) string {
 
 func (ui *ChatUI) triggerDiscovery() {
 
-	go ps.Host.StartPeerDiscovery(ui.ctx, rendezvous, serviceName)
+	// go ui.n.StartPeerDiscovery(ui.ctx, config.GetRendezvous())
+	p2p.StartPeerDiscovery(ui.ctx, ui.n)
 	ui.displaySystemMessage("Discovery process started...")
 }
 
@@ -317,18 +316,18 @@ func (ui *ChatUI) displaySystemMessage(msg string) {
 func (ui *ChatUI) changeTopic(d string) {
 
 	// Create a new Room instance with the new topic
-	room, err := NewRoom(d)
+	room, err := room.New(ui.a)
 	if err != nil {
-		ui.displaySystemMessage(fmt.Sprintf("Failed to create the new topic '%s': %s", d, err))
+		ui.displaySystemMessage(fmt.Sprintf("Failed to enter room '%s': %s", d, err))
 		return
 	}
 	// If successful, assign the new Room instance to ui.cr
 	ui.r = room
 	// ui.msgW.SetTitle(fmt.Sprintf("Topic: %s", newTopic))
-	ui.msgBox.SetTitle("Room: " + ui.r.nick)
+	ui.msgBox.SetTitle("Room: " + ui.r.Entity.DID.Fragment)
 
 	// Notify the user
-	ui.displaySystemMessage(fmt.Sprintf("Entered the new Room: %s", ui.r.nick))
+	ui.displaySystemMessage(fmt.Sprintf("Entered the new Room: %s", ui.r.Entity.DID.Fragment))
 
 	ui.app.Draw()
 }
