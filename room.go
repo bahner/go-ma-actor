@@ -6,7 +6,7 @@ import (
 
 	"github.com/bahner/go-ma/did"
 	"github.com/bahner/go-ma/did/doc"
-	"github.com/bahner/go-ma/message"
+	"github.com/bahner/go-ma/msg"
 	p2ppupsub "github.com/libp2p/go-libp2p-pubsub"
 )
 
@@ -18,14 +18,14 @@ type Room struct {
 	// The signing and encryption keys are used to verify and encrypt messages.
 	SigningKey    *ed25519.PublicKey
 	EncryptionKey *ed25519.PublicKey
-	Messages      chan *message.Message
+	Messages      chan *msg.Message
 	// We can add objects etc here.
 	Actor *Actor
 	nick  string
 }
 
 // Override ProcessMessage to handle room-specific actions
-func (r *Room) ProcessMessage(m *message.Message) {
+func (r *Room) ProcessMessage(m *msg.Message) {
 	// Add the message to the Room's Messages channel
 	r.Messages <- m
 }
@@ -66,7 +66,7 @@ func NewRoom(d string) (*Room, error) {
 	}
 
 	// Create a new channel for messages
-	r.Messages = make(chan *message.Message)
+	r.Messages = make(chan *msg.Message)
 
 	return r, nil
 }
@@ -114,7 +114,7 @@ func NewRoom(d string) (*Room, error) {
 // 			continue
 // 		}
 
-// 		roomMessage := new(message.Message)
+// 		roomMessage := new(msg.Message)
 // 		if err := json.Unmarshal(msg.Data, roomMessage); err != nil {
 // 			log.Debugf("Failed to unmarshal message: %v", err)
 // 			continue

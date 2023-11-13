@@ -8,10 +8,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/bahner/go-ma/msg"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
-
-	"github.com/bahner/go-ma/message"
 )
 
 // ChatUI is a Text User Interface (TUI) for a Room.
@@ -143,7 +142,7 @@ func (ui *ChatUI) end() {
 
 // displayChatMessage writes a ChatMessage from the room to the message window,
 // with the sender's nick highlighted in green.
-func (ui *ChatUI) displayChatMessage(cm *message.Message) {
+func (ui *ChatUI) displayChatMessage(cm *msg.Message) {
 	prompt := withColor("green", fmt.Sprintf("<%s>:", cm.From))
 	fmt.Fprintf(ui.msgW, "%s %s\n", prompt, cm.Body)
 }
@@ -244,14 +243,14 @@ func (ui *ChatUI) handleStatusCommand(args []string) {
 }
 
 func (ui *ChatUI) handleChatMessage(input string) error {
-	// Wrapping the string message into the message.Message structure
+	// Wrapping the string message into the msg.Message structure
 
 	msgBytes, err := json.Marshal(input)
 	if err != nil {
 		return fmt.Errorf("message serialization error: %s", err)
 	}
 
-	msg, err := message.New(ui.r.nick, ui.r.nick, string(msgBytes), "application/json")
+	msg, err := msg.New(ui.r.nick, ui.r.nick, string(msgBytes), "application/json")
 	if err != nil {
 		return fmt.Errorf("message creation error: %s", err)
 	}

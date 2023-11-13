@@ -6,7 +6,7 @@ import (
 	"github.com/bahner/go-ma/did"
 	"github.com/bahner/go-ma/did/doc"
 	"github.com/bahner/go-ma/key/set"
-	"github.com/bahner/go-ma/message"
+	"github.com/bahner/go-ma/msg"
 	pubsub "github.com/libp2p/go-libp2p-pubsub"
 
 	log "github.com/sirupsen/logrus"
@@ -21,8 +21,8 @@ type Actor struct {
 	From *pubsub.Subscription // The subscription to the topic for receiving messages.
 
 	// By using antropomorphic terms, we underline that this is a special use case.
-	// mouth chan *message.Message // Messages to send
-	ears chan *message.Message // Received messages
+	// mouth chan *msg.Message // Messages to send
+	ears chan *msg.Message // Received messages
 	// hands chan string           // Local command input. Simple commands like /quit, /help etc.
 }
 
