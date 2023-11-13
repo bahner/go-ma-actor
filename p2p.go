@@ -6,7 +6,6 @@ import (
 
 	"github.com/bahner/go-space/p2p/host"
 	"github.com/bahner/go-space/p2p/pubsub"
-	log "github.com/sirupsen/logrus"
 )
 
 func doDiscovery(ctx context.Context, h *host.Host) error {
@@ -31,11 +30,8 @@ func initSubscriptionService(ctx context.Context, h *host.Host) *pubsub.Service 
 	doDiscovery(ctx, h)
 
 	// Subscribe to the topic
-	log.Debugf("Creating PubSub service ...")
 	ps = pubsub.New(h)
-	log.Debug("Starting PubSub service ...")
 	ps.Start(ctx)
-	log.Info("Subscription service started.")
 
 	return ps
 }

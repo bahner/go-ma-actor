@@ -48,7 +48,7 @@ func initActor(k *set.Keyset) (*Actor, error) {
 	}
 
 	// Make sure the actor has a DOC and published DIDDocument.
-	a.Doc, err = doc.New(a.DID.String(), a.DID.String())
+	a.Doc, err = doc.NewFromKeyset(a.Keyset, a.DID.String())
 	if err != nil {
 		return nil, fmt.Errorf("new_actor: Failed to create DOC: %v", err)
 	}

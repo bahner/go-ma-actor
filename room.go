@@ -32,7 +32,7 @@ func (r *Room) ProcessMessage(m *message.Message) {
 
 func NewRoom(d string) (*Room, error) {
 
-	var r *Room
+	r := &Room{}
 	var err error
 
 	// Set the DID
