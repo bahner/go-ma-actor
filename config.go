@@ -35,6 +35,7 @@ func initConfig() {
 	flag.StringVar(&rendezvous, "rendezvous", rendezvous, "Unique string to identify group of nodes. Share this with your friends to let them connect with you")
 	flag.StringVar(&serviceName, "servicename", serviceName, "serviceName to use for MDNS discovery")
 	flag.StringVar(&room, "room", room, "Room (topic) to join. This is obviously a TODO as we need more.")
+	flag.StringVar(&nick, "nick", nick, "Nickname to use in character creation")
 
 	// The secret sauce. Use or generate a new one.
 	flag.StringVar(&keyset, "keyset", keyset, "Base58 encoded secret key used to identify the client. You.")
@@ -56,7 +57,7 @@ func initConfig() {
 
 	// Generate a new keyset if requested
 	if *generate || *genenv {
-		generateKeyset(nick, *publish)
+		generateKeyset(nick)
 	}
 
 	// Assign the identity
