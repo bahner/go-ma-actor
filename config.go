@@ -18,9 +18,10 @@ var (
 	room        string = env.Get("GO_MA_ACTOR_ROOM", "mytopic")
 	keyset      string = env.Get("GO_MA_ACTOR_KEYSET", "")
 
-	generate *bool
-	genenv   *bool
-	publish  *bool
+	generate     *bool
+	genenv       *bool
+	publish      *bool
+	forcePublish *bool
 
 	identity *set.Keyset
 	node     *host.Host
@@ -41,6 +42,7 @@ func initConfig() {
 	generate = flag.Bool("generate", false, "Generate a new private key, prints it and exit the program.")
 	genenv = flag.Bool("genenv", false, "Generates a new environment file with a new private key to stdout")
 	publish = flag.Bool("publish", false, "Publishes keyset to IPFS when using genenv or generate")
+	forcePublish = flag.Bool("force-publish", false, "Force publish even if keyset is already published")
 
 	flag.Parse()
 

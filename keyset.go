@@ -38,7 +38,7 @@ func generateKeyset(name string, publish bool) {
 
 	if publish {
 		log.Debugf("generate_keyset: Publishing secret IPNSKey to IPFS: %v", ks.IPNSKey.PublicKey)
-		err = ks.IPNSKey.ExportToIPFS(name)
+		err = ks.IPNSKey.ExportToIPFS(name, *forcePublish)
 		if err != nil {
 			log.Fatalf("create_and_print_keyset: failed to export keyset: %v", err)
 		}

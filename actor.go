@@ -28,15 +28,24 @@ type Actor struct {
 
 func initActor(k *set.Keyset) (*Actor, error) {
 
-	var a *Actor
+	a := &Actor{}
 	var err error
 
+	log.Debugf("Setting Actor Keyset: %v", k)
+	a.Keyset = k
+
 	// Add the DID fragment as a field to the actor.
-	a.DID, err = did.NewFromIPNSKey(k.IPNSKey)
+	a.DID, err = did.NewFromIPNSKey(a.Keyset.IPNSKey)
 	if err != nil {
 		return nil, fmt.Errorf("new_actor: Failed to create DID: %v", err)
 	}
 	log.Debugf("new_actor: Created DID: %s", a.DID.String())
+
+	// Publish the IPNSKey to IPFS for publication.
+	err = k.IPNSKey.ExportToIPFS(a.DID.Fragment, *forcePublish)
+	if err != nil {
+		return nil, fmt.Errorf("new_actor: Failed to export IPNSKey to IPFS: %v", err)
+	}
 
 	// Make sure the actor has a DOC and published DIDDocument.
 	a.Doc, err = doc.New(a.DID.String(), a.DID.String())
