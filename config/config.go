@@ -1,11 +1,10 @@
-package main
+package config
 
 import (
 	"flag"
 
 	"github.com/bahner/go-ma"
 	"github.com/bahner/go-ma/key/set"
-	pubsub "github.com/libp2p/go-libp2p-pubsub"
 	nanoid "github.com/matoous/go-nanoid/v2"
 	log "github.com/sirupsen/logrus"
 	"go.deanishe.net/env"
@@ -32,12 +31,11 @@ var (
 	publish      *bool
 	forcePublish *bool
 
-	roomKeyset  *set.Keyset
-	actorKeyset *set.Keyset
-	ps          *pubsub.PubSub
+	RoomKeyset  *set.Keyset
+	ActorKeyset *set.Keyset
 )
 
-func initConfig() {
+func Init() {
 
 	// Flags - user configurations
 	flag.StringVar(&logLevel, "loglevel", logLevel, "Loglevel to use for application")
@@ -74,6 +72,7 @@ func initConfig() {
 		room_keyset_string = generateKeyset(room_keyset_var, randomRoomNick)
 	}
 
+	log.Debugf("actor_keyset_string: %s", actor_keyset_string)
 	// Create the actor keyset
 	if actor_keyset_string == "" {
 		log.Fatal("You need to define actorKeyset or generate a new one.")
@@ -82,7 +81,7 @@ func initConfig() {
 	if err != nil {
 		log.Fatalf("Failed to unpack keyset: %v", err)
 	}
-	actorKeyset = &unpackedActorKeyset
+	ActorKeyset = &unpackedActorKeyset
 
 	// Create the room keyset
 	if room_keyset_string == "" {
@@ -92,13 +91,45 @@ func initConfig() {
 	if err != nil {
 		log.Fatalf("Failed to unpack keyset: %v", err)
 	}
-	roomKeyset = &unpackedRoomKeyset
+	RoomKeyset = &unpackedRoomKeyset
 
 	// Publish the keysets if requested
 	if *publish || *forcePublish {
-		publishKeyset(actorKeyset)
-		publishKeyset(roomKeyset)
+		publishKeyset(ActorKeyset)
+		publishKeyset(RoomKeyset)
 	}
 
 	log.Debug("Unpacked keyset and set it to actor.")
+}
+
+func GetActorKeyset() *set.Keyset {
+	return ActorKeyset
+}
+
+func GetRoomKeyset() *set.Keyset {
+	return RoomKeyset
+}
+
+func GetRendezvous() string {
+	return rendezvous
+}
+
+func GetServiceName() string {
+	return serviceName
+}
+
+func GetActorNick() string {
+	return actorNick
+}
+
+func GetRoomNick() string {
+	return roomNick
+}
+
+func GetLogLevel() string {
+	return logLevel
+}
+
+func GetForcePublish() bool {
+	return *forcePublish
 }

@@ -1,4 +1,4 @@
-package main
+package config
 
 import (
 	"fmt"
@@ -26,7 +26,7 @@ func generateKeyset(variableName string, name string) string {
 	}
 
 	if *genenv {
-		fmt.Println(variableName + "=" + pks)
+		fmt.Println("export " + variableName + "=" + pks)
 	}
 
 	return pks
