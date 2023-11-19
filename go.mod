@@ -4,7 +4,7 @@ go 1.21
 
 require (
 	github.com/bahner/go-ma v0.0.0-20231118231407-c8af1e3b7995
-	github.com/bahner/go-space v0.0.0-20231119045007-717ea37aea0a
+	github.com/bahner/go-space v0.0.0-20231119070102-9b4f54d8b7b4
 	github.com/gdamore/tcell/v2 v2.6.0
 	github.com/libp2p/go-libp2p v0.32.1
 	github.com/libp2p/go-libp2p-pubsub v0.10.0

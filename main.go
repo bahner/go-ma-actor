@@ -6,7 +6,7 @@ import (
 
 	"github.com/bahner/go-home/actor"
 	"github.com/bahner/go-home/config"
-	"github.com/bahner/go-home/pubsub"
+	"github.com/bahner/go-home/p2p"
 	"github.com/bahner/go-home/room"
 
 	log "github.com/sirupsen/logrus"
@@ -22,9 +22,9 @@ func main() {
 
 	log.Infof("Intializing actor with identity: %s", actorKeyset.IPNSKey.DID)
 
-	ps, err := pubsub.Init(ctx, actorKeyset)
+	node, ps, err := p2p.Init(ctx, actorKeyset)
 	if err != nil {
-		panic(fmt.Sprintf("Failed to initialize pubsub: %v", err))
+		panic(fmt.Sprintf("Failed to initialize p2p: %v", err))
 	}
 
 	a, err := actor.NewFromKeyset(ctx, ps, actorKeyset, config.GetForcePublish())
@@ -38,13 +38,16 @@ func main() {
 		panic(fmt.Sprintf("Failed to create room actor: %v", err))
 	}
 
-	r := room.Room{Actor: ra}
+	r, err := room.New(ra)
+	if err != nil {
+		panic(fmt.Sprintf("Failed to create room: %v", err))
+	}
 
 	r.Enter(ps, a)
 
-	// // Draw the UI.
-	// ui := NewChatUI(ctx, r, a)
-	// if err := ui.Run(); err != nil {
-	// 	log.Errorf("error running text UI: %s", err)
-	// }
+	// Draw the UI.
+	ui := NewChatUI(ctx, node, ps, r, a)
+	if err := ui.Run(); err != nil {
+		log.Errorf("error running text UI: %s", err)
+	}
 }
