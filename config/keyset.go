@@ -3,19 +3,18 @@ package config
 import (
 	"fmt"
 
-	"github.com/bahner/go-ma/did"
 	"github.com/bahner/go-ma/did/doc"
 	"github.com/bahner/go-ma/key/set"
 	log "github.com/sirupsen/logrus"
 )
 
-func generateKeyset(variableName string, name string) string {
+func generateKeyset(variableName string, name string, forceUpdate bool) string {
 
 	if actorNick == "ghost" {
 		log.Fatal("You need to set a nick when generating an identity.")
 	}
 
-	ks, err := set.New(name)
+	ks, err := set.New(name, forceUpdate)
 	if err != nil {
 		log.Fatalf("Failed to generate new keyset: %v", err)
 	}
@@ -32,14 +31,12 @@ func generateKeyset(variableName string, name string) string {
 	return pks
 }
 
-func publishKeyset(ks *set.Keyset) {
-
-	name := did.GetFragment(ks.SigningKey.DID)
+func publishKeyset(ks *set.Keyset, forcePublish bool) {
 
 	log.Debugf("generate_keyset: Publishing secret IPNSKey to IPFS: %v", ks.IPNSKey.PublicKey)
-	err := ks.IPNSKey.ExportToIPFS(name, *forcePublish)
+	err := ks.IPNSKey.ExportToIPFS(forcePublish)
 	if err != nil {
-		log.Fatalf("create_and_print_keyset: failed to export keyset: %v", err)
+		log.Warnf("create_and_print_keyset: failed to export keyset: %v", err)
 	}
 	log.Infof("create_and_print_keyset: exported IPNSkey to IPFS: %s", ks.IPNSKey.DID)
 

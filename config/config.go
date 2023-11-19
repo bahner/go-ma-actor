@@ -4,7 +4,6 @@ import (
 	"flag"
 	"time"
 
-	"github.com/bahner/go-ma"
 	"github.com/bahner/go-ma/key/set"
 	nanoid "github.com/matoous/go-nanoid/v2"
 	log "github.com/sirupsen/logrus"
@@ -18,17 +17,12 @@ const (
 )
 
 var (
-	randomRoomNick, _ = nanoid.New()
-
 	discoveryTimeout int = env.GetInt("GO_HOME_DISCOVERY_TIMEOUT", defaultDiscoveryTimeout)
 
 	logLevel            string = env.Get("GO_HOME_LOG_LEVEL", "error")
-	rendezvous          string = env.Get("GO_HOME_RENDEZVOUS", ma.RENDEZVOUS)
-	serviceName         string = env.Get("GO_HOME_SERVICE_NAME", ma.RENDEZVOUS)
 	actorNick           string = env.Get("USER")
 	actor_keyset_string string = env.Get(actor_keyset_var, "")
 	room_keyset_string  string = env.Get(room_keyset_var, "")
-	roomNick            string = env.Get("GO_HOME_ROOM_NICK", randomRoomNick)
 
 	generate     *bool
 	genenv       *bool
@@ -37,14 +31,14 @@ var (
 
 	RoomKeyset  *set.Keyset
 	ActorKeyset *set.Keyset
+
+	randomRoomNick, _ = nanoid.New()
 )
 
 func Init() {
 
 	// Flags - user configurations
 	flag.StringVar(&logLevel, "loglevel", logLevel, "Loglevel to use for application")
-	flag.StringVar(&rendezvous, "rendezvous", rendezvous, "Unique string to identify group of nodes. Share this with your friends to let them connect with you")
-	flag.StringVar(&serviceName, "servicename", serviceName, "serviceName to use for MDNS discovery")
 	flag.IntVar(&discoveryTimeout, "discoveryTimeout", discoveryTimeout, "Timeout for peer discovery")
 
 	// Actor
@@ -52,7 +46,6 @@ func Init() {
 	flag.StringVar(&actor_keyset_string, "actor_keyset", actor_keyset_string, "Base58 encoded secret key used to identify the client. You.")
 
 	// Room
-	flag.StringVar(&roomNick, "roomNick", roomNick, "Nickname to use in room creation")
 	flag.StringVar(&room_keyset_string, "room_keyset", actor_keyset_string, "Base58 encoded secret key used to identify your room.")
 
 	// Booleans with control flow
@@ -73,8 +66,13 @@ func Init() {
 
 	// Generate a new keysets if requested
 	if *generate || *genenv {
-		actor_keyset_string = generateKeyset(actor_keyset_var, actorNick)
-		room_keyset_string = generateKeyset(room_keyset_var, randomRoomNick)
+		actor_keyset_string = generateKeyset(actor_keyset_var, actorNick, *forcePublish)
+		room_keyset_string = generateKeyset(room_keyset_var, randomRoomNick, *forcePublish)
+	} else {
+		if *publish || *forcePublish {
+			publishKeyset(ActorKeyset, *forcePublish)
+			publishKeyset(RoomKeyset, *forcePublish)
+		}
 	}
 
 	log.Debugf("actor_keyset_string: %s", actor_keyset_string)
@@ -86,7 +84,7 @@ func Init() {
 	if err != nil {
 		log.Fatalf("Failed to unpack keyset: %v", err)
 	}
-	ActorKeyset = &unpackedActorKeyset
+	ActorKeyset = unpackedActorKeyset
 
 	// Create the room keyset
 	if room_keyset_string == "" {
@@ -96,13 +94,7 @@ func Init() {
 	if err != nil {
 		log.Fatalf("Failed to unpack keyset: %v", err)
 	}
-	RoomKeyset = &unpackedRoomKeyset
-
-	// Publish the keysets if requested
-	if *publish || *forcePublish {
-		publishKeyset(ActorKeyset)
-		publishKeyset(RoomKeyset)
-	}
+	RoomKeyset = unpackedRoomKeyset
 
 	log.Debug("Unpacked keyset and set it to actor.")
 }
@@ -115,20 +107,8 @@ func GetRoomKeyset() *set.Keyset {
 	return RoomKeyset
 }
 
-func GetRendezvous() string {
-	return rendezvous
-}
-
-func GetServiceName() string {
-	return serviceName
-}
-
 func GetActorNick() string {
 	return actorNick
-}
-
-func GetRoomNick() string {
-	return roomNick
 }
 
 func GetLogLevel() string {

@@ -3,7 +3,7 @@ module github.com/bahner/go-home
 go 1.21
 
 require (
-	github.com/bahner/go-ma v0.0.0-20231119174227-c6f25a46b762
+	github.com/bahner/go-ma v0.0.3-0.20231120012422-08fb805f233d
 	github.com/gdamore/tcell/v2 v2.6.0
 	github.com/libp2p/go-libp2p v0.32.1
 	github.com/libp2p/go-libp2p-pubsub v0.10.0
@@ -70,7 +70,6 @@ require (
 	github.com/libp2p/go-netroute v0.2.1 // indirect
 	github.com/libp2p/go-reuseport v0.4.0 // indirect
 	github.com/libp2p/go-yamux/v4 v4.0.1 // indirect
-	github.com/libp2p/zeroconf/v2 v2.2.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/marten-seemann/tcp v0.0.0-20210406111302-dfbc87cc63fd // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect

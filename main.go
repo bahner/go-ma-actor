@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"os"
 
 	"github.com/bahner/go-home/actor"
 	"github.com/bahner/go-home/config"
@@ -22,6 +23,9 @@ func main() {
 
 	actorKeyset := config.GetActorKeyset()
 	roomKeyset := config.GetRoomKeyset()
+	cborData, _ := actorKeyset.IPNSKey.MarshalCBOR()
+	fmt.Printf("actorKeyset: %s\n", cborData)
+	os.Exit(0)
 
 	log.Infof("Intializing actor with identity: %s", actorKeyset.IPNSKey.DID)
 

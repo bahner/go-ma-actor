@@ -84,7 +84,7 @@ func New(ctx context.Context, ps *pubsub.PubSub, e *entity.Entity, forcePublish 
 func NewFromKeyset(ctx context.Context, ps *pubsub.PubSub, k *set.Keyset, forcePublish bool) (*Actor, error) {
 
 	log.Debugf("Setting Actor Entity: %v", k)
-	e, err := entity.NewFromKeyset(*k)
+	e, err := entity.NewFromKeyset(k)
 	if err != nil {
 		return nil, fmt.Errorf("new_actor: Failed to create Entity: %v", err)
 	}

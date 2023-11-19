@@ -56,8 +56,7 @@ go run . -room=planet-express
 
 It's usually more fun to chat with others, so open a new terminal and run the app again.
 If you set a custom chat room name with the `-room` flag, make sure you use the same one
-for both apps. Once the new instance starts, the two chat apps should discover each other
-automatically using mDNS, and typing a message into one app will send it to any others that are open.
+for both apps.
 
 To quit, hit `Ctrl-C`, or type `/quit` into the input field.
 
