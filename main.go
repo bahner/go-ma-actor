@@ -6,6 +6,7 @@ import (
 
 	"github.com/bahner/go-home/actor"
 	"github.com/bahner/go-home/config"
+	"github.com/bahner/go-home/pubsub"
 	"github.com/bahner/go-home/room"
 
 	log "github.com/sirupsen/logrus"
@@ -21,7 +22,7 @@ func main() {
 
 	log.Infof("Intializing actor with identity: %s", actorKeyset.IPNSKey.DID)
 
-	ps, err := initPubSub(ctx, actorKeyset)
+	ps, err := pubsub.Init(ctx, actorKeyset)
 	if err != nil {
 		panic(fmt.Sprintf("Failed to initialize pubsub: %v", err))
 	}

@@ -1,8 +1,6 @@
 module github.com/bahner/go-home
 
-go 1.21.3
-
-toolchain go1.21.4
+go 1.21
 
 require (
 	github.com/bahner/go-ma v0.0.0-20231118231407-c8af1e3b7995
@@ -28,7 +26,6 @@ require (
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.2.0 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/elastic/gosigar v0.14.2 // indirect
-	github.com/ergo-services/ergo v1.999.224 // indirect
 	github.com/flynn/noise v1.0.0 // indirect
 	github.com/francoispqt/gojay v1.2.13 // indirect
 	github.com/fxamacker/cbor/v2 v2.5.0 // indirect
