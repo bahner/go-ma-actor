@@ -9,12 +9,12 @@ import (
 	"time"
 
 	"github.com/bahner/go-home/actor"
-	"github.com/bahner/go-home/config"
 	"github.com/bahner/go-home/room"
 	"github.com/bahner/go-ma/msg"
-	"github.com/bahner/go-space/p2p/host"
+	"github.com/bahner/go-ma/p2p"
 	"github.com/gdamore/tcell/v2"
 	pubsub "github.com/libp2p/go-libp2p-pubsub"
+	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/rivo/tview"
 )
 
@@ -25,7 +25,7 @@ import (
 type ChatUI struct {
 	ctx       context.Context
 	ps        *pubsub.PubSub
-	n         *host.P2pHost
+	n         host.Host
 	a         *actor.Actor
 	r         *room.Room
 	app       *tview.Application
@@ -39,7 +39,7 @@ type ChatUI struct {
 
 // NewChatUI returns a new ChatUI struct that controls the text UI.
 // It won't actually do anything until you call Run().
-func NewChatUI(ctx context.Context, n *host.P2pHost, ps *pubsub.PubSub, r *room.Room, a *actor.Actor) *ChatUI {
+func NewChatUI(ctx context.Context, n host.Host, ps *pubsub.PubSub, r *room.Room, a *actor.Actor) *ChatUI {
 	app := tview.NewApplication()
 	roomNick := r.Entity.DID.Fragment
 
@@ -303,7 +303,8 @@ func withColor(color, msg string) string {
 
 func (ui *ChatUI) triggerDiscovery() {
 
-	go ui.n.StartPeerDiscovery(ui.ctx, config.GetRendezvous())
+	// go ui.n.StartPeerDiscovery(ui.ctx, config.GetRendezvous())
+	p2p.StartPeerDiscovery(ui.ctx, ui.n)
 	ui.displaySystemMessage("Discovery process started...")
 }
 

@@ -2,6 +2,7 @@ package config
 
 import (
 	"flag"
+	"time"
 
 	"github.com/bahner/go-ma"
 	"github.com/bahner/go-ma/key/set"
@@ -11,12 +12,15 @@ import (
 )
 
 const (
-	actor_keyset_var = "GO_HOME_ACTOR_KEYSET"
-	room_keyset_var  = "GO_HOME_ROOM_KEYSET"
+	actor_keyset_var        = "GO_HOME_ACTOR_KEYSET"
+	room_keyset_var         = "GO_HOME_ROOM_KEYSET"
+	defaultDiscoveryTimeout = 300
 )
 
 var (
 	randomRoomNick, _ = nanoid.New()
+
+	discoveryTimeout int = env.GetInt("GO_HOME_DISCOVERY_TIMEOUT", defaultDiscoveryTimeout)
 
 	logLevel            string = env.Get("GO_HOME_LOG_LEVEL", "error")
 	rendezvous          string = env.Get("GO_HOME_RENDEZVOUS", ma.RENDEZVOUS)
@@ -41,6 +45,7 @@ func Init() {
 	flag.StringVar(&logLevel, "loglevel", logLevel, "Loglevel to use for application")
 	flag.StringVar(&rendezvous, "rendezvous", rendezvous, "Unique string to identify group of nodes. Share this with your friends to let them connect with you")
 	flag.StringVar(&serviceName, "servicename", serviceName, "serviceName to use for MDNS discovery")
+	flag.IntVar(&discoveryTimeout, "discoveryTimeout", discoveryTimeout, "Timeout for peer discovery")
 
 	// Actor
 	flag.StringVar(&actorNick, "actorNick", actorNick, "Nickname to use in character creation")
@@ -132,4 +137,8 @@ func GetLogLevel() string {
 
 func GetForcePublish() bool {
 	return *forcePublish
+}
+
+func GetDiscoveryTimeout() time.Duration {
+	return time.Duration(discoveryTimeout) * time.Second
 }
