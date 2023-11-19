@@ -8,30 +8,15 @@ import (
 	"github.com/bahner/go-space/p2p/pubsub"
 )
 
-func doDiscovery(ctx context.Context, h *host.Host) error {
-
-	// Start libp2p node and discover peers
-	h.Init(ctx)
+func initSubscriptionService(ctx context.Context, h *host.P2pHost) *pubsub.Service {
 
 	discoveryWg := &sync.WaitGroup{}
 
 	// Discover peers
 	// No need to log, as the discovery functions do that.
 	discoveryWg.Add(1) // Only 1 of the following needs to finish
-	go host.DiscoverDHTPeers(ctx, discoveryWg, h.Node, rendezvous)
-	go host.DiscoverMDNSPeers(ctx, discoveryWg, h.Node, rendezvous)
+	go h.StartPeerDiscovery(ctx, discoveryWg, rendezvous)
 	discoveryWg.Wait()
 
-	return nil
-}
-
-func initSubscriptionService(ctx context.Context, h *host.Host) *pubsub.Service {
-
-	doDiscovery(ctx, h)
-
-	// Subscribe to the topic
-	ps = pubsub.New(h)
-	ps.Start(ctx)
-
-	return ps
+	return pubsub.New(ctx, h)
 }

@@ -5,7 +5,7 @@ import (
 
 	"github.com/bahner/go-ma"
 	"github.com/bahner/go-ma/key/set"
-	"github.com/bahner/go-space/p2p/pubsub"
+	pubsub "github.com/libp2p/go-libp2p-pubsub"
 	nanoid "github.com/matoous/go-nanoid/v2"
 	log "github.com/sirupsen/logrus"
 	"go.deanishe.net/env"
@@ -26,7 +26,7 @@ var (
 	forcePublish *bool
 
 	identity *set.Keyset
-	ps       *pubsub.Service
+	ps       *pubsub.PubSub
 )
 
 func initConfig() {

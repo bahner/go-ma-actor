@@ -5,10 +5,11 @@ import (
 	"encoding/json"
 
 	"github.com/bahner/go-ma/msg"
+	"github.com/bahner/go-space/actor"
 	log "github.com/sirupsen/logrus"
 )
 
-func (a *Actor) Listen(ctx context.Context) {
+func (a *actor.Actor) Listen(ctx context.Context) {
 	for {
 		m, err := a.From.Next(ctx)
 		if err != nil {
