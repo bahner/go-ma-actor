@@ -9,9 +9,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func generateKeyset(name string) string {
+func generateKeyset(variableName string, name string) string {
 
-	if nick == "ghost" {
+	if actorNick == "ghost" {
 		log.Fatal("You need to set a nick when generating an identity.")
 	}
 
@@ -26,7 +26,7 @@ func generateKeyset(name string) string {
 	}
 
 	if *genenv {
-		fmt.Println("export GO_MA_ACTOR_KEYSET=" + pks)
+		fmt.Println(variableName + "=" + pks)
 	}
 
 	return pks

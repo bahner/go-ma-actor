@@ -9,7 +9,7 @@ go run . -identity foobar -room myTopic
 
 # or, build and run separately
 go build .
- export GO_MA_ACTOR_IDENTITY=fooBar
+ export GO_HOME_IDENTITY=fooBar
 ./go-space-thumb  -room myTopic
 ```
 
@@ -18,11 +18,11 @@ go build .
 type `./go-space-thumb -help`. Most config settings can be set with environment variables, as follows:
 
 ```bash
-export GO_MA_ACTOR_LOG_LEVEL="error"
-export GO_MA_ACTOR_RENDEZVOUS="space"
-export GO_MA_ACTOR_SERVICE_NAME="space"
-export GO_MA_ACTOR_ROOM="mytopic"
-export GO_MA_ACTOR_IDENTITY="myBase58EncodedPrivkeyGeneratedByGenerate"
+export GO_HOME_LOG_LEVEL="error"
+export GO_HOME_RENDEZVOUS="space"
+export GO_HOME_SERVICE_NAME="space"
+export GO_HOME_ROOM="mytopic"
+export GO_HOME_IDENTITY="myBase58EncodedPrivkeyGeneratedByGenerate"
 ```
 
 ## Identity
@@ -35,7 +35,7 @@ Just don't store somewhere insecure. It's your future identity.
 
 ```bash
 unset HISTFILE
- export GO_MA_ACTOR_IDENTITY=FooBarABCDEFbase58
+ export GO_HOME_IDENTITY=FooBarABCDEFbase58
 ```
 
 or specified on the command line:

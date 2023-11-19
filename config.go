@@ -11,22 +11,30 @@ import (
 	"go.deanishe.net/env"
 )
 
+const (
+	actor_keyset_var = "GO_HOME_ACTOR_KEYSET"
+	room_keyset_var  = "GO_HOME_ROOM_KEYSET"
+)
+
 var (
-	randomNick, _        = nanoid.New()
-	logLevel      string = env.Get("GO_MA_ACTOR_LOG_LEVEL", "error")
-	rendezvous    string = env.Get("GO_MA_ACTOR_RENDEZVOUS", ma.RENDEZVOUS)
-	serviceName   string = env.Get("GO_MA_ACTOR_SERVICE_NAME", ma.RENDEZVOUS)
-	nick          string = env.Get("USER", randomNick)
-	room          string = env.Get("GO_MA_ACTOR_ROOM", "closet")
-	keyset        string = env.Get("GO_MA_ACTOR_KEYSET", "")
+	randomRoomNick, _ = nanoid.New()
+
+	logLevel            string = env.Get("GO_HOME_LOG_LEVEL", "error")
+	rendezvous          string = env.Get("GO_HOME_RENDEZVOUS", ma.RENDEZVOUS)
+	serviceName         string = env.Get("GO_HOME_SERVICE_NAME", ma.RENDEZVOUS)
+	actorNick           string = env.Get("USER")
+	actor_keyset_string string = env.Get(actor_keyset_var, "")
+	room_keyset_string  string = env.Get(room_keyset_var, "")
+	roomNick            string = env.Get("GO_HOME_ROOM_NICK", randomRoomNick)
 
 	generate     *bool
 	genenv       *bool
 	publish      *bool
 	forcePublish *bool
 
-	identity *set.Keyset
-	ps       *pubsub.PubSub
+	roomKeyset  *set.Keyset
+	actorKeyset *set.Keyset
+	ps          *pubsub.PubSub
 )
 
 func initConfig() {
@@ -35,12 +43,16 @@ func initConfig() {
 	flag.StringVar(&logLevel, "loglevel", logLevel, "Loglevel to use for application")
 	flag.StringVar(&rendezvous, "rendezvous", rendezvous, "Unique string to identify group of nodes. Share this with your friends to let them connect with you")
 	flag.StringVar(&serviceName, "servicename", serviceName, "serviceName to use for MDNS discovery")
-	flag.StringVar(&room, "room", room, "Room (topic) to join. This is obviously a TODO as we need more.")
-	flag.StringVar(&nick, "nick", nick, "Nickname to use in character creation")
 
-	// The secret sauce. Use or generate a new one.
-	flag.StringVar(&keyset, "keyset", keyset, "Base58 encoded secret key used to identify the client. You.")
+	// Actor
+	flag.StringVar(&actorNick, "actorNick", actorNick, "Nickname to use in character creation")
+	flag.StringVar(&actor_keyset_string, "actor_keyset", actor_keyset_string, "Base58 encoded secret key used to identify the client. You.")
 
+	// Room
+	flag.StringVar(&roomNick, "roomNick", roomNick, "Nickname to use in room creation")
+	flag.StringVar(&room_keyset_string, "room_keyset", actor_keyset_string, "Base58 encoded secret key used to identify your room.")
+
+	// Booleans with control flow
 	generate = flag.Bool("generate", false, "Generates one-time keyset and uses it")
 	genenv = flag.Bool("genenv", false, "Generates a keyset and prints it to stdout and uses it")
 	publish = flag.Bool("publish", false, "Publishes keyset to IPFS when using genenv or generate")
@@ -56,25 +68,36 @@ func initConfig() {
 	log.SetLevel(level)
 	log.Info("Logger initialized")
 
-	// Generate a new keyset if requested
+	// Generate a new keysets if requested
 	if *generate || *genenv {
-		keyset = generateKeyset(nick)
+		actor_keyset_string = generateKeyset(actor_keyset_var, actorNick)
+		room_keyset_string = generateKeyset(room_keyset_var, randomRoomNick)
 	}
 
-	// Assign the identity
-	if keyset == "" {
-		log.Fatal("You need to set a secret key unless you generate a new one.")
+	// Create the actor keyset
+	if actor_keyset_string == "" {
+		log.Fatal("You need to define actorKeyset or generate a new one.")
 	}
-
-	unpackedKeyset, err := set.Unpack(keyset)
+	unpackedActorKeyset, err := set.Unpack(actor_keyset_string)
 	if err != nil {
 		log.Fatalf("Failed to unpack keyset: %v", err)
 	}
-	identity = &unpackedKeyset
+	actorKeyset = &unpackedActorKeyset
 
-	// Publish the keyset if requested
+	// Create the room keyset
+	if room_keyset_string == "" {
+		log.Fatal("You need to define roomKeyset or generate a new one.")
+	}
+	unpackedRoomKeyset, err := set.Unpack(room_keyset_string)
+	if err != nil {
+		log.Fatalf("Failed to unpack keyset: %v", err)
+	}
+	roomKeyset = &unpackedRoomKeyset
+
+	// Publish the keysets if requested
 	if *publish || *forcePublish {
-		publishKeyset(identity)
+		publishKeyset(actorKeyset)
+		publishKeyset(roomKeyset)
 	}
 
 	log.Debug("Unpacked keyset and set it to actor.")

@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/bahner/go-space/actor"
+	"github.com/bahner/go-home/actor"
+	"github.com/bahner/go-home/room"
 
 	"github.com/bahner/go-space/p2p/host"
 	"github.com/libp2p/go-libp2p"
@@ -18,16 +19,16 @@ func main() {
 	var err error
 
 	initConfig()
-	log.Infof("Intializing actor with identity: %s", identity.IPNSKey.DID)
+	log.Infof("Intializing actor with identity: %s", actorKeyset.IPNSKey.DID)
 
 	// Create the node from the keyset.
 	log.Debug("Creating p2p host from identity ...")
 	node, err := host.New(
-		libp2p.Identity(identity.IPNSKey.PrivKey),
+		libp2p.Identity(actorKeyset.IPNSKey.PrivKey),
 		libp2p.ListenAddrStrings(),
 	)
 	if err != nil {
-		panic(fmt.Sprintf("Failed to create host: %v", err))
+		panic(fmt.Sprintf("Failed to create p2p host: %v", err))
 	}
 	log.Debugf("node: %v", node)
 	// the discoveryProcess return nil, so no need to check.
@@ -45,24 +46,24 @@ func main() {
 		panic(fmt.Sprintf("Failed to create pubsub service: %v", err))
 	}
 
-	a, err := actor.NewFromKeyset(identity, *forcePublish)
+	a, err := actor.NewFromKeyset(ctx, ps, actorKeyset, *forcePublish)
 	if err != nil {
 		panic(fmt.Sprintf("Failed to create actor: %v", err))
 	}
 	log.Infof("Actor initialized: %s", a.Entity.DID.Fragment)
 
-	// Publish the identity to IPFS.
-
-	r, err := NewRoom(room)
+	ra, err := actor.NewFromKeyset(ctx, ps, roomKeyset, *forcePublish)
 	if err != nil {
-		panic(fmt.Sprintf("Failed to create room: %v", err))
+		panic(fmt.Sprintf("Failed to create room actor: %v", err))
 	}
 
-	r.Enter(a)
+	r := room.Room{Actor: ra}
 
-	// Draw the UI.
-	ui := NewChatUI(ctx, r, a)
-	if err := ui.Run(); err != nil {
-		log.Errorf("error running text UI: %s", err)
-	}
+	r.Enter(ps, a)
+
+	// // Draw the UI.
+	// ui := NewChatUI(ctx, r, a)
+	// if err := ui.Run(); err != nil {
+	// 	log.Errorf("error running text UI: %s", err)
+	// }
 }

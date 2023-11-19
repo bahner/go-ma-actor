@@ -5,10 +5,10 @@ import (
 	"sync"
 
 	"github.com/bahner/go-space/p2p/host"
-	"github.com/bahner/go-space/p2p/pubsub"
+	pubsub "github.com/libp2p/go-libp2p-pubsub"
 )
 
-func initSubscriptionService(ctx context.Context, h *host.P2pHost) *pubsub.Service {
+func initSubscriptionService(ctx context.Context, h *host.P2pHost) (*pubsub.PubSub, error) {
 
 	discoveryWg := &sync.WaitGroup{}
 
@@ -18,5 +18,5 @@ func initSubscriptionService(ctx context.Context, h *host.P2pHost) *pubsub.Servi
 	go h.StartPeerDiscovery(ctx, discoveryWg, rendezvous)
 	discoveryWg.Wait()
 
-	return pubsub.New(ctx, h)
+	return pubsub.NewGossipSub(ctx, h)
 }
