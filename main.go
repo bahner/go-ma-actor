@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"os"
 
 	"github.com/bahner/go-home/actor"
 	"github.com/bahner/go-home/config"
@@ -14,6 +13,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+const nodeListenPort = "4001"
+
 func main() {
 	config.Init()
 
@@ -23,14 +24,15 @@ func main() {
 
 	actorKeyset := config.GetActorKeyset()
 	roomKeyset := config.GetRoomKeyset()
-	cborData, _ := actorKeyset.IPNSKey.MarshalCBOR()
-	fmt.Printf("actorKeyset: %s\n", cborData)
-	os.Exit(0)
+	// cborData, _ := actorKeyset.IPNSKey.MarshalCBOR()
+	// fmt.Printf("actorKeyset: %s\n", cborData)
+	// os.Exit(0)
 
 	log.Infof("Intializing actor with identity: %s", actorKeyset.IPNSKey.DID)
 
 	// Conifgure libp2p from here only
 	libp2pOpts := []libp2p.Option{
+		libp2p.ListenAddrStrings(getListenAddrStrings(nodeListenPort)...),
 		libp2p.Identity(actorKeyset.IPNSKey.PrivKey),
 	}
 

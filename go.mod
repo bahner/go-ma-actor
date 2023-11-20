@@ -3,7 +3,7 @@ module github.com/bahner/go-home
 go 1.21
 
 require (
-	github.com/bahner/go-ma v0.0.3-0.20231120012422-08fb805f233d
+	github.com/bahner/go-ma v0.0.3-0.20231120152939-51cf67625bba
 	github.com/gdamore/tcell/v2 v2.6.0
 	github.com/libp2p/go-libp2p v0.32.1
 	github.com/libp2p/go-libp2p-pubsub v0.10.0

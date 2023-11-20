@@ -56,7 +56,9 @@ func New(ctx context.Context, ps *pubsub.PubSub, e *entity.Entity, forcePublish 
 	// Create topic for incoming envelopes
 	a.Private, err = ps.Join(a.Entity.Doc.KeyAgreement)
 	if err != nil {
-		return nil, fmt.Errorf("new_actor: Failed to join topic: %v", err)
+		// If Topic is already created, we can try and attach to it.
+		// a.Private, err = ps.Att
+		// return nil, fmt.Errorf("new_actor: Failed to join topic: %v", err)
 	}
 
 	// Create subscription to topic for incoming messages
