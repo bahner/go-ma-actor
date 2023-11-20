@@ -2,6 +2,7 @@ package config
 
 import (
 	"flag"
+	"os"
 	"time"
 
 	"github.com/bahner/go-ma/key/set"
@@ -20,7 +21,7 @@ var (
 	discoveryTimeout int = env.GetInt("GO_HOME_DISCOVERY_TIMEOUT", defaultDiscoveryTimeout)
 
 	logLevel            string = env.Get("GO_HOME_LOG_LEVEL", "error")
-	actorNick           string = env.Get("USER")
+	nick                string = env.Get("USER")
 	actor_keyset_string string = env.Get(actor_keyset_var, "")
 	room_keyset_string  string = env.Get(room_keyset_var, "")
 
@@ -42,17 +43,17 @@ func Init() {
 	flag.IntVar(&discoveryTimeout, "discoveryTimeout", discoveryTimeout, "Timeout for peer discovery")
 
 	// Actor
-	flag.StringVar(&actorNick, "actorNick", actorNick, "Nickname to use in character creation")
-	flag.StringVar(&actor_keyset_string, "actor_keyset", actor_keyset_string, "Base58 encoded secret key used to identify the client. You.")
+	flag.StringVar(&nick, "nick", nick, "Nickname to use in character creation")
+	flag.StringVar(&actor_keyset_string, "actorKeyset", actor_keyset_string, "Base58 encoded secret key used to identify the client. You.")
 
 	// Room
-	flag.StringVar(&room_keyset_string, "room_keyset", room_keyset_string, "Base58 encoded secret key used to identify your room.")
+	flag.StringVar(&room_keyset_string, "roomKeyset", room_keyset_string, "Base58 encoded secret key used to identify your room.")
 
 	// Booleans with control flow
 	generate = flag.Bool("generate", false, "Generates one-time keyset and uses it")
 	genenv = flag.Bool("genenv", false, "Generates a keyset and prints it to stdout and uses it")
 	publish = flag.Bool("publish", false, "Publishes keyset to IPFS when using genenv or generate")
-	forcePublish = flag.Bool("force-publish", false, "Force publish even if keyset is already published")
+	forcePublish = flag.Bool("forcePublish", false, "Force publish even if keyset is already published")
 
 	flag.Parse()
 
@@ -66,13 +67,26 @@ func Init() {
 
 	// Generate a new keysets if requested
 	if *generate || *genenv {
-		actor_keyset_string = generateKeyset(actor_keyset_var, actorNick, *forcePublish)
+		actor_keyset_string = generateKeyset(actor_keyset_var, nick, *forcePublish)
 		room_keyset_string = generateKeyset(room_keyset_var, randomRoomNick, *forcePublish)
-	} else {
-		if *publish || *forcePublish {
+	}
+
+	if *publish || *forcePublish {
+		if actor_keyset_string != "" {
 			publishKeyset(ActorKeyset, *forcePublish)
-			publishKeyset(RoomKeyset, *forcePublish)
+		} else {
+			log.Errorf("No actor keyset to publish.")
 		}
+
+		if room_keyset_string != "" {
+			publishKeyset(RoomKeyset, *forcePublish)
+		} else {
+			log.Errorf("No room keyset to publish.")
+		}
+	}
+
+	if *genenv || *generate {
+		os.Exit(0)
 	}
 
 	log.Debugf("actor_keyset_string: %s", actor_keyset_string)
@@ -107,8 +121,8 @@ func GetRoomKeyset() *set.Keyset {
 	return RoomKeyset
 }
 
-func GetActorNick() string {
-	return actorNick
+func GetNick() string {
+	return nick
 }
 
 func GetLogLevel() string {

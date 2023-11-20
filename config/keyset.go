@@ -10,7 +10,7 @@ import (
 
 func generateKeyset(variableName string, name string, forceUpdate bool) string {
 
-	if actorNick == "ghost" {
+	if nick == "ghost" {
 		log.Fatal("You need to set a nick when generating an identity.")
 	}
 
