@@ -1,19 +1,19 @@
-# github.com/bahner/go-home
+# github.com/bahner/go-ma-actor
 
-This is go-home based on [an example from go-libp2p][src].
+This is go-ma-actor based on [an example from go-libp2p][src].
 
 Now you can either run with `go run`, or build and run the binary:
 
 ```shell
 go build .
-./go-home -genenv -forcPublish > .env // Generate persistent environment variables of *SECRET* keysets
+./go-ma-actor -genenv -forcPublish > .env // Generate persistent environment variables of *SECRET* keysets
 . .env // Load the environment variables
-./go-home // Run the app
+./go-ma-actor // Run the app
 ```
 
 ## Configuration
 
-type `./go-home -help`. Most config settings can be set with environment variables, as follows:
+type `./go-ma-actor -help`. Most config settings can be set with environment variables, as follows:
 
 ```bash
 export GO_ACTOR_LOG_LEVEL="error"
@@ -39,7 +39,7 @@ unset HISTFILE
 or specified on the command line:
 
 ```bash
-./go-home -actorKeyset FooBarABCDEFbase58 -roomKeyset FooBarABCDEFGHIbase58
+./go-ma-actor -actorKeyset FooBarABCDEFbase58 -roomKeyset FooBarABCDEFGHIbase58
 ```
 
 The first is the best. (Noticed that in most shells the empty space before the command, means that the line isn't saved in history.)

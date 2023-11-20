@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/bahner/go-home/actor"
-	"github.com/bahner/go-home/config"
-	"github.com/bahner/go-home/ui"
+	"github.com/bahner/go-ma-actor/actor"
+	"github.com/bahner/go-ma-actor/config"
+	"github.com/bahner/go-ma-actor/ui"
 	"github.com/bahner/go-ma/p2p"
 	"github.com/libp2p/go-libp2p"
 

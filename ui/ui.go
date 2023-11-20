@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/bahner/go-home/actor"
+	"github.com/bahner/go-ma-actor/actor"
 	"github.com/bahner/go-ma/did"
 	"github.com/bahner/go-ma/did/doc"
 	"github.com/bahner/go-ma/msg"

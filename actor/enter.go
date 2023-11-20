@@ -12,7 +12,7 @@ func (a *Actor) Enter(room string) error {
 
 	a.Public, err = a.ps.Join(room)
 	if err != nil {
-		return fmt.Errorf("home: %v failed to join topic: %v", a, err)
+		return fmt.Errorf("actor: %v failed to join topic: %v", a, err)
 	}
 
 	return nil
