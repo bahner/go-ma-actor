@@ -16,10 +16,10 @@ go build .
 type `./go-home -help`. Most config settings can be set with environment variables, as follows:
 
 ```bash
-export GO_HOME_LOG_LEVEL="error"
-export GO_HOME_DISCOVERY_TIMEOUT="300"
-export GO_HOME_ACTOR_KEYSET="myBase58EncodedPrivkeyGeneratedByGenerate"
-export GO_HOME_ROOM_KEYSET="myBase58EncodedPrivkeyGeneratedByGenerate"
+export GO_ACTOR_LOG_LEVEL="error"
+export GO_ACTOR_DISCOVERY_TIMEOUT="300"
+export GO_ACTOR_ACTOR_KEYSET="myBase58EncodedPrivkeyGeneratedByGenerate"
+export GO_ACTOR_ROOM_KEYSET="myBase58EncodedPrivkeyGeneratedByGenerate"
 ```
 
 ## Identity
@@ -32,8 +32,8 @@ Just don't store somewhere insecure. It's your future identity.
 
 ```bash
 unset HISTFILE
- export GO_HOME_ACTOR_KEYSET=FooBarABCDEFbase58
- export GO_HOME_ROOM_KEYSET=FooBarABCDEFGHIbase58
+ export GO_ACTOR_ACTOR_KEYSET=FooBarABCDEFbase58
+ export GO_ACTOR_ROOM_KEYSET=FooBarABCDEFGHIbase58
 ```
 
 or specified on the command line:

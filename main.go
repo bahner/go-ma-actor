@@ -6,7 +6,7 @@ import (
 
 	"github.com/bahner/go-home/actor"
 	"github.com/bahner/go-home/config"
-	"github.com/bahner/go-home/room"
+	"github.com/bahner/go-home/ui"
 	"github.com/bahner/go-ma/p2p"
 	"github.com/libp2p/go-libp2p"
 
@@ -22,17 +22,13 @@ func main() {
 	ctxTimeout, cancel := context.WithTimeout(ctx, config.GetDiscoveryTimeout())
 	defer cancel()
 
-	actorKeyset := config.GetActorKeyset()
-	roomKeyset := config.GetRoomKeyset()
-	// cborData, _ := actorKeyset.IPNSKey.MarshalCBOR()
-	// fmt.Printf("actorKeyset: %s\n", cborData)
-	// os.Exit(0)
+	actorKeyset := config.GetKeyset()
 
 	log.Infof("Intializing actor with identity: %s", actorKeyset.IPNSKey.DID)
 
 	// Conifgure libp2p from here only
 	libp2pOpts := []libp2p.Option{
-		libp2p.ListenAddrStrings(getListenAddrStrings(nodeListenPort)...),
+		libp2p.ListenAddrStrings(config.GetListenAddrStrings(nodeListenPort)...),
 		libp2p.Identity(actorKeyset.IPNSKey.PrivKey),
 	}
 
@@ -47,22 +43,11 @@ func main() {
 	}
 	log.Infof("Actor initialized: %s", a.Entity.DID.Fragment)
 
-	ra, err := actor.NewFromKeyset(ctx, ps, roomKeyset, config.GetForcePublish())
-	if err != nil {
-		panic(fmt.Sprintf("Failed to create room actor: %v", err))
-	}
-
-	r, err := room.New(ra)
-	if err != nil {
-		panic(fmt.Sprintf("Failed to create room: %v", err))
-	}
-	log.Debugf("Room initialized: %s", r.Entity.DID.Fragment)
-
-	a.Enter(r.Entity.DID.String())
+	a.Enter(config.GetRoom())
 
 	// Draw the UI.
 	log.Debugf("Starting text UI")
-	ui := NewChatUI(ctx, node, ps, r, a)
+	ui := ui.NewChatUI(ctx, node, ps, a)
 	if err := ui.Run(); err != nil {
 		log.Errorf("error running text UI: %s", err)
 	}

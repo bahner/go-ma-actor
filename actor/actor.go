@@ -36,6 +36,11 @@ type Actor struct {
 	// Others can subscribe to this topic and send us messages, as long as they are signed.
 	Public *pubsub.Topic
 
+	// Room
+	// For rooms, we need the DIDDocument of the room, as the keyAgreement is what we send messages to.
+	// And the assertionMethod is what we receive messages from.
+	Room *Actor
+
 	// Incoming messages from the actor to AssertionMethod topic. It's bascially a broadcast channel.
 	// But you could use it to send messages to a specific actor or to all actors in a group.
 	// This is a public channel. There will need to be some generic To (recipients) in the mesage
