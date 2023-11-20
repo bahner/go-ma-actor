@@ -6,7 +6,7 @@ Now you can either run with `go run`, or build and run the binary:
 
 ```shell
 go build .
-./go-ma-actor -genenv -forcPublish > .env // Generate persistent environment variables of *SECRET* keysets
+./go-ma-actor -genenv -forcePublish > .env // Generate persistent environment variables of *SECRET* keysets
 . .env // Load the environment variables
 ./go-ma-actor // Run the app
 ```
@@ -18,8 +18,7 @@ type `./go-ma-actor -help`. Most config settings can be set with environment var
 ```bash
 export GO_ACTOR_LOG_LEVEL="error"
 export GO_ACTOR_DISCOVERY_TIMEOUT="300"
-export GO_ACTOR_ACTOR_KEYSET="myBase58EncodedPrivkeyGeneratedByGenerate"
-export GO_ACTOR_ROOM_KEYSET="myBase58EncodedPrivkeyGeneratedByGenerate"
+export GO_ACTOR_KEYSET="myBase58EncodedPrivkeyGeneratedByGenerate"
 ```
 
 ## Identity
@@ -32,14 +31,13 @@ Just don't store somewhere insecure. It's your future identity.
 
 ```bash
 unset HISTFILE
- export GO_ACTOR_ACTOR_KEYSET=FooBarABCDEFbase58
- export GO_ACTOR_ROOM_KEYSET=FooBarABCDEFGHIbase58
+ export GO_ACTOR_KEYSET=FooBarABCDEFbase58
 ```
 
 or specified on the command line:
 
 ```bash
-./go-ma-actor -actorKeyset FooBarABCDEFbase58 -roomKeyset FooBarABCDEFGHIbase58
+./go-ma-actor -keyset FooBarABCDEFbase58
 ```
 
 The first is the best. (Noticed that in most shells the empty space before the command, means that the line isn't saved in history.)
