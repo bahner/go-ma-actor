@@ -27,6 +27,6 @@ func (a *Actor) Listen(outputChannel chan<- string) error {
 	go a.handlePublicMessages(spaceSub)
 
 	// Wait for context cancellation (or other exit conditions)
-	<-a.Ctx.Done()
-	return a.Ctx.Err()
+	<-a.ctx.Done()
+	return a.ctx.Err()
 }

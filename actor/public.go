@@ -9,7 +9,7 @@ import (
 
 func (a *Actor) receivePublicMessages(sub *pubsub.Subscription) (*msg.Message, error) {
 
-	msgData, err := sub.Next(a.Ctx)
+	msgData, err := sub.Next(a.ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to receive message from inbox: %v", err)
 	}
@@ -36,7 +36,7 @@ func (a *Actor) receivePublicMessages(sub *pubsub.Subscription) (*msg.Message, e
 func (a *Actor) handlePublicMessages(sub *pubsub.Subscription) {
 	for {
 		select {
-		case <-a.Ctx.Done():
+		case <-a.ctx.Done():
 			// Exit goroutine when context is cancelled
 			return
 		default:

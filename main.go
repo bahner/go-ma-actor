@@ -58,7 +58,7 @@ func main() {
 	}
 	log.Debugf("Room initialized: %s", r.Entity.DID.Fragment)
 
-	r.Enter(ps, a)
+	a.Enter(r.Entity.DID.String())
 
 	// Draw the UI.
 	log.Debugf("Starting text UI")

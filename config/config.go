@@ -46,7 +46,7 @@ func Init() {
 	flag.StringVar(&actor_keyset_string, "actor_keyset", actor_keyset_string, "Base58 encoded secret key used to identify the client. You.")
 
 	// Room
-	flag.StringVar(&room_keyset_string, "room_keyset", actor_keyset_string, "Base58 encoded secret key used to identify your room.")
+	flag.StringVar(&room_keyset_string, "room_keyset", room_keyset_string, "Base58 encoded secret key used to identify your room.")
 
 	// Booleans with control flow
 	generate = flag.Bool("generate", false, "Generates one-time keyset and uses it")

@@ -17,7 +17,10 @@ const MESSAGES_BUFFERSIZE = 100
 type Actor struct {
 
 	// This context is used to cancel the Listen() function.
-	Ctx context.Context
+	ctx context.Context
+
+	// ps service ointer
+	ps *pubsub.PubSub
 
 	// All actors must be entities.
 	// Ideally they should be the same, but then ma becomes a bit too opinionated.
@@ -47,8 +50,14 @@ type Actor struct {
 // The forcePublish is to override existing keys in IPFS.
 func New(ctx context.Context, ps *pubsub.PubSub, e *entity.Entity, forcePublish bool) (*Actor, error) {
 
+	log.Debugf("actor/new: Setting Actor Entity: %v", e)
+
 	var err error
 	a := &Actor{}
+
+	// Assign provided resource pointers
+	a.ctx = ctx
+	a.ps = ps
 
 	// Firstly create assign entity to actor
 	a.Entity = e
@@ -56,9 +65,9 @@ func New(ctx context.Context, ps *pubsub.PubSub, e *entity.Entity, forcePublish 
 	// Create topic for incoming envelopes
 	a.Private, err = ps.Join(a.Entity.Doc.KeyAgreement)
 	if err != nil {
-		// If Topic is already created, we can try and attach to it.
-		// a.Private, err = ps.Att
-		// return nil, fmt.Errorf("new_actor: Failed to join topic: %v", err)
+		if err.Error() != "topic already exists" {
+			return nil, fmt.Errorf("new_actor: Failed to join topic: %v", err)
+		}
 	}
 
 	// Create subscription to topic for incoming messages
