@@ -43,11 +43,9 @@ func main() {
 	}
 	log.Infof("Actor initialized: %s", a.Entity.DID.Fragment)
 
-	a.Enter(config.GetRoom())
-
 	// Draw the UI.
 	log.Debugf("Starting text UI")
-	ui := ui.NewChatUI(ctx, node, ps, a)
+	ui := ui.NewChatUI(ctx, node, a, config.GetEntity())
 	if err := ui.Run(); err != nil {
 		log.Errorf("error running text UI: %s", err)
 	}

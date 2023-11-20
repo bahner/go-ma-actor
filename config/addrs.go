@@ -1,6 +1,6 @@
-package main
+package config
 
-func getListenAddrStrings(port string) []string {
+func GetListenAddrStrings(port string) []string {
 
 	return []string{
 		"/ip4/0.0.0.0/tcp/" + port,
