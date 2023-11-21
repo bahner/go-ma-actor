@@ -28,16 +28,16 @@ func (ui *ChatUI) displayStatusMessage(msg string) {
 }
 
 func (ui *ChatUI) getStatusSub() string {
-	status := fmt.Sprintf("keyAgreement: %s", ui.keyAgreement.String())
-	status += fmt.Sprintf("assertionMethod: %s", ui.assertionMethod.String())
-	return status
+	// status := fmt.Sprintf("keyAgreement: %s", ui.a.keyAgreement.String())
+	// status += fmt.Sprintf("assertionMethod: %s", ui.assertionMethod.String())
+	return "not implemented yet"
 }
 
 func (ui *ChatUI) getStatusTopic() string {
 	// Return whatever status you'd like about the topic.
 	// Fetching peers as an example below:
-	peers := ui.keyAgreement.ListPeers()
-	return fmt.Sprintf("Topic Status: %s | Peers: %v", ui.nick, peers)
+	// peers := ui.keyAgreement.ListPeers()
+	return "not implemented yet"
 }
 
 func (ui *ChatUI) getStatusHost() string {

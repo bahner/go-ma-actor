@@ -10,7 +10,6 @@ import (
 	"github.com/bahner/go-ma/did/doc"
 	"github.com/bahner/go-ma/msg"
 	"github.com/gdamore/tcell/v2"
-	pubsub "github.com/libp2p/go-libp2p-pubsub"
 	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/rivo/tview"
 )
@@ -33,21 +32,14 @@ type ChatUI struct {
 	// The Topic is used for publication of messages after encryption and signing.
 	// The names are obviously, from the corresponding DIDDocument.
 
-	// For sending encrypted messages, we need the keyAgreement.
-	// This is for sending encrypted messages to the room.
-	keyAgreement *pubsub.Topic
-	// For broadcasting signed messages, we need the assertionMethod.
-	// This is for sending signed messages to the room and it's participants.
-	assertionMethod *pubsub.Topic
-
 	app       *tview.Application
 	peersList *tview.TextView
 	msgBox    *tview.TextView
 
-	msgW    io.Writer
-	inputCh chan string
-	msgCh   chan *msg.Message
-	doneCh  chan struct{}
+	msgW      io.Writer
+	chInput   chan string
+	chMessage chan *msg.Message
+	chDone    chan struct{}
 }
 
 // NewChatUI returns a new ChatUI struct that controls the text UI.
@@ -86,7 +78,7 @@ func NewChatUI(ctx context.Context, n host.Host, a *actor.Actor, id string) *Cha
 	})
 
 	// an input field for typing messages into
-	inputCh := make(chan string, 32)
+	chInput := make(chan string, 32)
 	input := tview.NewInputField().
 		SetLabel(u.nick + " > ").
 		SetFieldWidth(0).
@@ -111,7 +103,7 @@ func NewChatUI(ctx context.Context, n host.Host, a *actor.Actor, id string) *Cha
 		}
 
 		// send the line onto the input chan and reset the field text
-		inputCh <- line
+		chInput <- line
 		input.SetText("")
 	})
 
@@ -143,8 +135,8 @@ func NewChatUI(ctx context.Context, n host.Host, a *actor.Actor, id string) *Cha
 		peersList: peersList,
 		msgW:      msgBox,
 		msgBox:    msgBox,
-		inputCh:   inputCh,
-		doneCh:    make(chan struct{}, 1),
+		chInput:   chInput,
+		chDone:    make(chan struct{}, 1),
 	}
 }
 
@@ -159,5 +151,5 @@ func (ui *ChatUI) Run() error {
 
 // end signals the event loop to exit gracefully
 func (ui *ChatUI) end() {
-	ui.doneCh <- struct{}{}
+	ui.chDone <- struct{}{}
 }

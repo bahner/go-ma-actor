@@ -34,7 +34,7 @@ func (ui *ChatUI) handleChatMessage(input string) error {
 		return fmt.Errorf("message serialization error: %s", err)
 	}
 
-	err = ui.a.Public.Publish(ui.ctx, m)
+	err = ui.a.Outbox.Publish(ui.ctx, m)
 	if err != nil {
 		return fmt.Errorf("publish error: %s", err)
 	}

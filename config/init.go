@@ -27,7 +27,7 @@ var (
 
 var (
 	discoveryTimeout int    = env.GetInt(discovery_timeout_var, defaultDiscoveryTimeout)
-	logLevel         string = env.Get(log_level_var, "error")
+	logLevel         string = env.Get(log_level_var, "info")
 
 	// What we want to communicate with initially
 	entity string = env.Get(entity_var, "")

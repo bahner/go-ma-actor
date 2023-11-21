@@ -1,20 +1,32 @@
 package actor
 
-import "fmt"
+import (
+	"fmt"
+)
 
-// Takes a room topic and joins it. The room is the DID of the room actor.
-func (a *Actor) Enter(room string) error {
-
-	var err error
-
-	// First close the current subscription
-	a.Public.Close()
-
-	a.Public, err = a.ps.Join(room)
+func (a *Actor) Enter(id string, outputChannel chan<- string) error {
+	// Subscribe to Inbox topic
+	inboxSub, err := a.Inbox.Subscribe()
 	if err != nil {
-		return fmt.Errorf("actor: %v failed to join topic: %v", a, err)
+		return fmt.Errorf("failed to subscribe to Inbox topic: %v", err)
 	}
+	defer inboxSub.Cancel()
 
-	return nil
+	// Subscribe to Space topic
+	spaceSub, err := a.Outbox.Subscribe()
+	if err != nil {
+		return fmt.Errorf("failed to subscribe to Space topic: %v", err)
+	}
+	defer spaceSub.Cancel()
 
+	// Start a goroutine for Inbox subscription
+	go a.handlePrivateMessages(inboxSub)
+
+	// Start a goroutine for Space subscription
+	// Assuming you have a similar function for Space
+	go a.handlePublicMessages(spaceSub)
+
+	// Wait for context cancellation (or other exit conditions)
+	<-a.ctx.Done()
+	return a.ctx.Err()
 }

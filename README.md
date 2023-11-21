@@ -4,11 +4,10 @@ This is go-ma-actor based on [an example from go-libp2p][src].
 
 Now you can either run with `go run`, or build and run the binary:
 
-```shell
-go build .
-./go-ma-actor -genenv -forcePublish > .env // Generate persistent environment variables of *SECRET* keysets
-. .env // Load the environment variables
-./go-ma-actor // Run the app
+```bash
+# Generate persistent environment variables of *SECRET* keysets
+eval $(go run . -genenv -forcePublish | tee .env)
+./go-ma-actor # Share and enjoy!
 ```
 
 ## Configuration

@@ -32,14 +32,14 @@ func (ui *ChatUI) handleEvents() {
 
 	for {
 		select {
-		case input := <-ui.inputCh:
+		case input := <-ui.chInput:
 			if strings.HasPrefix(input, "/") {
 				ui.handleCommands(input)
 			} else {
 				ui.handleChatMessage(input)
 			}
 
-		case m := <-ui.msgCh:
+		case m := <-ui.chMessage:
 			ui.displayChatMessage(m)
 
 		case <-peerRefreshTicker.C:
@@ -48,7 +48,7 @@ func (ui *ChatUI) handleEvents() {
 		case <-ui.ctx.Done():
 			return
 
-		case <-ui.doneCh:
+		case <-ui.chDone:
 			return
 		}
 	}

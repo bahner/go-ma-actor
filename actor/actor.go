@@ -26,20 +26,9 @@ type Actor struct {
 	// Ideally they should be the same, but then ma becomes a bit too opinionated.
 	Entity *entity.Entity
 
-	// Private is the topic where we receive envelopes from other actors.
+	// Inbox is the topic where we receive envelopes from other actors.
 	// It's basically a private channel with the DIDDocument keyAgreement as topic.
-	Private *pubsub.Topic
-
-	// We basically receive signed messages from the room we're in here.
-	// It's basically a public channel with the assertionMethod from the DIDDocument of
-	// the room we're in as topic.
-	// Others can subscribe to this topic and send us messages, as long as they are signed.
-	Public *pubsub.Topic
-
-	// Room
-	// For rooms, we need the DIDDocument of the room, as the keyAgreement is what we send messages to.
-	// And the assertionMethod is what we receive messages from.
-	Room *Actor
+	Inbox *pubsub.Topic
 
 	// Incoming messages from the actor to AssertionMethod topic. It's bascially a broadcast channel.
 	// But you could use it to send messages to a specific actor or to all actors in a group.
@@ -68,17 +57,11 @@ func New(ctx context.Context, ps *pubsub.PubSub, e *entity.Entity, forcePublish 
 	a.Entity = e
 
 	// Create topic for incoming envelopes
-	a.Private, err = ps.Join(a.Entity.Doc.KeyAgreement)
+	a.Inbox, err = ps.Join(a.Entity.DID.String())
 	if err != nil {
 		if err.Error() != "topic already exists" {
 			return nil, fmt.Errorf("new_actor: Failed to join topic: %v", err)
 		}
-	}
-
-	// Create subscription to topic for incoming messages
-	a.Public, err = ps.Join(a.Entity.Doc.AssertionMethod)
-	if err != nil {
-		return nil, fmt.Errorf("new_actor: Failed to join topic: %v", err)
 	}
 
 	// Set the messages channel
