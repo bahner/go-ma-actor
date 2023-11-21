@@ -2,8 +2,6 @@ package config
 
 import (
 	"flag"
-	"os"
-	"time"
 
 	"github.com/bahner/go-ma/key/set"
 	log "github.com/sirupsen/logrus"
@@ -19,16 +17,6 @@ const (
 )
 
 var (
-	discoveryTimeout int    = env.GetInt(discovery_timeout_var, defaultDiscoveryTimeout)
-	logLevel         string = env.Get(log_level_var, "error")
-
-	entity string = env.Get(entity_var, "")
-
-	// Actor
-	keyset_string string = env.Get(keyset_var, "")
-	// Nick is only used for keyset generation. Must be a valid NanoID.
-	nick string = env.Get("USER")
-
 	generate     *bool
 	genenv       *bool
 	publish      *bool
@@ -37,7 +25,21 @@ var (
 	keyset *set.Keyset
 )
 
-func Init() {
+var (
+	discoveryTimeout int    = env.GetInt(discovery_timeout_var, defaultDiscoveryTimeout)
+	logLevel         string = env.Get(log_level_var, "error")
+
+	// What we want to communicate with initially
+	entity string = env.Get(entity_var, "")
+
+	// Actor
+	keyset_string string = env.Get(keyset_var, "")
+
+	// Nick is only used for keyset generation. Must be a valid NanoID.
+	nick string = env.Get("USER")
+)
+
+func init() {
 
 	// Flags - user configurations
 	flag.StringVar(&logLevel, "loglevel", logLevel, "Loglevel to use for application")
@@ -64,39 +66,15 @@ func Init() {
 	log.SetLevel(level)
 	log.Info("Logger initialized")
 
-	// Generate a new keysets if requested
-	if *generate || *genenv {
-		keyset_string = generateKeyset(keyset_var, nick, *forcePublish)
-	}
+	// Init keyset
+	initKeyset(keyset_string)
 
-	if *publish || *forcePublish {
-		if keyset_string != "" {
-			publishKeyset(keyset, *forcePublish)
-		} else {
-			log.Errorf("No actor keyset to publish.")
-		}
+	// Make sure required services are running
+	initP2P(discoveryTimeout)
 
-		if *genenv || *generate {
-			os.Exit(0)
-		}
+	// Init actor and libP2P node
+	initActor() // Requires running IPFS Daemon for publication
 
-		log.Debugf("actor_keyset_string: %s", keyset_string)
-		// Create the actor keyset
-		if keyset_string == "" {
-			log.Fatal("You need to define actorKeyset or generate a new one.")
-		}
-		unpackedActorKeyset, err := set.Unpack(keyset_string)
-		if err != nil {
-			log.Fatalf("Failed to unpack keyset: %v", err)
-		}
-		keyset = unpackedActorKeyset
-
-		log.Debug("Unpacked keyset and set it to actor.")
-	}
-}
-
-func GetKeyset() *set.Keyset {
-	return keyset
 }
 
 func GetNick() string {
@@ -109,12 +87,4 @@ func GetEntity() string {
 
 func GetLogLevel() string {
 	return logLevel
-}
-
-func GetForcePublish() bool {
-	return *forcePublish
-}
-
-func GetDiscoveryTimeout() time.Duration {
-	return time.Duration(discoveryTimeout) * time.Second
 }
