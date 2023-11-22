@@ -1,23 +1,26 @@
 package actor
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/bahner/go-ma/msg"
-	"github.com/bahner/go-ma/msg/envelope"
 	pubsub "github.com/libp2p/go-libp2p-pubsub"
 )
 
-func (a *Actor) receivePrivateEnvelopes(sub *pubsub.Subscription) (*msg.Message, error) {
+func (a *Actor) receiveEnvelopes() (*msg.Message, error) {
 
-	msgData, err := sub.Next(a.ctx)
+	ctx, cancel := context.WithCancel(a.ctx)
+	defer cancel()
+
+	envelopes := a.Inbox.SubscribeEnvelopes(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("failed to receive message from inbox: %v", err)
+		return nil, fmt.Errorf("failed to subscribe to inbox: %v", err)
 	}
 
-	e, err := envelope.UnmarshalFromCBOR(msgData.Data)
+	e := <-envelopes
 	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal envelope from CBOR: %v", err)
+		return nil, fmt.Errorf("failed to receive message from inbox: %v", err)
 	}
 
 	message, err := e.Open(a.Entity.Keyset.EncryptionKey.PrivKey)
@@ -28,7 +31,7 @@ func (a *Actor) receivePrivateEnvelopes(sub *pubsub.Subscription) (*msg.Message,
 	return message, nil
 }
 
-func (a *Actor) handlePrivateMessages(sub *pubsub.Subscription) {
+func (a *Actor) openEnvelopes(sub *pubsub.Subscription) {
 	for {
 		select {
 		case <-a.ctx.Done():
@@ -36,7 +39,7 @@ func (a *Actor) handlePrivateMessages(sub *pubsub.Subscription) {
 			return
 		default:
 			// Read message from Inbox subscription
-			if msg, err := a.receivePrivateEnvelopes(sub); err == nil {
+			if msg, err := a.receiveEnvelopes(); err == nil {
 				a.Messages <- msg
 			}
 		}

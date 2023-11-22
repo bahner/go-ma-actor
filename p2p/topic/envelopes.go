@@ -4,11 +4,11 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/bahner/go-ma/msg"
+	"github.com/bahner/go-ma/msg/envelope"
 	log "github.com/sirupsen/logrus"
 )
 
-func (t *Topic) Subscribe(ctx context.Context) (messages <-chan *msg.Message) {
+func (t *Topic) SubscribeEnvelopes(ctx context.Context) (envelopes <-chan *envelope.Envelope) {
 
 	t.ctx = ctx
 	var err error
@@ -19,40 +19,36 @@ func (t *Topic) Subscribe(ctx context.Context) (messages <-chan *msg.Message) {
 		return
 	}
 
-	t.Messages = make(chan *msg.Message, MESSAGES_BUFFERSIZE)
+	t.Envelopes = make(chan *envelope.Envelope, ENVELOPES_BUFFERSIZE)
 
-	go t.subscriptionLoop()
+	go t.envelopeSubscriptionLoop()
 
-	return t.Messages
+	return t.Envelopes
 
 }
 
-func (t *Topic) Next() (*msg.Message, error) {
+func (t *Topic) NextEnvelope() (*envelope.Envelope, error) {
 
 	message, err := t.Subscription.Next(t.ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	// Here we should distinguish between different message types
-	unpackedMessage, err := msg.Unpack(string(message.Data))
-	if err != nil {
-		return nil, fmt.Errorf("failed to unpack message: %v", err)
-	}
+	// Here we should distinguish between packed and unpacked envelopes
+	return envelope.UnmarshalFromCBOR(message.Data)
 
-	return unpackedMessage, nil
 }
 
 // Publish a message to the topic.
 // NB! Check that it's the correct topic!
-func (t *Topic) Publish(m msg.Message) error {
+func (t *Topic) SendEnvelope(e *envelope.Envelope) error {
 
-	data, err := m.Pack()
+	data, err := e.MarshalToCBOR()
 	if err != nil {
 		return err
 	}
 
-	err = t.Topic.Publish(t.ctx, []byte(data))
+	err = t.Topic.Publish(t.ctx, data)
 	if err != nil {
 		return fmt.Errorf("failed to publish message: %v", err)
 	}
@@ -60,7 +56,7 @@ func (t *Topic) Publish(m msg.Message) error {
 	return nil
 }
 
-func (t *Topic) subscriptionLoop() {
+func (t *Topic) envelopeSubscriptionLoop() {
 	for {
 		select {
 		case <-t.ctx.Done():
@@ -68,9 +64,9 @@ func (t *Topic) subscriptionLoop() {
 		case <-t.chDone:
 			return
 		default:
-			message, err := t.Next()
+			letter, err := t.NextEnvelope()
 			if err != nil {
-				close(t.Messages)
+				close(t.Envelopes)
 				return
 			}
 
@@ -81,7 +77,7 @@ func (t *Topic) subscriptionLoop() {
 			// }
 
 			// send valid messages onto the Messages channel
-			t.Messages <- message
+			t.Envelopes <- letter
 
 		}
 	}

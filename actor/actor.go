@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/bahner/go-ma-actor/p2p/topic"
 	"github.com/bahner/go-ma/entity"
 	"github.com/bahner/go-ma/key/set"
 	"github.com/bahner/go-ma/msg"
@@ -28,7 +29,7 @@ type Actor struct {
 
 	// Inbox is the topic where we receive envelopes from other actors.
 	// It's basically a private channel with the DIDDocument keyAgreement as topic.
-	Inbox *pubsub.Topic
+	Inbox *topic.Topic
 
 	// Incoming messages from the actor to AssertionMethod topic. It's bascially a broadcast channel.
 	// But you could use it to send messages to a specific actor or to all actors in a group.
@@ -57,7 +58,7 @@ func New(ctx context.Context, ps *pubsub.PubSub, e *entity.Entity, forcePublish 
 	a.Entity = e
 
 	// Create topic for incoming envelopes
-	a.Inbox, err = ps.Join(a.Entity.DID.String())
+	a.Inbox, err = topic.GetOrCreate(a.Entity.DID.String())
 	if err != nil {
 		if err.Error() != "topic already exists" {
 			return nil, fmt.Errorf("new_actor: Failed to join topic: %v", err)
@@ -89,4 +90,11 @@ func NewFromKeyset(ctx context.Context, ps *pubsub.PubSub, k *set.Keyset, forceP
 	}
 
 	return New(ctx, ps, e, forcePublish)
+}
+
+func (a *Actor) Listen() {
+
+	// Listen for incoming messages
+	go a.openEnvelopes(a.Inbox.Subscription)
+
 }

@@ -22,7 +22,7 @@ func init() {
 
 	ctx = context.Background()
 	node = config.GetNode()
-	a = config.GetActor()
+	a = actor.GetActor()
 	entity = config.GetEntity()
 
 }

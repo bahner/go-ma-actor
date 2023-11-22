@@ -72,9 +72,6 @@ func init() {
 	// Make sure required services are running
 	initP2P(discoveryTimeout)
 
-	// Init actor and libP2P node
-	initActor() // Requires running IPFS Daemon for publication
-
 }
 
 func GetNick() string {
@@ -87,4 +84,13 @@ func GetEntity() string {
 
 func GetLogLevel() string {
 	return logLevel
+}
+
+func GetPublish() bool {
+
+	return *publish
+}
+
+func GetForcePublish() bool {
+	return *forcePublish
 }

@@ -5,19 +5,27 @@ import (
 	"fmt"
 
 	"github.com/bahner/go-ma/msg"
+	"github.com/bahner/go-ma/msg/envelope"
 	pubsub "github.com/libp2p/go-libp2p-pubsub"
 )
 
 var topics = map[string]*Topic{}
 
-const MESSAGES_BUFFERSIZE = 100
+const (
+	MESSAGES_BUFFERSIZE  = 100
+	ENVELOPES_BUFFERSIZE = 100
+)
 
 type Topic struct {
+	ctx context.Context
+
+	chDone chan struct{}
+
+	Messages  chan *msg.Message
+	Envelopes chan *envelope.Envelope
+
 	Topic        *pubsub.Topic
 	Subscription *pubsub.Subscription
-	ctx          context.Context
-	chDone       chan struct{}
-	Messages     chan *msg.Message
 }
 
 func GetOrCreate(id string) (*Topic, error) {
