@@ -50,7 +50,7 @@ func init() {
 
 	// Actor
 	flag.StringVar(&nick, "nick", nick, "Nickname to use in character creation")
-	flag.StringVar(&keyset_string, "keyset", "", "Base58 encoded *secret* keyset used to identify the client. You.")
+	flag.StringVar(&keyset_string, "keyset", keyset_string, "Base58 encoded *secret* keyset used to identify the client. You.")
 	flag.StringVar(&entity, "entity", entity, "DID of the entity to communicate with.")
 
 	// Booleans with control flow
