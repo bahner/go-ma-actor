@@ -5,6 +5,7 @@ import (
 
 	"github.com/bahner/go-ma-actor/actor"
 	"github.com/bahner/go-ma-actor/config"
+	"github.com/bahner/go-ma-actor/p2p"
 	"github.com/bahner/go-ma-actor/ui"
 	"github.com/libp2p/go-libp2p/core/host"
 
@@ -12,18 +13,20 @@ import (
 )
 
 var (
-	ctx    context.Context
-	node   host.Host
-	a      *actor.Actor
-	entity string
+	ctx context.Context
+
+	a *actor.Actor
+	e string
+	n host.Host
 )
 
 func init() {
 
 	ctx = context.Background()
-	node = config.GetNode()
+
 	a = actor.GetActor()
-	entity = config.GetEntity()
+	e = config.GetEntity()
+	n = p2p.GetNode()
 
 }
 
@@ -31,7 +34,7 @@ func main() {
 
 	// Draw the UI.
 	log.Debugf("Starting text UI")
-	ui := ui.NewChatUI(ctx, node, a, entity)
+	ui := ui.NewChatUI(ctx, n, a, e)
 	if err := ui.Run(); err != nil {
 		log.Errorf("error running text UI: %s", err)
 	}

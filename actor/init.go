@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/bahner/go-ma-actor/config"
+	"github.com/bahner/go-ma-actor/p2p/pubsub"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -17,8 +18,8 @@ var (
 func init() {
 
 	ctx := context.Background()
-	ps := config.GetPubSub()
 	k := config.GetKeyset()
+	ps := pubsub.Get()
 
 	log.Infof("Intializing actor with identity: %s", k.IPNSKey.DID)
 	a, err = NewFromKeyset(ctx, ps, k, config.GetForcePublish())

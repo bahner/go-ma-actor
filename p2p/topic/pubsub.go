@@ -1,13 +1,13 @@
 package topic
 
 import (
-	"github.com/bahner/go-ma-actor/config"
-	pubsub "github.com/libp2p/go-libp2p-pubsub"
+	"github.com/bahner/go-ma-actor/p2p/pubsub"
+	p2ppubsub "github.com/libp2p/go-libp2p-pubsub"
 )
 
-var pubsubTopics = map[string]*pubsub.Topic{}
+var pubsubTopics = map[string]*p2ppubsub.Topic{}
 
-func getOrCreatePubSub(id string) (*pubsub.Topic, error) {
+func getOrCreatePubSub(id string) (*p2ppubsub.Topic, error) {
 
 	t := pubsubTopics[id]
 	if t != nil {
@@ -17,9 +17,9 @@ func getOrCreatePubSub(id string) (*pubsub.Topic, error) {
 	return createPubSub(id)
 }
 
-func createPubSub(id string) (*pubsub.Topic, error) {
+func createPubSub(id string) (*p2ppubsub.Topic, error) {
 
-	ps := config.GetPubSub()
+	ps := pubsub.Get()
 
 	t, err := ps.Join(id)
 	if err != nil {

@@ -12,6 +12,7 @@ import (
 	"github.com/gdamore/tcell/v2"
 	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/rivo/tview"
+	log "github.com/sirupsen/logrus"
 )
 
 // ChatUI is a Text User Interface (TUI) for a Room.
@@ -55,9 +56,9 @@ func NewChatUI(ctx context.Context, n host.Host, a *actor.Actor, id string) *Cha
 	// This is because the ui has the event loop, and the actor doesn't.
 	u.a = a
 
-	u.d, err = doc.Fetch(id)
+	u.d, err = doc.Fetch(a.Entity.DID.String()) // Fake id. Use mine.
 	if err != nil {
-		panic(fmt.Sprintf("Failed to fetch DIDDOcument. %v", err))
+		log.Errorf("Failed to fetch DIDDOcument. %v", err)
 	}
 
 	u.nick = did.GetFragment(id)

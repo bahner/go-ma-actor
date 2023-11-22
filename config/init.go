@@ -2,6 +2,7 @@ package config
 
 import (
 	"flag"
+	"time"
 
 	"github.com/bahner/go-ma/key/set"
 	log "github.com/sirupsen/logrus"
@@ -17,6 +18,8 @@ const (
 )
 
 var (
+	err error
+
 	generate     *bool
 	genenv       *bool
 	publish      *bool
@@ -69,9 +72,6 @@ func init() {
 	// Init keyset
 	initKeyset(keyset_string)
 
-	// Make sure required services are running
-	initP2P(discoveryTimeout)
-
 }
 
 func GetNick() string {
@@ -93,4 +93,8 @@ func GetPublish() bool {
 
 func GetForcePublish() bool {
 	return *forcePublish
+}
+
+func GetDiscoveryTimeout() time.Duration {
+	return time.Duration(discoveryTimeout) * time.Second
 }
