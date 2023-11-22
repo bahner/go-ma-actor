@@ -1,6 +1,6 @@
 package ui
 
-import "github.com/bahner/go-ma/p2p"
+import "github.com/bahner/go-ma-actor/p2p"
 
 func (ui *ChatUI) triggerDiscovery() {
 

@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/bahner/go-ma/p2p"
+	"github.com/bahner/go-ma-actor/p2p"
 	"github.com/libp2p/go-libp2p"
 	pubsub "github.com/libp2p/go-libp2p-pubsub"
 	"github.com/libp2p/go-libp2p/core/host"
