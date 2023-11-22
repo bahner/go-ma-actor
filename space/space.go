@@ -15,10 +15,9 @@ type Space struct {
 	Document *doc.Document
 	Private  *pubsub.Topic
 	Public   *pubsub.Topic
-	Messages chan *msg.Message
 }
 
-func Enter(id string, a *actor.Actor) (*Space, error) {
+func New(id string) (*Space, error) {
 
 	if spaces[id] != nil {
 		return spaces[id], nil
@@ -29,12 +28,12 @@ func Enter(id string, a *actor.Actor) (*Space, error) {
 		return nil, fmt.Errorf("failed to fetch DID Document: %v", err)
 	}
 
-	keyAgreement, err := topics.GetOrCreate(id)
+	private, err := topics.GetOrCreate(id)
 	if err != nil {
 		return nil, fmt.Errorf("failed to join keyAgreement topic: %v", err)
 	}
 
-	assertionMethod, err := topics.GetOrCreate(d.AssertionMethod)
+	public, err := topics.GetOrCreate(d.AssertionMethod)
 	if err != nil {
 		return nil, fmt.Errorf("failed to subscribe to assertionMethod topic: %v", err)
 	}
@@ -42,7 +41,15 @@ func Enter(id string, a *actor.Actor) (*Space, error) {
 	return &Space{
 		DID:      id,
 		Document: d,
-		Private:  keyAgreement,
-		Public:   assertionMethod,
+		Private:  private,
+		Public:   public,
 	}, nil
+}
+
+func (s *Space) Enter(a *actor.Actor) error {
+
+	a.Messages = make(chan *msg.Message)
+
+	return nil
+
 }
