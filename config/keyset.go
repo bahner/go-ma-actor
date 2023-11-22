@@ -6,6 +6,7 @@ import (
 
 	"github.com/bahner/go-ma/did/doc"
 	"github.com/bahner/go-ma/key/set"
+	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -69,6 +70,7 @@ func publishIdentity(k *set.Keyset) {
 
 	err := k.IPNSKey.ExportToIPFS(*forcePublish)
 	if err != nil {
+		log.Debugf(errors.Cause(err).Error())
 		log.Fatalf("config.publishIdentity: failed to export keyset: %v", err)
 	}
 	log.Infof("Exported IPNSkey to IPFS: %s", k.IPNSKey.DID)

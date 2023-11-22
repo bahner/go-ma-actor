@@ -54,7 +54,7 @@ func New(e *entity.Entity, forcePublish bool) (*Actor, error) {
 	a.Inbox, err = topic.GetOrCreate(a.Entity.DID.String())
 	if err != nil {
 		if err.Error() != "topic already exists" {
-			return nil, fmt.Errorf("actor.New: Failed to join topic: %v", err)
+			return nil, fmt.Errorf("actor.New: Failed to join topic: %w", err)
 		}
 	}
 
@@ -64,7 +64,7 @@ func New(e *entity.Entity, forcePublish bool) (*Actor, error) {
 	// Publish the entity
 	err = a.Entity.Publish(forcePublish)
 	if err != nil {
-		return nil, fmt.Errorf("actor.New: Failed to publish Entity: %v", err)
+		return nil, fmt.Errorf("actor.New: Failed to publish Entity: %w", err)
 	}
 
 	log.Debugf("actor.New: Actor initialized: %s", a.Entity.DID.Fragment)
@@ -80,7 +80,7 @@ func NewFromKeyset(k *set.Keyset, forcePublish bool) (*Actor, error) {
 	log.Debugf("Setting Actor Entity: %v", k)
 	e, err := entity.NewFromKeyset(k)
 	if err != nil {
-		return nil, fmt.Errorf("actor.NewFromKeyset: Failed to create Entity: %v", err)
+		return nil, fmt.Errorf("actor.NewFromKeyset: Failed to create Entity: %w", err)
 	}
 
 	return New(e, forcePublish)

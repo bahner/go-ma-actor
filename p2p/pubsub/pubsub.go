@@ -24,7 +24,7 @@ func New(ctx context.Context, n host.Host) (*pubsub.PubSub, error) {
 
 	ps, err = pubsub.NewGossipSub(ctx, n)
 	if err != nil {
-		return nil, fmt.Errorf("p2p: failed to create pubsub service: %v", err)
+		return nil, fmt.Errorf("p2p: failed to create pubsub service: %w", err)
 	}
 
 	return ps, nil

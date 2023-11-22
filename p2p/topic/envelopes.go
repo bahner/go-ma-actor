@@ -50,7 +50,7 @@ func (t *Topic) SendEnvelope(e *envelope.Envelope) error {
 
 	err = t.Topic.Publish(t.ctx, data)
 	if err != nil {
-		return fmt.Errorf("failed to publish message: %v", err)
+		return fmt.Errorf("failed to publish message: %w", err)
 	}
 
 	return nil

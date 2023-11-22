@@ -39,12 +39,12 @@ func Init(ctx context.Context, i *ipns.Key, discoveryTimeout time.Duration) (hos
 	// Create a new libp2p Host that listens on a random TCP port
 	n, err = node.New(i, nil)
 	if err != nil {
-		return nil, nil, fmt.Errorf("p2p.Init: failed to create libp2p node: %v", err)
+		return nil, nil, fmt.Errorf("p2p.Init: failed to create libp2p node: %w", err)
 	}
 
 	ps, err = pubsub.New(ctx, n)
 	if err != nil {
-		return nil, nil, fmt.Errorf("p2p.Init: failed to create pubsub: %v", err)
+		return nil, nil, fmt.Errorf("p2p.Init: failed to create pubsub: %w", err)
 	}
 
 	// Peer discovery
@@ -57,7 +57,7 @@ func Init(ctx context.Context, i *ipns.Key, discoveryTimeout time.Duration) (hos
 
 	err = StartPeerDiscovery(ctxDiscovery, n)
 	if err != nil {
-		return nil, nil, fmt.Errorf("p2p.Init: failed to start peer discovery: %v", err)
+		return nil, nil, fmt.Errorf("p2p.Init: failed to start peer discovery: %w", err)
 	}
 
 	return n, ps, nil

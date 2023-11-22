@@ -15,17 +15,17 @@ func (a *Actor) receiveEnvelopes() (*msg.Message, error) {
 
 	envelopes := a.Inbox.SubscribeEnvelopes(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("failed to subscribe to inbox: %v", err)
+		return nil, fmt.Errorf("failed to subscribe to inbox: %w", err)
 	}
 
 	e := <-envelopes
 	if err != nil {
-		return nil, fmt.Errorf("failed to receive message from inbox: %v", err)
+		return nil, fmt.Errorf("failed to receive message from inbox: %w", err)
 	}
 
 	message, err := e.Open(a.Entity.Keyset.EncryptionKey.PrivKey)
 	if err != nil {
-		return nil, fmt.Errorf("failed to open envelope: %v", err)
+		return nil, fmt.Errorf("failed to open envelope: %w", err)
 	}
 
 	return message, nil

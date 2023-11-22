@@ -37,7 +37,7 @@ func GetOrCreate(id string) (*Topic, error) {
 
 	pubsubTopic, err := getOrCreatePubSub(id)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create topic: %v", err)
+		return nil, fmt.Errorf("failed to create topic: %w", err)
 	}
 
 	return &Topic{
@@ -57,7 +57,7 @@ func (t *Topic) Close() error {
 
 	err := t.Topic.Close()
 	if err != nil {
-		return fmt.Errorf("topic/Close: failed to close topic: %v", err)
+		return fmt.Errorf("topic/Close: failed to close topic: %w", err)
 	}
 
 	return nil

@@ -37,7 +37,7 @@ func (t *Topic) nextMessage() (*msg.Message, error) {
 	// Here we should distinguish between different message types
 	unpackedMessage, err := msg.Unpack(string(message.Data))
 	if err != nil {
-		return nil, fmt.Errorf("failed to unpack message: %v", err)
+		return nil, fmt.Errorf("failed to unpack message: %w", err)
 	}
 
 	return unpackedMessage, nil
@@ -54,7 +54,7 @@ func (t *Topic) PublishMessage(m *msg.Message) error {
 
 	err = t.Topic.Publish(t.ctx, []byte(data))
 	if err != nil {
-		return fmt.Errorf("failed to publish message: %v", err)
+		return fmt.Errorf("failed to publish message: %w", err)
 	}
 
 	return nil

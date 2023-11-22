@@ -58,7 +58,7 @@ func NewChatUI(ctx context.Context, n host.Host, a *actor.Actor, id string) *Cha
 
 	u.d, err = doc.Fetch(id)
 	if err != nil {
-		log.Errorf("Failed to fetch DIDDOcument. %v", err)
+		log.Errorf("Failed to fetch DIDDOcument. %w", err)
 	}
 
 	u.nick = did.GetFragment(id)

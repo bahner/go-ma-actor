@@ -32,7 +32,7 @@ func New(i *ipnskey.Key, opts ...libp2p.Option) (host.Host, error) {
 	p2pNode, err = libp2p.New(p2pOptions...)
 
 	if err != nil {
-		return nil, fmt.Errorf("p2p: failed to create libp2p node: %v", err)
+		return nil, fmt.Errorf("p2p: failed to create libp2p node: %w", err)
 	}
 
 	return p2pNode, nil
