@@ -25,9 +25,8 @@ type Actor struct {
 	// Ideally they should be the same, but then ma becomes a bit too opinionated.
 	Entity *entity.Entity
 
-	// Inbox is the topic where we receive envelopes from other actors.
-	// It's basically a private channel with the DIDDocument keyAgreement as topic.
-	Inbox *topic.Topic
+	// Topic is the topic where we send or receive envelopes and messages.
+	Topic *topic.Topic
 
 	// Incoming messages from the actor to AssertionMethod topic. It's bascially a broadcast channel.
 	// But you could use it to send messages to a specific actor or to all actors in a group.
@@ -51,7 +50,7 @@ func New(e *entity.Entity, forcePublish bool) (*Actor, error) {
 	a.Entity = e
 
 	// Create topic for incoming envelopes
-	a.Inbox, err = topic.GetOrCreate(a.Entity.DID.String())
+	a.Topic, err = topic.GetOrCreate(a.Entity.DID.String())
 	if err != nil {
 		if err.Error() != "topic already exists" {
 			return nil, fmt.Errorf("actor.New: Failed to join topic: %w", err)
@@ -97,7 +96,7 @@ func (a *Actor) Listen(ctx context.Context) {
 
 	a.ctx = ctx
 
-	s, err := a.Inbox.Topic.Subscribe()
+	s, err := a.Topic.Topic.Subscribe()
 	if err != nil {
 		log.Errorf("actor/listen: Failed to subscribe to topic: %v", err)
 		return

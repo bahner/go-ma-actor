@@ -13,7 +13,7 @@ func (a *Actor) receiveEnvelopes() (*msg.Message, error) {
 	ctx, cancel := context.WithCancel(a.ctx)
 	defer cancel()
 
-	envelopes := a.Inbox.SubscribeEnvelopes(ctx)
+	envelopes := a.Topic.SubscribeEnvelopes(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to subscribe to inbox: %w", err)
 	}
