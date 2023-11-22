@@ -1,9 +1,10 @@
 package node
 
 import (
+	"fmt"
 	"strconv"
 
-	"github.com/bahner/go-ma-actor/config"
+	ipnskey "github.com/bahner/go-ma/key/ipns"
 	"github.com/libp2p/go-libp2p"
 	"github.com/libp2p/go-libp2p/core/host"
 	log "github.com/sirupsen/logrus"
@@ -17,21 +18,24 @@ var (
 )
 
 // Creates a new libp2p node, meant to be the only one used in an application.
-// Takes normal libp2p options as parameters.
-func init() {
+// Requires an IPNS key for identity libp2p options as parameters.
+func New(i *ipnskey.Key, opts ...libp2p.Option) (host.Host, error) {
 
-	// Get the keyset and use it to start the node
-	k := config.GetKeyset()
+	p2pOptions := []libp2p.Option{
+		libp2p.ListenAddrStrings(getListenAddrStrings()...),
+		libp2p.Identity(i.PrivKey),
+	}
+
+	p2pOptions = append(p2pOptions, opts...)
 
 	// Create a new libp2p Host that listens on a random TCP port
-	p2pNode, err = libp2p.New(
-		libp2p.ListenAddrStrings(getListenAddrStrings()...),
-		libp2p.Identity(k.IPNSKey.PrivKey),
-	)
+	p2pNode, err = libp2p.New(p2pOptions...)
 
 	if err != nil {
-		log.Errorf("p2p: failed to create libp2p node: %v", err)
+		return nil, fmt.Errorf("p2p: failed to create libp2p node: %v", err)
 	}
+
+	return p2pNode, nil
 }
 
 func Get() host.Host {
@@ -45,6 +49,8 @@ func Get() host.Host {
 
 func getListenAddrStrings() []string {
 
+	// Converting this to s string so quickly, is a little ugly,
+	// but it is an integer to begin with, co it feels more correct.
 	port := strconv.Itoa(NODE_LISTEN_PORT)
 
 	return []string{

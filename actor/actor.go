@@ -8,20 +8,18 @@ import (
 	"github.com/bahner/go-ma/entity"
 	"github.com/bahner/go-ma/key/set"
 	"github.com/bahner/go-ma/msg"
-	pubsub "github.com/libp2p/go-libp2p-pubsub"
 
 	log "github.com/sirupsen/logrus"
 )
 
 const MESSAGES_BUFFERSIZE = 100
 
+var err error
+
 type Actor struct {
 
 	// This context is used to cancel the Listen() function.
 	ctx context.Context
-
-	// ps service ointer
-	ps *pubsub.PubSub
 
 	// All actors must be entities.
 	// Ideally they should be the same, but then ma becomes a bit too opinionated.
@@ -41,18 +39,13 @@ type Actor struct {
 }
 
 // Creates a new actor from an entity.
-// Takes a pubsub.PubSub service, an entity and a forcePublish flag.
+// Takes an entity and a forcePublish flag.
 // The forcePublish is to override existing keys in IPFS.
-func New(ctx context.Context, ps *pubsub.PubSub, e *entity.Entity, forcePublish bool) (*Actor, error) {
+func New(e *entity.Entity, forcePublish bool) (*Actor, error) {
 
-	log.Debugf("actor/new: Setting Actor Entity: %v", e)
+	log.Debugf("actor.New: Setting Actor Entity: %v", e)
 
-	var err error
-	a := &Actor{}
-
-	// Assign provided resource pointers
-	a.ctx = ctx
-	a.ps = ps
+	a := new(Actor)
 
 	// Firstly create assign entity to actor
 	a.Entity = e
@@ -61,7 +54,7 @@ func New(ctx context.Context, ps *pubsub.PubSub, e *entity.Entity, forcePublish 
 	a.Inbox, err = topic.GetOrCreate(a.Entity.DID.String())
 	if err != nil {
 		if err.Error() != "topic already exists" {
-			return nil, fmt.Errorf("new_actor: Failed to join topic: %v", err)
+			return nil, fmt.Errorf("actor.New: Failed to join topic: %v", err)
 		}
 	}
 
@@ -71,30 +64,46 @@ func New(ctx context.Context, ps *pubsub.PubSub, e *entity.Entity, forcePublish 
 	// Publish the entity
 	err = a.Entity.Publish(forcePublish)
 	if err != nil {
-		return nil, fmt.Errorf("new_actor: Failed to publish Entity: %v", err)
+		return nil, fmt.Errorf("actor.New: Failed to publish Entity: %v", err)
 	}
 
-	log.Debugf("new_actor: Actor initialized: %s", a.Entity.DID.Fragment)
+	log.Debugf("actor.New: Actor initialized: %s", a.Entity.DID.Fragment)
 	return a, nil
 
 }
 
 // Creates a new actor from a keyset.
-// Takes a pubsub.PubSub service, a keyset and a forcePublish flag.
-func NewFromKeyset(ctx context.Context, ps *pubsub.PubSub, k *set.Keyset, forcePublish bool) (*Actor, error) {
+// Takes a context, a keyset and a forcePublish flag.
+// If ctx is nil a background context is used.
+func NewFromKeyset(k *set.Keyset, forcePublish bool) (*Actor, error) {
 
 	log.Debugf("Setting Actor Entity: %v", k)
 	e, err := entity.NewFromKeyset(k)
 	if err != nil {
-		return nil, fmt.Errorf("new_actor: Failed to create Entity: %v", err)
+		return nil, fmt.Errorf("actor.NewFromKeyset: Failed to create Entity: %v", err)
 	}
 
-	return New(ctx, ps, e, forcePublish)
+	return New(e, forcePublish)
 }
 
-func (a *Actor) Listen() {
+// Listen for incoming messages.
+// The ctx is used to cancel the Listen() function.
+func (a *Actor) Listen(ctx context.Context) {
+
+	// We are the Cuckooes.
+	if a.ctx != nil {
+		a.ctx.Done()
+	}
+
+	a.ctx = ctx
+
+	s, err := a.Inbox.Topic.Subscribe()
+	if err != nil {
+		log.Errorf("actor/listen: Failed to subscribe to topic: %v", err)
+		return
+	}
 
 	// Listen for incoming messages
-	go a.openEnvelopes(a.Inbox.Subscription)
+	go a.openEnvelopes(s)
 
 }

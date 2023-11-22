@@ -42,7 +42,7 @@ func StartPeerDiscovery(ctx context.Context, h host.Host) error {
 	done := make(chan bool, 2)
 
 	wg := &sync.WaitGroup{}
-	wg.Add(2)
+	wg.Add(1)
 
 	go func() {
 		defer wg.Done()

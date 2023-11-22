@@ -2,13 +2,14 @@ package p2p
 
 import (
 	"context"
+	"fmt"
+	"time"
 
-	"github.com/bahner/go-ma-actor/config"
 	"github.com/bahner/go-ma-actor/p2p/node"
 	"github.com/bahner/go-ma-actor/p2p/pubsub"
+	"github.com/bahner/go-ma/key/ipns"
 	p2ppubsub "github.com/libp2p/go-libp2p-pubsub"
 	"github.com/libp2p/go-libp2p/core/host"
-	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -21,29 +22,45 @@ var (
 	ps *p2ppubsub.PubSub
 )
 
-func init() {
+// Initialise everything needed for p2p communication.
+//
+// If ctx is nil a background context will be used as basis for a timeout context.
+// So nil is fine.
+//
+// i is the ipns key.
+//
+// discoveryTimeout is the timeout duration for peer discovery.
+// It's a time.Duration type.
+//
+// The function return the libp2p node and a PubSub Service
 
-	// Set context timeout for peer discovery
-	ctx := context.Background()
+func Init(ctx context.Context, i *ipns.Key, discoveryTimeout time.Duration) (host.Host, *p2ppubsub.PubSub, error) {
 
-	discoveryTimeout := config.GetDiscoveryTimeout()
+	// Create a new libp2p Host that listens on a random TCP port
+	n, err = node.New(i, nil)
+	if err != nil {
+		return nil, nil, fmt.Errorf("p2p.Init: failed to create libp2p node: %v", err)
+	}
+
+	ps, err = pubsub.New(ctx, n)
+	if err != nil {
+		return nil, nil, fmt.Errorf("p2p.Init: failed to create pubsub: %v", err)
+	}
+
+	// Peer discovery
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
 	ctxDiscovery, cancel = context.WithTimeout(ctx, discoveryTimeout)
 	defer cancel()
 
-	// Create a new libp2p Host that listens on a random TCP port
-	n = node.Get()
-	if err != nil {
-		log.Fatalf("p2p: failed to create libp2p node: %v", err)
-	}
-
-	ps = pubsub.Get()
-
-	// Start peer discovery
 	err = StartPeerDiscovery(ctxDiscovery, n)
 	if err != nil {
-		log.Fatalf("p2p: failed to start peer discovery: %v", err)
+		return nil, nil, fmt.Errorf("p2p.Init: failed to start peer discovery: %v", err)
 	}
 
+	return n, ps, nil
 }
 
 func GetPubSub() *p2ppubsub.PubSub {

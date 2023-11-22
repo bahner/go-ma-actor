@@ -56,7 +56,7 @@ func NewChatUI(ctx context.Context, n host.Host, a *actor.Actor, id string) *Cha
 	// This is because the ui has the event loop, and the actor doesn't.
 	u.a = a
 
-	u.d, err = doc.Fetch(a.Entity.DID.String()) // Fake id. Use mine.
+	u.d, err = doc.Fetch(id)
 	if err != nil {
 		log.Errorf("Failed to fetch DIDDOcument. %v", err)
 	}

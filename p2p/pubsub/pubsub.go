@@ -2,35 +2,39 @@ package pubsub
 
 import (
 	"context"
+	"fmt"
 
-	"github.com/bahner/go-ma-actor/p2p/node"
 	pubsub "github.com/libp2p/go-libp2p-pubsub"
+	"github.com/libp2p/go-libp2p/core/host"
 	log "github.com/sirupsen/logrus"
 )
 
 var (
 	err error
 
-	pubSubService *pubsub.PubSub
+	ps *pubsub.PubSub
 )
 
-func init() {
-	ctx := context.Background()
-	n := node.Get()
-
-	pubSubService, err = pubsub.NewGossipSub(ctx, n)
-	if err != nil {
-		log.Fatalf("p2p: failed to create pubsub service: %v", err)
+// Start the pubsub service. If ctx is nil a background context is used.
+// n is the libp2p host.
+func New(ctx context.Context, n host.Host) (*pubsub.PubSub, error) {
+	if ctx == nil {
+		ctx = context.Background()
 	}
-	log.Info("Global resources initialized")
 
+	ps, err = pubsub.NewGossipSub(ctx, n)
+	if err != nil {
+		return nil, fmt.Errorf("p2p: failed to create pubsub service: %v", err)
+	}
+
+	return ps, nil
 }
 
 func Get() *pubsub.PubSub {
 
-	if pubSubService == nil {
+	if ps == nil {
 		log.Errorf("p2p: pubsub service not initialized")
 	}
 
-	return pubSubService
+	return ps
 }

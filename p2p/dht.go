@@ -97,13 +97,13 @@ func DiscoverDHTPeers(ctx context.Context, wg *sync.WaitGroup, h host.Host) erro
 
 	retryCount := 0
 
+discoveryLoop:
 	for {
 		peerChan, err := routingDiscovery.FindPeers(ctx, ma.RENDEZVOUS)
 		if err != nil {
 			return fmt.Errorf("peer discovery error: %w", err)
 		}
 
-		anyConnected := false
 		for {
 			select {
 			case peer, ok := <-peerChan:
@@ -120,7 +120,7 @@ func DiscoverDHTPeers(ctx context.Context, wg *sync.WaitGroup, h host.Host) erro
 					log.Debugf("Failed connecting to %s, error: %v\n", peer.ID.String(), err)
 				} else {
 					log.Infof("Connected to DHT peer: %s", peer.ID.String())
-					anyConnected = true
+					break discoveryLoop
 				}
 			case <-ctx.Done():
 				log.Info("Context cancelled, stopping DHT peer discovery.")
@@ -131,9 +131,6 @@ func DiscoverDHTPeers(ctx context.Context, wg *sync.WaitGroup, h host.Host) erro
 			}
 		}
 
-		if anyConnected {
-			break
-		}
 		retryCount++
 	}
 

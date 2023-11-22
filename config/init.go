@@ -50,14 +50,14 @@ func init() {
 
 	// Actor
 	flag.StringVar(&nick, "nick", nick, "Nickname to use in character creation")
-	flag.StringVar(&keyset_string, "keyset", keyset_string, "Base58 encoded secret key used to identify the client. You.")
+	flag.StringVar(&keyset_string, "keyset", "", "Base58 encoded *secret* keyset used to identify the client. You.")
 	flag.StringVar(&entity, "entity", entity, "DID of the entity to communicate with.")
 
 	// Booleans with control flow
 	generate = flag.Bool("generate", false, "Generates one-time keyset and uses it")
 	genenv = flag.Bool("genenv", false, "Generates a keyset and prints it to stdout and uses it")
 	publish = flag.Bool("publish", false, "Publishes keyset to IPFS when using genenv or generate")
-	forcePublish = flag.Bool("forcePublish", false, "Force publish even if keyset is already published")
+	forcePublish = flag.Bool("forcePublish", false, "Like -publish, force publication even if keyset is already published. This is probably the one you want.")
 
 	flag.Parse()
 
