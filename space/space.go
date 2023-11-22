@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/bahner/go-ma-actor/actor"
-	"github.com/bahner/go-ma-actor/config"
+	"github.com/bahner/go-ma-actor/topics"
 	"github.com/bahner/go-ma/did/doc"
 	"github.com/bahner/go-ma/msg"
 	pubsub "github.com/libp2p/go-libp2p-pubsub"
@@ -29,14 +29,12 @@ func Enter(id string, a *actor.Actor) (*Space, error) {
 		return nil, fmt.Errorf("failed to fetch DID Document: %v", err)
 	}
 
-	ps := config.GetPubSub()
-
-	keyAgreement, err := ps.Join(d.KeyAgreement)
+	keyAgreement, err := topics.GetOrCreate(id)
 	if err != nil {
 		return nil, fmt.Errorf("failed to join keyAgreement topic: %v", err)
 	}
 
-	assertionMethod, err := ps.Join(d.AssertionMethod)
+	assertionMethod, err := topics.GetOrCreate(d.AssertionMethod)
 	if err != nil {
 		return nil, fmt.Errorf("failed to subscribe to assertionMethod topic: %v", err)
 	}
