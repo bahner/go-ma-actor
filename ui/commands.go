@@ -12,6 +12,8 @@ func (ui *ChatUI) handleCommands(input string) {
 		ui.triggerDiscovery()
 	case "/enter":
 		ui.handleEnterCommand(args)
+	case "/alias":
+		ui.handleAliasCommand(args)
 	case "/refresh":
 		ui.app.Draw()
 	default:

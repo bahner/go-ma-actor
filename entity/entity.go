@@ -41,18 +41,6 @@ func NewFromDID(id string) (*Entity, error) {
 	return New(id, alias)
 }
 
-func (e *Entity) GetAlias() string {
-	return e.Alias
-}
-
-func (e *Entity) SetAlias(alias string) {
-	e.Alias = alias
-}
-
-func (e *Entity) String() string {
-	return e.DID
-}
-
 func (e *Entity) IsValid() bool {
 	return did.IsValidDID(e.DID)
 }

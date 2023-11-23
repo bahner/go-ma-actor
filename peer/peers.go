@@ -8,12 +8,16 @@ func init() {
 
 // Add adds a peer to the map
 func Add(p *Peer) {
-	peers[p.ID()] = p
+	peers[p.ID] = p
 }
 
 // Get returns a peer from the map
 func Get(id string) *Peer {
 	return peers[id]
+}
+
+func GetAlias(id string) string {
+	return peers[id].Alias
 }
 
 // List returns a list of peers
@@ -33,7 +37,7 @@ func Delete(id string) {
 func ListAliases() []string {
 	var result []string
 	for _, p := range peers {
-		result = append(result, p.Alias())
+		result = append(result, p.Alias)
 	}
 	return result
 }
@@ -41,7 +45,7 @@ func ListAliases() []string {
 func ListIDs() []string {
 	var result []string
 	for _, p := range peers {
-		result = append(result, p.ID())
+		result = append(result, p.ID)
 	}
 	return result
 }

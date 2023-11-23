@@ -8,7 +8,7 @@ func init() {
 
 // Add adds a entity to the map
 func Add(e *Entity) {
-	entities[e.String()] = e
+	entities[e.DID] = e
 }
 
 // Get returns a entity from the map
@@ -33,7 +33,7 @@ func Delete(id string) {
 func ListAliases() []string {
 	var result []string
 	for _, e := range entities {
-		result = append(result, e.GetAlias())
+		result = append(result, e.Alias)
 	}
 	return result
 }
@@ -41,7 +41,7 @@ func ListAliases() []string {
 func ListDIDs() []string {
 	var result []string
 	for _, e := range entities {
-		result = append(result, e.String())
+		result = append(result, e.DID)
 	}
 	return result
 }
