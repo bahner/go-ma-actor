@@ -55,10 +55,9 @@ func NewChatUI(ctx context.Context, n host.Host, a *actor.Actor, id string) *Cha
 	// Assign actor to the room, so the room can handle messages on behalf of the actor.
 	// This is because the ui has the event loop, and the actor doesn't.
 	u.a = a
-
-	u.d, err = doc.Fetch(id)
+	u.d, err = doc.FetchFromDID(id)
 	if err != nil {
-		log.Errorf("Failed to fetch DIDDOcument. %w", err)
+		log.Errorf("Failed to fetch DIDDOcument. %v", err)
 	}
 
 	u.nick = did.GetFragment(id)
