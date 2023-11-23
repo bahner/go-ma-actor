@@ -9,7 +9,10 @@ import (
 	pubsub "github.com/libp2p/go-libp2p-pubsub"
 )
 
-var topics = map[string]*Topic{}
+var (
+	err    error
+	topics = map[string]*Topic{}
+)
 
 const (
 	MESSAGES_BUFFERSIZE  = 100
@@ -30,20 +33,38 @@ type Topic struct {
 
 func GetOrCreate(id string) (*Topic, error) {
 
-	t := topics[id]
+	t := &Topic{}
+
+	t = Get(id)
 	if topics[id] != nil {
 		return t, nil
 	}
 
-	pubsubTopic, err := getOrCreatePubSub(id)
+	// Start new Topic. Add channels.
+	t.chDone = make(chan struct{})
+	t.Messages = make(chan *msg.Message, MESSAGES_BUFFERSIZE)
+	t.Envelopes = make(chan *envelope.Envelope, ENVELOPES_BUFFERSIZE)
+
+	// Topic
+	t.Topic, err = getOrCreatePubSub(id)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create topic: %w", err)
 	}
+	addPubSub(id, t.Topic)
 
-	return &Topic{
-		Topic:  pubsubTopic,
-		chDone: make(chan struct{}),
-	}, nil
+	// Subscription
+	t.Subscription, err = t.Topic.Subscribe()
+	if err != nil {
+		return nil, fmt.Errorf("failed to subscribe to topic: %w", err)
+	}
+
+	// Add it to the list of topics
+	add(t)
+	return t, nil
+}
+
+func Get(id string) *Topic {
+	return topics[id]
 }
 
 // Close a topic if it is known.
@@ -69,4 +90,14 @@ func (t *Topic) Unsubscribe() error {
 	close(t.chDone)
 
 	return nil
+}
+
+func (t *Topic) Delete() {
+
+	deletePubSub(t.Topic.String())
+	delete(topics, t.Topic.String())
+}
+
+func add(t *Topic) {
+	topics[t.Topic.String()] = t
 }

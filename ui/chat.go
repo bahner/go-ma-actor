@@ -3,6 +3,8 @@ package ui
 import (
 	"fmt"
 
+	"github.com/bahner/go-ma-actor/config"
+	"github.com/bahner/go-ma-actor/p2p/topic"
 	"github.com/bahner/go-ma/msg"
 	log "github.com/sirupsen/logrus"
 )
@@ -35,6 +37,23 @@ func (ui *ChatUI) handleChatMessage(input string) error {
 		return fmt.Errorf("message signing error: %w", err)
 	}
 	ui.displayChatMessage(msg)
+	topic, err := topic.GetOrCreate(ui.e.DID)
+	if err != nil {
+		log.Debugf("topic creation error: %s", err)
+		return fmt.Errorf("topic creation error: %w", err)
+	}
+
+	msgBytes, err = msg.Bytes()
+	if err != nil {
+		log.Debugf("message serialization error: %s", err)
+		return fmt.Errorf("message serialization error: %w", err)
+	}
+	err = topic.Topic.Publish(ui.ctx, msgBytes)
+	if err != nil {
+		log.Debugf("message publishing error: %s", err)
+		return fmt.Errorf("message publishing error: %w", err)
+	}
+	log.Debugf("Message published to topic: %s", topic.Topic.String())
 
 	// // FIXME. This should be done in the message.New function
 	m, err := msg.MarshalToJSON()
@@ -42,7 +61,10 @@ func (ui *ChatUI) handleChatMessage(input string) error {
 		log.Debugf("message serialization error: %s", err)
 		return fmt.Errorf("message serialization error: %s", err)
 	}
-	ui.displaySelfMessage(string(m))
+
+	if config.GetLogLevel() == "debug" {
+		ui.displaySelfMessage(string(m))
+	}
 
 	return nil
 }

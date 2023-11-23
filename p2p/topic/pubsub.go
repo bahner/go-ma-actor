@@ -9,7 +9,7 @@ var pubsubTopics = map[string]*p2ppubsub.Topic{}
 
 func getOrCreatePubSub(id string) (*p2ppubsub.Topic, error) {
 
-	t := pubsubTopics[id]
+	t := getPubSub(id)
 	if t != nil {
 		return t, nil
 	}
@@ -21,10 +21,24 @@ func createPubSub(id string) (*p2ppubsub.Topic, error) {
 
 	ps := pubsub.Get()
 
-	t, err := ps.Join(id)
+	pst, err := ps.Join(id)
 	if err != nil {
 		return nil, err
 	}
 
-	return t, nil
+	addPubSub(id, pst)
+
+	return pst, nil
+}
+
+func addPubSub(id string, topic *p2ppubsub.Topic) {
+	pubsubTopics[id] = topic
+}
+
+func getPubSub(id string) *p2ppubsub.Topic {
+	return pubsubTopics[id]
+}
+
+func deletePubSub(id string) {
+	delete(pubsubTopics, id)
 }
