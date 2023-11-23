@@ -14,6 +14,11 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+var (
+	connectedPeers = make(map[string]struct{})
+	peerMutex      sync.Mutex
+)
+
 func initDHT(ctx context.Context, h host.Host) (*dht.IpfsDHT, error) {
 	log.Info("Initializing DHT.")
 
@@ -120,6 +125,12 @@ discoveryLoop:
 					log.Debugf("Failed connecting to %s, error: %v\n", peer.ID.String(), err)
 				} else {
 					log.Infof("Connected to DHT peer: %s", peer.ID.String())
+
+					// New code to add the connected peer to the map
+					peerMutex.Lock()
+					connectedPeers[peer.ID.String()] = struct{}{}
+					peerMutex.Unlock()
+
 					break discoveryLoop
 				}
 			case <-ctx.Done():
@@ -136,4 +147,15 @@ discoveryLoop:
 
 	log.Info("DHT Peer discovery complete")
 	return nil
+}
+
+func GetConnectedPeers() []string {
+	peerMutex.Lock()
+	defer peerMutex.Unlock()
+
+	peers := make([]string, 0, len(connectedPeers))
+	for peer := range connectedPeers {
+		peers = append(peers, peer)
+	}
+	return peers
 }
