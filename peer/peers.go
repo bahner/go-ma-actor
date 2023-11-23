@@ -16,8 +16,22 @@ func Get(id string) *Peer {
 	return peers[id]
 }
 
-func GetAlias(id string) string {
+func GetAliasByID(id string) string {
 	return peers[id].Alias
+}
+
+func GetIDByAlias(alias string) string {
+	p := GetByAlias(alias)
+	return p.ID
+}
+
+func GetByAlias(alias string) *Peer {
+	for _, p := range peers {
+		if p.Alias == alias {
+			return p
+		}
+	}
+	return nil
 }
 
 // List returns a list of peers

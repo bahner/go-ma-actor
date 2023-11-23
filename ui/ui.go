@@ -6,6 +6,7 @@ import (
 	"io"
 
 	"github.com/bahner/go-ma-actor/actor"
+	"github.com/bahner/go-ma-actor/entity"
 	"github.com/bahner/go-ma/did"
 	"github.com/bahner/go-ma/did/doc"
 	"github.com/bahner/go-ma/msg"
@@ -23,9 +24,7 @@ type ChatUI struct {
 	ctx context.Context
 	n   host.Host
 
-	nick string
-	// We need this because for the acor, the chatui *is* the room.
-	d *doc.Document
+	e *entity.Entity
 
 	// The actor is need to encrypt and sign messages in the event loop.
 	a *actor.Actor
@@ -48,19 +47,26 @@ type ChatUI struct {
 func NewChatUI(ctx context.Context, n host.Host, a *actor.Actor, id string) *ChatUI {
 
 	var (
-		u   ChatUI
 		err error
 	)
 
-	// Assign actor to the room, so the room can handle messages on behalf of the actor.
-	// This is because the ui has the event loop, and the actor doesn't.
-	u.a = a
-	u.d, err = doc.FetchFromDID(id)
-	if err != nil {
-		log.Errorf("Failed to fetch DIDDOcument. %v", err)
+	// Check for valid inputs
+	if ctx == nil {
+		log.Error("invalid context: nil")
+		return nil
 	}
 
-	u.nick = did.GetFragment(id)
+	if a == nil {
+		log.Error("invalid Actor: nil")
+		return nil
+	}
+
+	if id == "" || !did.IsValidDID(id) {
+		log.Errorf("invalid DID %s", id)
+		return nil
+	}
+
+	e := entity.GetOrCreate(id)
 
 	app := tview.NewApplication()
 
@@ -68,7 +74,7 @@ func NewChatUI(ctx context.Context, n host.Host, a *actor.Actor, id string) *Cha
 	msgBox := tview.NewTextView()
 	msgBox.SetDynamicColors(true)
 	msgBox.SetBorder(true)
-	msgBox.SetTitle(fmt.Sprintf("Entity: %s", u.nick))
+	msgBox.SetTitle(fmt.Sprintf("Entity: %s", e.Alias))
 
 	// text views are io.Writers, but they don't automatically refresh.
 	// this sets a change handler to force the app to redraw when we get
@@ -80,7 +86,7 @@ func NewChatUI(ctx context.Context, n host.Host, a *actor.Actor, id string) *Cha
 	// an input field for typing messages into
 	chInput := make(chan string, 32)
 	input := tview.NewInputField().
-		SetLabel(u.nick + " > ").
+		SetLabel(e.Alias + " > ").
 		SetFieldWidth(0).
 		SetFieldBackgroundColor(tcell.ColorBlack)
 
@@ -128,9 +134,20 @@ func NewChatUI(ctx context.Context, n host.Host, a *actor.Actor, id string) *Cha
 
 	app.SetRoot(flex, true)
 
+	// There should be a document there, but ...
+	if e.Doc == nil {
+		e.Doc, err = doc.FetchFromDID(id)
+		if err != nil {
+			log.Errorf("Failed to fetch DIDDOcument. %v", err)
+			return nil
+		}
+	}
+
 	return &ChatUI{
 		ctx:       ctx,
 		n:         n,
+		a:         a,
+		e:         e,
 		app:       app,
 		peersList: peersList,
 		msgW:      msgBox,

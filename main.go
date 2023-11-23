@@ -16,7 +16,6 @@ var (
 	ctx context.Context
 	err error
 
-	a *actor.Actor
 	e string
 	n host.Host
 )
@@ -30,11 +29,16 @@ func init() {
 		ctx,
 		config.GetKeyset().IPNSKey,
 		config.GetDiscoveryTimeout())
+
+	if err != nil {
+		log.Fatalf("failed to initialize p2p: %v", err)
+	}
+
 }
 
 func main() {
-	a, err = actor.NewFromKeyset(config.GetKeyset(), config.GetForcePublish())
-	if err != nil {
+	a, err := actor.NewFromKeyset(config.GetKeyset(), config.GetForcePublish())
+	if err != nil || a == nil {
 		log.Fatalf("failed to create actor: %v", err)
 	}
 

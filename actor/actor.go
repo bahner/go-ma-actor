@@ -82,7 +82,19 @@ func NewFromKeyset(k *set.Keyset, forcePublish bool) (*Actor, error) {
 		return nil, fmt.Errorf("actor.NewFromKeyset: Failed to create Entity: %w", err)
 	}
 
-	return New(e, forcePublish)
+	if e == nil {
+		return nil, fmt.Errorf("actor.NewFromKeyset: Failed to create Entity: %w", err)
+	}
+
+	a, err := New(e, forcePublish)
+	if err != nil {
+		return nil, fmt.Errorf("actor.NewFromKeyset: Failed to create Actor: %w", err)
+	}
+
+	if a == nil {
+		return nil, fmt.Errorf("actor.NewFromKeyset: Received nil from New() %w", err)
+	}
+	return a, nil
 }
 
 // Listen for incoming messages.

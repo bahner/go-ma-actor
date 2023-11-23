@@ -2,6 +2,7 @@ package config
 
 import (
 	"flag"
+	"os"
 	"time"
 
 	"github.com/bahner/go-ma/key/set"
@@ -10,6 +11,7 @@ import (
 )
 
 const (
+	name                    = "go-ma-actor"
 	keyset_var              = "GO_ACTOR_KEYSET"
 	entity_var              = "GO_ACTOR_ENTITY"
 	discovery_timeout_var   = "GO_ACTOR_DISCOVERY_TIMEOUT"
@@ -31,6 +33,7 @@ var (
 var (
 	discoveryTimeout int    = env.GetInt(discovery_timeout_var, defaultDiscoveryTimeout)
 	logLevel         string = env.Get(log_level_var, "info")
+	logfile          string = env.Get("GO_ACTOR_LOG_FILE", name+"log")
 
 	// What we want to communicate with initially
 	entity string = env.Get(entity_var, "")
@@ -46,6 +49,7 @@ func init() {
 
 	// Flags - user configurations
 	flag.StringVar(&logLevel, "loglevel", logLevel, "Loglevel to use for application")
+	flag.StringVar(&logfile, "logfile", logfile, "Logfile to use for application")
 	flag.IntVar(&discoveryTimeout, "discoveryTimeout", discoveryTimeout, "Timeout for peer discovery")
 
 	// Actor
@@ -67,6 +71,12 @@ func init() {
 		log.Fatal(err)
 	}
 	log.SetLevel(level)
+	file, err := os.OpenFile(name+".log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+	if err != nil {
+		log.Fatalf("Failed to open log file: %v", err)
+	}
+	log.SetOutput(file)
+
 	log.Info("Logger initialized")
 
 	// Init keyset

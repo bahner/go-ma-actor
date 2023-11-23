@@ -9,7 +9,7 @@ import (
 // displaySelfMessage writes a message from ourself to the message window,
 // with our nick highlighted in yellow.
 func (ui *ChatUI) displaySelfMessage(msg string) {
-	prompt := withColor("yellow", fmt.Sprintf("<%s>:", ui.nick))
+	prompt := withColor("yellow", fmt.Sprintf("<%s>:", ui.e.Alias))
 	fmt.Fprintf(ui.msgW, "%s %s\n", prompt, msg)
 }
 

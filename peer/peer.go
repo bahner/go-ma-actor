@@ -17,3 +17,12 @@ func New(id string, alias string) *Peer {
 func NewFromID(id string) *Peer {
 	return New(id, id[len(id)-8:])
 }
+
+func GetOrCreate(id string) *Peer {
+	p := Get(id)
+	if p == nil {
+		p = NewFromID(id)
+		Add(p)
+	}
+	return p
+}

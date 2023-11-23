@@ -48,3 +48,14 @@ func (e *Entity) IsValid() bool {
 func (e *Entity) GetDoc() *doc.Document {
 	return e.Doc
 }
+
+func GetOrCreate(id string) *Entity {
+	e := Get(id)
+	if e == nil {
+		e, err = NewFromDID(id)
+		if err != nil {
+			return nil
+		}
+	}
+	return e
+}

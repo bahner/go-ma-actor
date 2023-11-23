@@ -4,16 +4,19 @@ import (
 	"fmt"
 
 	"github.com/bahner/go-ma-actor/p2p"
+	"github.com/bahner/go-ma-actor/peer"
 )
-
-var aliases map[string]string
-
-func init() {
-	aliases = make(map[string]string)
-}
 
 // handleAliasCommand handles the /alias command
 func (ui *ChatUI) handleAliasCommand(args []string) {
+
+	if len(args) == 3 {
+		p := peer.GetByAlias(args[1])
+		p.Alias = args[2]
+		ui.displaySystemMessage("Peer " + p.ID + " is now known as " + p.Alias)
+	} else {
+		ui.displaySystemMessage("Usage: /alias <current alias> <alias>")
+	}
 
 }
 
@@ -26,8 +29,26 @@ func (ui *ChatUI) refreshPeers() {
 	ui.peersList.Clear()
 
 	for _, p := range peers {
-		fmt.Fprintln(ui.peersList, p)
+		ap := peer.GetOrCreate(p)
+		fmt.Fprintln(ui.peersList, ap.Alias)
 	}
 
 	ui.app.Draw()
 }
+
+// func (ui *ChatUI) handleStatusCommand(args []string) {
+// 	if len(args) > 1 {
+// 		switch args[1] {
+// 		case "sub":
+// 			ui.displayStatusMessage(ui.getStatusSub())
+// 		case "topic":
+// 			ui.displayStatusMessage(ui.getStatusTopic())
+// 		case "host":
+// 			ui.displayStatusMessage(ui.getStatusHost())
+// 		default:
+// 			ui.displaySystemMessage("Unknown status type: " + args[1])
+// 		}
+// 	} else {
+// 		ui.displaySystemMessage("Usage: /status [sub|topic|host]")
+// 	}
+// }

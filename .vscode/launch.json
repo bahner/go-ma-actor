@@ -9,7 +9,13 @@
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "${fileDirname}"
+            "program": "${fileDirname}",
+            "args": [
+                "-loglevel", "debug",
+                "-keyset", "z92ekm6BMHDc1wJNkbmzqFpRxX7JwQUDEFcawGdkvWZcLNC7FbXPFR29qRnBZ7X8dV7gmfPByzHPTfakAFTPCL4K2qJtqEdQwmF93TW35kZeKjoh4z6BNSdgsoa2n6ioko712oHe2xFSDrcjw7QVfCo534zSjq2fs4MoqwYN1TSNnNpLa9TR7TKNha8TbcikTk7RrayS2YnXysmV9LZUphN63uRpzmTfMkktF7jpdJy5tmC8gGvjJeeGEDZQ3DWVY41nPzEez8UNDU1NWvf6cJTY2yKLjX7TSgRskswTCwKKdS5AqVqG6buXd8cKFBLksCdsEzQheen4sURPWecd4PKSim1VJH8kah3RZD6YYFxpE5UxKtAAp7xcHRCYTkXebAtVNPmAMdVE8Bqju6C1dCe6wNyBnfYRW2bvksCd5cxt5SHpDHpjZyQQyWp5EGnqLc44apjzfbmpNNtxc63V5k1znqTB18EXj8aQP2GbEq5x1NfMcDD2tLYLvPNTxFF7RvhT1jyrB95Jqx5GvucTp4pnfQiAjNYpDAqXZyg6CrhLyyA97c5oGsacYebM5DqFnFeptuVNULK5B1EtHnkEkGRPwjy711k21atTpV1cPTSh9EKHEhSvTzLZmbQKB2mZMcpvL39WzsFjva93JndAWPnnGbPbRVhQ8LNBnz4BNfvtU32uZFd2wd7RgKrcjCBYheh2XoQDYoCuQP3k8c4R1mDU7N8EWqKYR99QEQUQ9yXd6ZhoUsKBFJ5Fqhrf6s5FeFj7G3wCLoKiLFvBcU1E7WPP7sXa6JWSMhGMfNFmx5BgDM2mRR7YJfNxNP1Bt9vWfH9ZHcdAw2qReDUD4MoYXcr4ZwTgo7GQ3QCwbWGiw5Ud5fzTzypCP3jZE6YY2sidCCPbvHADn7BExz8HgurRP75cR5c7SgherJWCV1jsMUxbwmYZsJxU5G6yUsDZBeuiyecMZsnztVe3DkeJwhHnWvwUwDFFouG7t2XbcPEwo1wxS7vS3NXWcaEziL3hrCuVKwUgWVwkGweH8V6WEvkbSFNkzAJ1hDSNG7qVBKuepwBGzoUJQMnyVr3jyiee8o4s2EjYpCf4UW",
+                "-entity", "did:ma:k51qzi5uqu5dmd4sku82zehgj2fklfj05huo0ra3l9ntel7rd4blewdk74vyx4#home"
+            ],
+            "console": "integratedTerminal"
         }
     ]
 }
