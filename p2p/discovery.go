@@ -2,62 +2,36 @@ package p2p
 
 import (
 	"context"
-	"sync"
 
 	"github.com/libp2p/go-libp2p/core/host"
 	log "github.com/sirupsen/logrus"
 )
 
-// func StartPeerDiscovery(ctx context.Context, h host.Host) error {
-// 	log.Debug("Starting peer discovery...")
-
-// 	wg := &sync.WaitGroup{}
-// 	wg.Add(2)
-// 	go DiscoverDHTPeers(ctx, wg, h)
-// 	go DiscoverMDNSPeers(ctx, wg, h)
-
-// 	// Wait for the wait group or the timeout
-// 	done := make(chan struct{})
-// 	go func() {
-// 		wg.Wait()
-// 		close(done)
-// 	}()
-
-//		select {
-//		case <-ctx.Done():
-//			log.Warn("Peer discovery timed out.")
-//			return ctx.Err()
-//		case <-done:
-//			log.Info("Peer discovery successfully completed.")
-//			return nil
-//		}
-//	}
 func StartPeerDiscovery(ctx context.Context, h host.Host) error {
 	log.Debug("Starting peer discovery...")
 
-	// Create a new cancellable context that inherits the timeout from ctx
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel() // Ensure any remaining operations are cancelled upon return
+	done := make(chan struct{}, 2) // Buffered channel to avoid blocking
 
-	done := make(chan bool, 2)
-
-	wg := &sync.WaitGroup{}
-	wg.Add(1)
-
+	// Start DHT discovery in a new goroutine
 	go func() {
-		defer wg.Done()
-		DiscoverDHTPeers(ctx, wg, h)
-		done <- true
-		cancel() // Cancel the other discovery method
+		DiscoverDHTPeers(ctx, h)
+		done <- struct{}{} // Signal completion
 	}()
 
-	// Wait for either discovery method to complete or a timeout
+	// Start MDNS discovery in a new goroutine
+	go func() {
+		DiscoverMDNSPeers(ctx, h)
+		done <- struct{}{} // Signal completion
+	}()
+
+	// Wait for a discovery process to complete
 	select {
 	case <-ctx.Done():
-		log.Warn("Peer discovery timed out or was cancelled.")
+		log.Warn("Peer discovery unsuccessful.")
 		return ctx.Err()
 	case <-done:
-		log.Info("Peer discovery successfully completed.")
+		log.Info("Peer discovery successful.")
+		// Continue without waiting for the other process
 		return nil
 	}
 }

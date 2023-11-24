@@ -10,6 +10,8 @@ import (
 
 func (a *Actor) receiveEnvelopes() (*msg.Message, error) {
 
+	var err error
+
 	ctx, cancel := context.WithCancel(a.ctx)
 	defer cancel()
 

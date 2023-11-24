@@ -3,7 +3,7 @@ module github.com/bahner/go-ma-actor
 go 1.21
 
 require (
-	github.com/bahner/go-ma v0.0.3-0.20231123054724-841ea2c4f791
+	github.com/bahner/go-ma v0.0.3-0.20231124193112-665587548cd7
 	github.com/c-bata/go-prompt v0.2.6
 	github.com/gdamore/tcell/v2 v2.6.0
 	github.com/libp2p/go-libp2p v0.32.1
@@ -71,6 +71,7 @@ require (
 	github.com/libp2p/go-netroute v0.2.1 // indirect
 	github.com/libp2p/go-reuseport v0.4.0 // indirect
 	github.com/libp2p/go-yamux/v4 v4.0.1 // indirect
+	github.com/libp2p/zeroconf/v2 v2.2.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/marten-seemann/tcp v0.0.0-20210406111302-dfbc87cc63fd // indirect
 	github.com/matoous/go-nanoid/v2 v2.0.0 // indirect

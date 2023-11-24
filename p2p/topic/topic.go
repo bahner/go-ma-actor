@@ -33,17 +33,16 @@ type Topic struct {
 
 func GetOrCreate(id string) (*Topic, error) {
 
-	t := &Topic{}
-
-	t = Get(id)
-	if topics[id] != nil {
+	t, exists := Get(id)
+	if exists {
 		return t, nil
 	}
 
-	// Start new Topic. Add channels.
-	t.chDone = make(chan struct{})
-	t.Messages = make(chan *msg.Message, MESSAGES_BUFFERSIZE)
-	t.Envelopes = make(chan *envelope.Envelope, ENVELOPES_BUFFERSIZE)
+	t = &Topic{
+		chDone:    make(chan struct{}),
+		Messages:  make(chan *msg.Message, MESSAGES_BUFFERSIZE),
+		Envelopes: make(chan *envelope.Envelope, ENVELOPES_BUFFERSIZE),
+	}
 
 	// Topic
 	t.Topic, err = getOrCreatePubSub(id)
@@ -63,8 +62,11 @@ func GetOrCreate(id string) (*Topic, error) {
 	return t, nil
 }
 
-func Get(id string) *Topic {
-	return topics[id]
+func Get(id string) (*Topic, bool) {
+
+	t, exists := topics[id]
+
+	return t, exists
 }
 
 // Close a topic if it is known.

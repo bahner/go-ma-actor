@@ -14,8 +14,6 @@ import (
 
 const MESSAGES_BUFFERSIZE = 100
 
-var err error
-
 type Actor struct {
 
 	// This context is used to cancel the Listen() function.
@@ -42,6 +40,8 @@ type Actor struct {
 // The forcePublish is to override existing keys in IPFS.
 func New(e *entity.Entity, forcePublish bool) (*Actor, error) {
 
+	var err error
+
 	log.Debugf("actor.New: Setting Actor Entity: %v", e)
 
 	a := new(Actor)
@@ -49,7 +49,6 @@ func New(e *entity.Entity, forcePublish bool) (*Actor, error) {
 	// Firstly create assign entity to actor
 	a.Entity = e
 
-	// Create topic for incoming envelopes
 	a.Topic, err = topic.GetOrCreate(a.Entity.DID.String())
 	if err != nil {
 		if err.Error() != "topic already exists" {

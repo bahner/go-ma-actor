@@ -7,8 +7,6 @@ import (
 	"github.com/bahner/go-ma/did/doc"
 )
 
-var err error
-
 type Entity struct {
 	// ID is the entity's ID
 	DID string
@@ -19,12 +17,14 @@ type Entity struct {
 
 func New(id string, alias string) (*Entity, error) {
 
+	var err error
+
 	e := &Entity{
 		DID:   id,
 		Alias: alias,
 	}
 
-	e.Doc, err = doc.FetchFromDID(id)
+	e.Doc, err = doc.FetchFromDID(e.DID)
 	if err != nil {
 		return nil, fmt.Errorf("entity/newfromdid: failed to fetch document: %w", err)
 	}
@@ -50,6 +50,9 @@ func (e *Entity) GetDoc() *doc.Document {
 }
 
 func GetOrCreate(id string) *Entity {
+
+	var err error
+
 	e := Get(id)
 	if e == nil {
 		e, err = NewFromDID(id)

@@ -3,6 +3,7 @@ package p2p
 import (
 	"context"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/bahner/go-ma-actor/p2p/node"
@@ -10,6 +11,11 @@ import (
 	"github.com/bahner/go-ma/key/ipns"
 	p2ppubsub "github.com/libp2p/go-libp2p-pubsub"
 	"github.com/libp2p/go-libp2p/core/host"
+)
+
+const (
+	MDNS_MAX_RETRY = 5
+	DHT_MAX_RETRY  = 5
 )
 
 var (
@@ -20,6 +26,9 @@ var (
 
 	n  host.Host
 	ps *p2ppubsub.PubSub
+
+	connectedPeers = make(map[string]struct{})
+	peerMutex      sync.Mutex
 )
 
 // Initialise everything needed for p2p communication.
@@ -69,4 +78,15 @@ func GetPubSub() *p2ppubsub.PubSub {
 
 func GetNode() host.Host {
 	return n
+}
+
+func GetConnectedPeers() []string {
+	peerMutex.Lock()
+	defer peerMutex.Unlock()
+
+	peers := make([]string, 0, len(connectedPeers))
+	for peer := range connectedPeers {
+		peers = append(peers, peer)
+	}
+	return peers
 }

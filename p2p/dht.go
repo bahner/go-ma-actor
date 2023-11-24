@@ -14,11 +14,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-var (
-	connectedPeers = make(map[string]struct{})
-	peerMutex      sync.Mutex
-)
-
 func initDHT(ctx context.Context, h host.Host) (*dht.IpfsDHT, error) {
 	log.Info("Initializing DHT.")
 
@@ -86,7 +81,7 @@ func initDHT(ctx context.Context, h host.Host) (*dht.IpfsDHT, error) {
 	log.Info("Kademlia DHT bootstrapped successfully.")
 	return kademliaDHT, nil
 }
-func DiscoverDHTPeers(ctx context.Context, wg *sync.WaitGroup, h host.Host) error {
+func DiscoverDHTPeers(ctx context.Context, h host.Host) error {
 
 	log.Debug("Starting DHT route discovery.")
 
@@ -126,7 +121,7 @@ discoveryLoop:
 				} else {
 					log.Infof("Connected to DHT peer: %s", peer.ID.String())
 
-					// New code to add the connected peer to the map
+					// Add peer to list of known peers
 					peerMutex.Lock()
 					connectedPeers[peer.ID.String()] = struct{}{}
 					peerMutex.Unlock()
@@ -143,19 +138,12 @@ discoveryLoop:
 		}
 
 		retryCount++
+		if retryCount >= DHT_MAX_RETRY {
+			log.Info("DHT peer discovery max retry reached.")
+			break
+		}
 	}
 
 	log.Info("DHT Peer discovery complete")
 	return nil
-}
-
-func GetConnectedPeers() []string {
-	peerMutex.Lock()
-	defer peerMutex.Unlock()
-
-	peers := make([]string, 0, len(connectedPeers))
-	for peer := range connectedPeers {
-		peers = append(peers, peer)
-	}
-	return peers
 }
