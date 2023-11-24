@@ -38,8 +38,6 @@ func DiscoverMDNSPeers(ctx context.Context, h host.Host) error {
 
 	peerChan := initMDNS(h, ma.RENDEZVOUS)
 
-	var retryCount int
-
 discoveryLoop:
 	for {
 		select {
@@ -69,12 +67,6 @@ discoveryLoop:
 		case <-ctx.Done():
 			log.Info("Context cancelled, stopping MDNS peer discovery.")
 			return nil
-		}
-
-		retryCount++
-		if retryCount >= MDNS_MAX_RETRY {
-			log.Info("MDNS peer discovery max retry reached.")
-			break
 		}
 	}
 

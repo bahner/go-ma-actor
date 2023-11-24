@@ -13,11 +13,6 @@ import (
 	"github.com/libp2p/go-libp2p/core/host"
 )
 
-const (
-	MDNS_MAX_RETRY = 5
-	DHT_MAX_RETRY  = 5
-)
-
 var (
 	err error
 

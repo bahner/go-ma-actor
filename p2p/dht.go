@@ -95,8 +95,6 @@ func DiscoverDHTPeers(ctx context.Context, h host.Host) error {
 
 	log.Infof("Starting DHT peer discovery for rendezvous string: %s", ma.RENDEZVOUS)
 
-	retryCount := 0
-
 discoveryLoop:
 	for {
 		peerChan, err := routingDiscovery.FindPeers(ctx, ma.RENDEZVOUS)
@@ -135,12 +133,6 @@ discoveryLoop:
 			if peerChan == nil {
 				break
 			}
-		}
-
-		retryCount++
-		if retryCount >= DHT_MAX_RETRY {
-			log.Info("DHT peer discovery max retry reached.")
-			break
 		}
 	}
 
