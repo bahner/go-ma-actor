@@ -115,7 +115,7 @@ discoveryLoop:
 
 				err := h.Connect(ctx, peer) // Using the outer context directly
 				if err != nil {
-					log.Debugf("Failed connecting to %s, error: %v\n", peer.ID.String(), err)
+					log.Debugf("Failed connecting to %s, error: %v", peer.ID.String(), err)
 				} else {
 					log.Infof("Connected to DHT peer: %s", peer.ID.String())
 

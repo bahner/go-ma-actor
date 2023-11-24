@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"os"
 
 	"github.com/bahner/go-ma-actor/actor"
 	"github.com/bahner/go-ma-actor/config"
@@ -31,7 +32,8 @@ func init() {
 		config.GetDiscoveryTimeout())
 
 	if err != nil {
-		log.Fatalf("failed to initialize p2p: %v", err)
+		log.Errorf("failed to initialize p2p: %v", err)
+		os.Exit(75)
 	}
 
 }
@@ -39,7 +41,8 @@ func init() {
 func main() {
 	a, err := actor.NewFromKeyset(config.GetKeyset(), config.GetForcePublish())
 	if err != nil || a == nil {
-		log.Fatalf("failed to create actor: %v", err)
+		log.Errorf("failed to create actor: %v", err)
+		os.Exit(70)
 	}
 
 	e = config.GetEntity()

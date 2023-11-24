@@ -68,12 +68,14 @@ func init() {
 	// Init logger
 	level, err := log.ParseLevel(logLevel)
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
+		os.Exit(64) // EX_USAGE
 	}
 	log.SetLevel(level)
 	file, err := os.OpenFile(name+".log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 	if err != nil {
-		log.Fatalf("Failed to open log file: %v", err)
+		log.Errorf("Failed to open log file: %v", err)
+		os.Exit(73) // EX_CANTCREAT
 	}
 	log.SetOutput(file)
 

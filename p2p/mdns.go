@@ -53,7 +53,7 @@ discoveryLoop:
 			log.Infof("Found MDNS peer: %s connecting", peer.ID.String())
 			err := h.Connect(ctx, peer)
 			if err != nil {
-				log.Debugf("Failed connecting to %s, error: %v\n", peer.ID.String(), err)
+				log.Debugf("Failed connecting to %s, error: %v", peer.ID.String(), err)
 			} else {
 				log.Infof("Connected to MDNS peer: %s", peer.ID.String())
 

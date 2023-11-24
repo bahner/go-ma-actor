@@ -21,12 +21,14 @@ func initKeyset(keyset_string string) {
 	log.Debugf("config.initKeyset: %s", keyset_string)
 	// Create the actor keyset
 	if keyset_string == "" {
-		log.Fatal("config.initKeyset: You need to define actorKeyset or generate a new one.")
+		log.Errorf("config.initKeyset: You need to define actorKeyset or generate a new one.")
+		os.Exit(64) // EX_USAGE
 	}
 
 	keyset, err = set.Unpack(keyset_string)
 	if err != nil {
-		log.Fatalf("config.initKeyset: Failed to unpack keyset: %v", err)
+		log.Errorf("config.initKeyset: Failed to unpack keyset: %v", err)
+		os.Exit(65) // EX_DATAERR
 	}
 
 	if *publish || *forcePublish {
@@ -46,17 +48,20 @@ func initKeyset(keyset_string string) {
 func generateKeyset() string {
 
 	if nick == "ghost" {
-		log.Fatal("You need to set a nick when generating an identity.")
+		log.Errorf("You need to set a nick when generating an identity.")
+		os.Exit(64) // EX_USAGE
 	}
 
 	ks, err := set.New(nick, *forcePublish)
 	if err != nil {
-		log.Fatalf("Failed to generate new keyset: %v", err)
+		log.Errorf("Failed to generate new keyset: %v", err)
+		os.Exit(70) // EX_SOFTWARE
 	}
 
 	pks, err := ks.Pack()
 	if err != nil {
-		log.Fatalf("Failed to pack keyset: %v", err)
+		log.Errorf("Failed to pack keyset: %v", err)
+		os.Exit(70) // EX_SOFTWARE
 	}
 
 	if *genenv {
@@ -71,24 +76,28 @@ func publishIdentity(k *set.Keyset) {
 	err := k.IPNSKey.ExportToIPFS(*forcePublish)
 	if err != nil {
 		log.Debugf(errors.Cause(err).Error())
-		log.Fatalf("config.publishIdentity: failed to export keyset: %v", err)
+		log.Errorf("config.publishIdentity: failed to export keyset: %v", err)
+		os.Exit(75) // EX_TEMPFAIL
 	}
 	log.Infof("Exported IPNSkey to IPFS: %s", k.IPNSKey.DID)
 
 	d, err := doc.NewFromKeyset(keyset, k.IPNSKey.DID)
 	if err != nil {
-		log.Fatalf("config.publishIdentity: failed to create DOC: %v", err)
+		log.Errorf("config.publishIdentity: failed to create DOC: %v", err)
+		os.Exit(75) // EX_TEMPFAIL
 	}
 
 	assertionMethod, err := d.GetAssertionMethod()
 	if err != nil {
-		log.Fatalf("config.publishIdentity: failed to get verification method: %v", err)
+		log.Errorf("config.publishIdentity: failed to get verification method: %v", err)
+		os.Exit(75) // EX_TEMPFAIL
 	}
 	d.Sign(k.SigningKey, assertionMethod)
 
 	_, err = d.Publish()
 	if err != nil {
-		log.Fatalf("config.publishIdentity: failed to publish DOC: %v", err)
+		log.Errorf("config.publishIdentity: failed to publish DOC: %v", err)
+		os.Exit(75) // EX_TEMPFAIL
 	}
 	log.Debugf("config.publishIdentity: published DOC: %s", d.ID)
 
