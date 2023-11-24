@@ -56,8 +56,8 @@ func Init(ctx context.Context, i *ipns.Key, discoveryTimeout time.Duration) (hos
 		ctx = context.Background()
 	}
 
-	ctxDiscovery, _ = context.WithTimeout(ctx, discoveryTimeout)
-	// defer cancel()
+	ctxDiscovery, cancel = context.WithTimeout(ctx, discoveryTimeout)
+	defer cancel()
 
 	err = StartPeerDiscovery(ctxDiscovery, n)
 	if err != nil {

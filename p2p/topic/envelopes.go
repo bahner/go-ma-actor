@@ -35,7 +35,12 @@ func (t *Topic) NextEnvelope() (*envelope.Envelope, error) {
 	}
 
 	// Here we should distinguish between packed and unpacked envelopes
-	return envelope.UnmarshalFromCBOR(message.Data)
+	e, err := envelope.UnmarshalFromCBOR(message.Data)
+	if err != nil {
+		log.Debugf("Failed to unmarshal envelope: %v", err)
+	}
+
+	return e, err
 
 }
 
@@ -60,25 +65,26 @@ func (t *Topic) envelopeSubscriptionLoop() {
 	for {
 		select {
 		case <-t.ctx.Done():
+			log.Debugf("Context cancelled, stopping envelope subscription loop for topic %s.", t.Topic.String())
 			return
 		case <-t.chDone:
+			log.Debugf("Channel done, stopping envelope subscription loop for topic %s.", t.Topic.String())
 			return
 		default:
 			letter, err := t.NextEnvelope()
 			if err != nil {
-				close(t.Envelopes)
-				return
+				log.Errorf("Error in envelope subscription loop: %v", err)
+				continue
 			}
 
-			// See everything for now.
-			// // only forward messages delivered by others
-			// if msg.ReceivedFrom == cr.self {
-			// 	continue
+			// If additional filtering or processing is required, do it here
+			// For example, uncomment the following if you want to filter out messages sent by self
+			// if letter.Sender == t.self {
+			//     continue
 			// }
 
-			// send valid messages onto the Messages channel
+			// Send valid messages onto the Envelopes channel
 			t.Envelopes <- letter
-
 		}
 	}
 }
