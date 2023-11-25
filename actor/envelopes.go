@@ -25,7 +25,7 @@ func (a *Actor) receiveEnvelopes() (*msg.Message, error) {
 		return nil, fmt.Errorf("failed to receive message from inbox: %w", err)
 	}
 
-	message, err := e.Open(a.Entity.Keyset.EncryptionKey.PrivKey)
+	message, err := msg.OpenEnvelope(e, a.Entity.Keyset.EncryptionKey.PrivKey[:])
 	if err != nil {
 		return nil, fmt.Errorf("failed to open envelope: %w", err)
 	}
