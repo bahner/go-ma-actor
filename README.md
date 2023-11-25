@@ -15,9 +15,9 @@ eval $(go run . -genenv -forcePublish | tee .env)
 type `./go-ma-actor -help`. Most config settings can be set with environment variables, as follows:
 
 ```bash
-export GO_ACTOR_LOG_LEVEL="error"
-export GO_ACTOR_DISCOVERY_TIMEOUT="300"
-export GO_ACTOR_KEYSET="myBase58EncodedPrivkeyGeneratedByGenerate"
+export GO_MA_ACTOR_LOG_LEVEL="error"
+export GO_MA_ACTOR_DISCOVERY_TIMEOUT="300"
+export GO_MA_ACTOR_KEYSET="myBase58EncodedPrivkeyGeneratedByGenerate"
 ```
 
 ## Identity
@@ -30,7 +30,7 @@ Just don't store somewhere insecure. It's your future identity.
 
 ```bash
 unset HISTFILE
- export GO_ACTOR_KEYSET=FooBarABCDEFbase58
+ export GO_MA_ACTOR_KEYSET=FooBarABCDEFbase58
 ```
 
 or specified on the command line:

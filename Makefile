@@ -11,7 +11,9 @@ ifneq (,$(wildcard ./.env))
     export
 endif
 
-default: clean tidy $(NAME) install
+default: clean tidy $(NAME)
+
+build: $(NAME)
 
 init: go.mod tidy
 

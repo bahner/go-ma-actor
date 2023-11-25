@@ -1,8 +1,3 @@
 ## Bugs
-* fix redraw of ui when issuing commands
-* redirect logs from stdout to file
 
-## Features
-* integrate ipns
-  - publish did with key
-    - There is some logical error wityh handling existing keys 
+* fix redraw of ui when issuing commands

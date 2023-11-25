@@ -1,4 +1,4 @@
-package p2p
+package mdns
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/libp2p/go-libp2p/core/peer"
 
-	"github.com/libp2p/go-libp2p/p2p/discovery/mdns"
+	p2pmdns "github.com/libp2p/go-libp2p/p2p/discovery/mdns"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -27,16 +27,18 @@ func initMDNS(h host.Host, rendezvous string) chan peer.AddrInfo {
 	n.PeerChan = make(chan peer.AddrInfo)
 
 	// An hour might be a long long period in practical applications. But this is fine for us
-	ser := mdns.NewMdnsService(h, rendezvous, n)
+	ser := p2pmdns.NewMdnsService(h, rendezvous, n)
 	if err := ser.Start(); err != nil {
 		panic(err)
 	}
 	return n.PeerChan
 }
-func DiscoverMDNSPeers(ctx context.Context, h host.Host) error {
+func DiscoverPeers(ctx context.Context, h host.Host) error {
 	log.Debugf("Discovering MDNS peers for servicename: %s", ma.RENDEZVOUS)
 
 	peerChan := initMDNS(h, ma.RENDEZVOUS)
+	// Start trimming connections, so we have room for new friends
+	h.ConnManager().TrimOpenConns(context.Background())
 
 discoveryLoop:
 	for {
@@ -58,12 +60,12 @@ discoveryLoop:
 				log.Infof("Connected to MDNS peer: %s", p.ID.String())
 
 				// Add peer to list of known peers
-				peerMutex.Lock()
-				connectedPeers[p.ID.String()] = &p
-				peerMutex.Unlock()
+				log.Debugf("Protecting discovered MDNS peer: %s", p.ID.String())
+				h.ConnManager().TagPeer(p.ID, ma.RENDEZVOUS, 10)
+				h.ConnManager().Protect(p.ID, ma.RENDEZVOUS)
 
-				break discoveryLoop
 			}
+
 		case <-ctx.Done():
 			log.Info("Context cancelled, stopping MDNS peer discovery.")
 			return nil

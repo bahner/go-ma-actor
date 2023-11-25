@@ -11,12 +11,19 @@ import (
 )
 
 const (
-	name                    = "go-ma-actor"
-	keyset_var              = "GO_ACTOR_KEYSET"
-	entity_var              = "GO_ACTOR_ENTITY"
-	discovery_timeout_var   = "GO_ACTOR_DISCOVERY_TIMEOUT"
-	log_level_var           = "GO_ACTOR_LOG_LEVEL"
-	defaultDiscoveryTimeout = 300
+	name                  = "go-ma-actor"
+	keyset_var            = "GO_MA_ACTOR_KEYSET"
+	entity_var            = "GO_MA_ACTOR_ENTITY"
+	discovery_timeout_var = "GO_MA_ACTOR_DISCOVERY_TIMEOUT"
+	low_watermark_var     = "GO_MA_ACTOR_LOW_WATERMARK"
+	high_watermark_var    = "GO_MA_ACTOR_HIGH_WATERMARK"
+	connmgr_grace_var     = "GO_MA_ACTOR_CONNMGR_GRACE"
+	log_level_var         = "GO_MA_ACTOR_LOG_LEVEL"
+
+	defaultDiscoveryTimeout int           = 300
+	defaultLowWaterMark     int           = 2
+	defaultHighWaterMark    int           = 10
+	defaultConnMgrGrace     time.Duration = time.Minute * 1
 )
 
 var (
@@ -31,9 +38,13 @@ var (
 )
 
 var (
-	discoveryTimeout int    = env.GetInt(discovery_timeout_var, defaultDiscoveryTimeout)
-	logLevel         string = env.Get(log_level_var, "info")
-	logfile          string = env.Get("GO_ACTOR_LOG_FILE", name+"log")
+	discoveryTimeout   int           = env.GetInt(discovery_timeout_var, defaultDiscoveryTimeout)
+	lowWaterMark       int           = env.GetInt(low_watermark_var, defaultLowWaterMark)
+	highWaterMark      int           = env.GetInt(high_watermark_var, defaultHighWaterMark)
+	connmgrGracePeriod time.Duration = env.GetDuration(connmgr_grace_var, defaultConnMgrGrace)
+
+	logLevel string = env.Get(log_level_var, "info")
+	logfile  string = env.Get("GO_MA_LOG_FILE", name+"log")
 
 	// What we want to communicate with initially
 	entity string = env.Get(entity_var, "")
@@ -50,7 +61,12 @@ func init() {
 	// Flags - user configurations
 	flag.StringVar(&logLevel, "loglevel", logLevel, "Loglevel to use for application")
 	flag.StringVar(&logfile, "logfile", logfile, "Logfile to use for application")
+
+	// P"P Settings
 	flag.IntVar(&discoveryTimeout, "discoveryTimeout", discoveryTimeout, "Timeout for peer discovery")
+	flag.IntVar(&lowWaterMark, "lowWaterMark", lowWaterMark, "Low watermark for peer discovery")
+	flag.IntVar(&highWaterMark, "highWaterMark", highWaterMark, "High watermark for peer discovery")
+	flag.DurationVar(&connmgrGracePeriod, "connmgrGracePeriod", connmgrGracePeriod, "Grace period for connection manager")
 
 	// Actor
 	flag.StringVar(&nick, "nick", nick, "Nickname to use in character creation")
@@ -109,4 +125,16 @@ func GetForcePublish() bool {
 
 func GetDiscoveryTimeout() time.Duration {
 	return time.Duration(discoveryTimeout) * time.Second
+}
+
+func GetLowWaterMark() int {
+	return lowWaterMark
+}
+
+func GetHighWaterMark() int {
+	return highWaterMark
+}
+
+func GetConnMgrGracePeriod() time.Duration {
+	return connmgrGracePeriod
 }

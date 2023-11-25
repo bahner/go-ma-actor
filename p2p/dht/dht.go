@@ -1,4 +1,4 @@
-package p2p
+package dht
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"sync"
 
 	"github.com/bahner/go-ma"
-	dht "github.com/libp2p/go-libp2p-kad-dht"
+	p2pDHT "github.com/libp2p/go-libp2p-kad-dht"
 	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/libp2p/go-libp2p/core/peer"
 	drouting "github.com/libp2p/go-libp2p/p2p/discovery/routing"
@@ -14,10 +14,10 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func initDHT(ctx context.Context, h host.Host) (*dht.IpfsDHT, error) {
+func Init(ctx context.Context, h host.Host, dhtOpts ...p2pDHT.Option) (*p2pDHT.IpfsDHT, error) {
 	log.Info("Initializing DHT.")
 
-	kademliaDHT, err := dht.New(ctx, h)
+	kademliaDHT, err := p2pDHT.New(ctx, h)
 	if err != nil {
 		log.Error("Failed to create Kademlia DHT.")
 		return nil, err
@@ -34,7 +34,7 @@ func initDHT(ctx context.Context, h host.Host) (*dht.IpfsDHT, error) {
 	}
 
 	var wg sync.WaitGroup
-	for _, peerAddr := range dht.DefaultBootstrapPeers {
+	for _, peerAddr := range p2pDHT.DefaultBootstrapPeers {
 		peerinfo, err := peer.AddrInfoFromP2pAddr(peerAddr)
 		if err != nil {
 			log.Warnf("Failed to convert bootstrap peer address: %v", err)
@@ -81,14 +81,12 @@ func initDHT(ctx context.Context, h host.Host) (*dht.IpfsDHT, error) {
 	log.Info("Kademlia DHT bootstrapped successfully.")
 	return kademliaDHT, nil
 }
-func DiscoverDHTPeers(ctx context.Context, h host.Host) error {
+
+// Takes a context and a DHT instance and discovers peers using the DHT.
+// You might want to se server option or not for the DHT.
+func DiscoverPeers(ctx context.Context, dhtInstance *p2pDHT.IpfsDHT, h host.Host) error {
 
 	log.Debug("Starting DHT route discovery.")
-
-	dhtInstance, err := initDHT(ctx, h)
-	if err != nil {
-		return err
-	}
 
 	routingDiscovery := drouting.NewRoutingDiscovery(dhtInstance)
 	dutil.Advertise(ctx, routingDiscovery, ma.RENDEZVOUS)
@@ -120,9 +118,9 @@ discoveryLoop:
 					log.Infof("Connected to DHT peer: %s", p.ID.String())
 
 					// Add peer to list of known peers
-					peerMutex.Lock()
-					connectedPeers[p.ID.String()] = &p
-					peerMutex.Unlock()
+					log.Debugf("Protecting peer: %s", p.ID.String())
+					h.ConnManager().TagPeer(p.ID, ma.RENDEZVOUS, 10)
+					h.ConnManager().Protect(p.ID, ma.RENDEZVOUS)
 
 					break discoveryLoop
 				}

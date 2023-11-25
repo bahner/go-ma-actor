@@ -3,6 +3,8 @@ package p2p
 import (
 	"context"
 
+	"github.com/bahner/go-ma-actor/p2p/dht"
+	"github.com/bahner/go-ma-actor/p2p/mdns"
 	"github.com/libp2p/go-libp2p/core/host"
 	log "github.com/sirupsen/logrus"
 )
@@ -14,13 +16,19 @@ func StartPeerDiscovery(ctx context.Context, h host.Host) error {
 
 	// Start DHT discovery in a new goroutine
 	go func() {
-		DiscoverDHTPeers(ctx, h)
+		dhtINstance, err := dht.Init(ctx, h)
+		if err != nil {
+			log.Error("Failed to initialise DHT. Peer discovery unsuccessful.")
+			done <- struct{}{} // Signal completion
+			return
+		}
+		dht.DiscoverPeers(ctx, dhtINstance, h)
 		done <- struct{}{} // Signal completion
 	}()
 
 	// Start MDNS discovery in a new goroutine
 	go func() {
-		DiscoverMDNSPeers(ctx, h)
+		mdns.DiscoverPeers(ctx, h)
 		done <- struct{}{} // Signal completion
 	}()
 
