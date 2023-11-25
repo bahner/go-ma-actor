@@ -23,7 +23,7 @@ func NewWithAlias(addrInfo *p2peer.AddrInfo, alias string) *Peer {
 
 func New(addrInfo *p2peer.AddrInfo) *Peer {
 	alias := addrInfo.ID.String()
-	return NewWithAlias(addrInfo, alias)
+	return NewWithAlias(addrInfo, alias[len(alias)-8:])
 }
 
 func GetOrCreate(addrInfo *p2peer.AddrInfo) *Peer {
