@@ -1,27 +1,38 @@
 package peer
 
+import p2peer "github.com/libp2p/go-libp2p/core/peer"
+
 type Peer struct {
 	// ID is the peer's ID
 	ID string
 	// Name is the peer's name
 	Alias string
+	// AddrInfo
+	AddrInfo *p2peer.AddrInfo
 }
 
-func New(id string, alias string) *Peer {
+func NewWithAlias(addrInfo *p2peer.AddrInfo, alias string) *Peer {
+
+	id := addrInfo.ID.String()
 	return &Peer{
-		ID:    id,
-		Alias: alias,
+		ID:       id,
+		Alias:    alias,
+		AddrInfo: addrInfo,
 	}
 }
 
-func NewFromID(id string) *Peer {
-	return New(id, id[len(id)-8:])
+func New(addrInfo *p2peer.AddrInfo) *Peer {
+	alias := addrInfo.ID.String()
+	return NewWithAlias(addrInfo, alias)
 }
 
-func GetOrCreate(id string) *Peer {
+func GetOrCreate(addrInfo *p2peer.AddrInfo) *Peer {
+
+	id := addrInfo.ID.String()
+
 	p := Get(id)
 	if p == nil {
-		p = NewFromID(id)
+		p = New(addrInfo)
 		Add(p)
 	}
 	return p

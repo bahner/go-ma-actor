@@ -104,24 +104,24 @@ discoveryLoop:
 
 		for {
 			select {
-			case peer, ok := <-peerChan:
+			case p, ok := <-peerChan:
 				if !ok {
 					peerChan = nil
 					break
 				}
-				if peer.ID == h.ID() {
+				if p.ID == h.ID() {
 					continue // Skip self connection
 				}
 
-				err := h.Connect(ctx, peer) // Using the outer context directly
+				err := h.Connect(ctx, p) // Using the outer context directly
 				if err != nil {
-					log.Debugf("Failed connecting to %s, error: %v", peer.ID.String(), err)
+					log.Debugf("Failed connecting to %s, error: %v", p.ID.String(), err)
 				} else {
-					log.Infof("Connected to DHT peer: %s", peer.ID.String())
+					log.Infof("Connected to DHT peer: %s", p.ID.String())
 
 					// Add peer to list of known peers
 					peerMutex.Lock()
-					connectedPeers[peer.ID.String()] = struct{}{}
+					connectedPeers[p.ID.String()] = &p
 					peerMutex.Unlock()
 
 					break discoveryLoop

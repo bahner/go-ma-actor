@@ -11,6 +11,8 @@ import (
 	"github.com/bahner/go-ma/key/ipns"
 	p2ppubsub "github.com/libp2p/go-libp2p-pubsub"
 	"github.com/libp2p/go-libp2p/core/host"
+	"github.com/libp2p/go-libp2p/core/peer"
+	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -22,7 +24,7 @@ var (
 	n  host.Host
 	ps *p2ppubsub.PubSub
 
-	connectedPeers = make(map[string]struct{})
+	connectedPeers = make(map[string]*peer.AddrInfo)
 	peerMutex      sync.Mutex
 )
 
@@ -75,13 +77,32 @@ func GetNode() host.Host {
 	return n
 }
 
-func GetConnectedPeers() []string {
-	peerMutex.Lock()
-	defer peerMutex.Unlock()
+// Get list of connectpeers.
+// The connectTimeout is how long to wait for a connection to be established.
+// This applies to each host in turn.
+// If set to 0 a default timeout of 5 seconds will be used.
+func GetConnectedPeers(connectTimeout time.Duration) map[string]*peer.AddrInfo {
+	defaultTimeoutSeconds := 5
 
-	peers := make([]string, 0, len(connectedPeers))
-	for peer := range connectedPeers {
-		peers = append(peers, peer)
+	if connectTimeout == 0 {
+		connectTimeout = time.Duration(defaultTimeoutSeconds) * time.Second
 	}
-	return peers
+
+	for p, addrs := range connectedPeers {
+
+		ctx, cancel := context.WithTimeout(context.Background(), connectTimeout)
+		defer cancel()
+
+		// Try connecting to the peer
+		if err := n.Connect(ctx, *addrs); err != nil {
+			log.Debugf("Failed connecting to %s, error: %v. Pruning.", p, err)
+
+			peerMutex.Lock()
+			delete(connectedPeers, p)
+			peerMutex.Unlock()
+		}
+	}
+
+	// No need to copy the peers again, as the new hosts are already live
+	return connectedPeers
 }

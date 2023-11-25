@@ -41,25 +41,25 @@ func DiscoverMDNSPeers(ctx context.Context, h host.Host) error {
 discoveryLoop:
 	for {
 		select {
-		case peer, ok := <-peerChan:
+		case p, ok := <-peerChan:
 			if !ok {
 				log.Debug("MDNS peer channel closed.")
 				break discoveryLoop
 			}
-			if peer.ID == h.ID() {
+			if p.ID == h.ID() {
 				continue // Skip self connection
 			}
 
-			log.Infof("Found MDNS peer: %s connecting", peer.ID.String())
-			err := h.Connect(ctx, peer)
+			log.Infof("Found MDNS peer: %s connecting", p.ID.String())
+			err := h.Connect(ctx, p)
 			if err != nil {
-				log.Debugf("Failed connecting to %s, error: %v", peer.ID.String(), err)
+				log.Debugf("Failed connecting to %s, error: %v", p.ID.String(), err)
 			} else {
-				log.Infof("Connected to MDNS peer: %s", peer.ID.String())
+				log.Infof("Connected to MDNS peer: %s", p.ID.String())
 
 				// Add peer to list of known peers
 				peerMutex.Lock()
-				connectedPeers[peer.ID.String()] = struct{}{}
+				connectedPeers[p.ID.String()] = &p
 				peerMutex.Unlock()
 
 				break discoveryLoop

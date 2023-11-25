@@ -3,6 +3,7 @@ package ui
 import (
 	"fmt"
 	"sort"
+	"time"
 
 	"github.com/bahner/go-ma-actor/p2p"
 	"github.com/bahner/go-ma-actor/peer"
@@ -24,7 +25,10 @@ func (ui *ChatUI) handleAliasCommand(args []string) {
 // refreshPeers pulls the list of peers currently in the chat room and
 // displays the last 8 chars of their peer id in the Peers panel in the ui.
 func (ui *ChatUI) refreshPeers() {
-	peers := p2p.GetConnectedPeers()
+
+	// Tweak this to change the timeout for peer discovery
+	peerConnectTimeout := 2
+	peers := p2p.GetConnectedPeers(time.Duration(peerConnectTimeout) * time.Second)
 
 	// clear is thread-safe
 	ui.peersList.Clear()
@@ -46,20 +50,3 @@ func (ui *ChatUI) refreshPeers() {
 
 	ui.app.Draw()
 }
-
-// func (ui *ChatUI) handleStatusCommand(args []string) {
-// 	if len(args) > 1 {
-// 		switch args[1] {
-// 		case "sub":
-// 			ui.displayStatusMessage(ui.getStatusSub())
-// 		case "topic":
-// 			ui.displayStatusMessage(ui.getStatusTopic())
-// 		case "host":
-// 			ui.displayStatusMessage(ui.getStatusHost())
-// 		default:
-// 			ui.displaySystemMessage("Unknown status type: " + args[1])
-// 		}
-// 	} else {
-// 		ui.displaySystemMessage("Usage: /status [sub|topic|host]")
-// 	}
-// }
