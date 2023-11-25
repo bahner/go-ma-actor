@@ -5,6 +5,7 @@ import (
 
 	"github.com/bahner/go-ma-actor/config"
 	"github.com/bahner/go-ma-actor/p2p/topic"
+	"github.com/bahner/go-ma/did"
 	"github.com/bahner/go-ma/msg"
 	log "github.com/sirupsen/logrus"
 )
@@ -13,7 +14,8 @@ import (
 // with the sender's nick highlighted in green.
 // func (ui *ChatUI) displayChatMessage(cm *msg.Message) {
 func (ui *ChatUI) displayChatMessage(cm *msg.Message) {
-	prompt := withColor("green", fmt.Sprintf("<%s>:", cm.From))
+	from := did.GetFragment(cm.From)
+	prompt := withColor("green", fmt.Sprintf("<%s>:", from))
 	fmt.Fprintf(ui.msgW, "%s %s\n", prompt, string(cm.Body))
 }
 
@@ -24,7 +26,7 @@ func (ui *ChatUI) handleChatMessage(input string) error {
 	msgBytes := []byte(input)
 	log.Debugf("ui.a.Entity.DID.Fragment: %s", ui.a.Entity.DID.Fragment)
 	log.Debugf("ui.e.ID: %s", ui.e.DID)
-	msg, err := msg.New(ui.a.Entity.DID.Fragment, ui.e.DID, msgBytes, "text/plain")
+	msg, err := msg.New(ui.a.Entity.DID.String(), ui.e.DID, msgBytes, "text/plain")
 	if err != nil {
 		log.Debugf("message creation error: %s", err)
 		return fmt.Errorf("message creation error: %w", err)
@@ -36,6 +38,11 @@ func (ui *ChatUI) handleChatMessage(input string) error {
 		log.Debugf("message signing error: %s", err)
 		return fmt.Errorf("message signing error: %w", err)
 	}
+	err = msg.VerifySignature()
+	if err != nil {
+		log.Debugf("failed to verify my own message: %s", err)
+		return fmt.Errorf("message verification error: %w", err)
+	}
 	ui.displayChatMessage(msg)
 	topic, err := topic.GetOrCreate(ui.e.DID)
 	if err != nil {
@@ -43,12 +50,18 @@ func (ui *ChatUI) handleChatMessage(input string) error {
 		return fmt.Errorf("topic creation error: %w", err)
 	}
 
-	msgBytes, err = msg.Bytes()
+	e, err := msg.Enclose()
+	if err != nil {
+		return fmt.Errorf("envelope creation error: %w", err)
+	}
+
+	letter, err := e.MarshalToCBOR()
 	if err != nil {
 		log.Debugf("message serialization error: %s", err)
-		return fmt.Errorf("message serialization error: %w", err)
+		return fmt.Errorf("message serialization error: %s", err)
 	}
-	err = topic.Topic.Publish(ui.ctx, msgBytes)
+
+	err = topic.Topic.Publish(ui.ctx, letter)
 	if err != nil {
 		log.Debugf("message publishing error: %s", err)
 		return fmt.Errorf("message publishing error: %w", err)

@@ -11,7 +11,7 @@ ifneq (,$(wildcard ./.env))
     export
 endif
 
-default: clean tidy $(NAME)
+default: clean tidy $(NAME) install
 
 init: go.mod tidy
 
@@ -43,8 +43,8 @@ image:
 		--build-arg "BUILD_IMAGE=$(BUILD_IMAGE)" \
 		.
 
-install:
-	install -Dm755 $(NAME) $(DESTDIR)$(PREFIX)/bin/$(NAME)
+install: $(NAME)
+	sudo install -Dm755 $(NAME) $(DESTDIR)$(PREFIX)/bin/$(NAME)
 
 run: clean $(NAME)
 	./$(NAME)
