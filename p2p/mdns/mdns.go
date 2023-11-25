@@ -64,6 +64,9 @@ discoveryLoop:
 				h.ConnManager().TagPeer(p.ID, ma.RENDEZVOUS, 10)
 				h.ConnManager().Protect(p.ID, ma.RENDEZVOUS)
 
+				// We only need 1 to get started.
+				break discoveryLoop
+
 			}
 
 		case <-ctx.Done():
