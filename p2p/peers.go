@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	connectedPeers map[string]*peer.AddrInfo
+	connectedPeers = make(map[string]*peer.AddrInfo)
 )
 
 // Get list of connected peers.
