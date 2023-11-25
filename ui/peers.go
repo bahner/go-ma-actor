@@ -2,6 +2,7 @@ package ui
 
 import (
 	"fmt"
+	"sort"
 
 	"github.com/bahner/go-ma-actor/p2p"
 	"github.com/bahner/go-ma-actor/peer"
@@ -28,9 +29,19 @@ func (ui *ChatUI) refreshPeers() {
 	// clear is thread-safe
 	ui.peersList.Clear()
 
+	// Create a slice for aliases
+	var aliases []string
 	for _, p := range peers {
 		ap := peer.GetOrCreate(p)
-		fmt.Fprintln(ui.peersList, ap.Alias)
+		aliases = append(aliases, ap.Alias)
+	}
+
+	// Sort the aliases
+	sort.Strings(aliases)
+
+	// Display sorted aliases
+	for _, alias := range aliases {
+		fmt.Fprintln(ui.peersList, alias)
 	}
 
 	ui.app.Draw()
