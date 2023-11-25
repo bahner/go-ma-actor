@@ -18,7 +18,7 @@ func StartPeerDiscovery(ctx context.Context, h host.Host) error {
 	go func() {
 		dhtINstance, err := dht.Init(ctx, h)
 		if err != nil {
-			log.Error("Failed to initialise DHT. Peer discovery unsuccessful.")
+			log.Errorf("Failed to initialise DHT. Peer discovery unsuccessful. %v ", err)
 			done <- struct{}{} // Signal completion
 			return
 		}

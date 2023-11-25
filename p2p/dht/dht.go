@@ -123,6 +123,7 @@ discoveryLoop:
 					h.ConnManager().Protect(p.ID, ma.RENDEZVOUS)
 
 					break discoveryLoop
+
 				}
 			case <-ctx.Done():
 				log.Info("Context cancelled, stopping DHT peer discovery.")
