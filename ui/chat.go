@@ -38,10 +38,14 @@ func (ui *ChatUI) handleChatMessage(input string) error {
 		log.Debugf("message signing error: %s", err)
 		return fmt.Errorf("message signing error: %w", err)
 	}
+	msgJson, _ := msg.MarshalToJSON()
+	log.Debugf("Message signed: %s", msgJson)
 	err = msg.VerifySignature()
 	if err != nil {
 		log.Debugf("failed to verify my own message: %s", err)
 		return fmt.Errorf("message verification error: %w", err)
+	} else {
+		log.Debugf("Message signature verified")
 	}
 	ui.displayChatMessage(msg)
 	topic, err := topic.GetOrCreate(ui.e.DID)
