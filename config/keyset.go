@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/bahner/go-ma"
 	"github.com/bahner/go-ma/did/doc"
 	"github.com/bahner/go-ma/key/set"
 	"github.com/pkg/errors"
@@ -12,6 +11,8 @@ import (
 )
 
 func initKeyset(keyset_string string) {
+
+	var err error
 
 	// Generate a new keysets if requested
 	if *generate || *genenv {
@@ -66,7 +67,7 @@ func generateKeyset() string {
 	}
 
 	if *genenv {
-		fmt.Println("export " + ma.KEYSET_VAR + "=" + pks)
+		fmt.Println("export " + GO_MA_ACTOR_KEYSET_VAR + "=" + pks)
 	}
 
 	return pks

@@ -23,7 +23,6 @@ go-space-thumb
 go-space-thumb*
 .env
 *secret
-go-ma-actor
 spacetar
-go-ma-actor.log
+*.log
 go-ma-actor

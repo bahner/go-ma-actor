@@ -5,52 +5,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/bahner/go-ma"
-	"github.com/bahner/go-ma/key/set"
 	log "github.com/sirupsen/logrus"
-	"go.deanishe.net/env"
-)
-
-const (
-	name = "go-ma-actor"
-
-	// The default entity to connect to.
-	GO_MA_ACTOR_ENTITY_VAR = "GO_MA_ACTOR_ENTITY"
-
-	defaultDiscoveryTimeout int           = 300
-	defaultLowWaterMark     int           = 2
-	defaultHighWaterMark    int           = 10
-	defaultConnMgrGrace     time.Duration = time.Minute * 1
-)
-
-var (
-	err error
-
-	generate     *bool
-	genenv       *bool
-	publish      *bool
-	forcePublish *bool
-
-	keyset *set.Keyset
-)
-
-var (
-	discoveryTimeout   int           = env.GetInt(ma.DISCOVERY_TIMEOUT_VAR, defaultDiscoveryTimeout)
-	lowWaterMark       int           = env.GetInt(ma.LOW_WATERMARK_VAR, defaultLowWaterMark)
-	highWaterMark      int           = env.GetInt(ma.HIGH_WATERMARK_VAR, defaultHighWaterMark)
-	connmgrGracePeriod time.Duration = env.GetDuration(ma.CONNMGR_GRACE_VAR, defaultConnMgrGrace)
-
-	logLevel string = env.Get(ma.LOGLEVEL_VAR, "info")
-	logfile  string = env.Get(ma.LOGFILE_VAR, name+".log")
-
-	// What we want to communicate with initially
-	entity string = env.Get(GO_MA_ACTOR_ENTITY_VAR, "")
-
-	// Actor
-	keyset_string string = env.Get(ma.KEYSET_VAR, "")
-
-	// Nick is only used for keyset generation. Must be a valid NanoID.
-	nick string = env.Get("USER")
 )
 
 func init() {
