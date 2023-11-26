@@ -15,9 +15,9 @@ eval $(go run . -genenv -forcePublish | tee .env)
 type `./go-ma-actor -help`. Most config settings can be set with environment variables, as follows:
 
 ```bash
-export GO_MA_ACTOR_LOG_LEVEL="error"
-export GO_MA_ACTOR_DISCOVERY_TIMEOUT="300"
-export GO_MA_ACTOR_KEYSET="myBase58EncodedPrivkeyGeneratedByGenerate"
+export GO_MA_LOG_LEVEL="error"
+export GO_MA_DISCOVERY_TIMEOUT="300"
+export GO_MA_KEYSET="myBase58EncodedPrivkeyGeneratedByGenerate"
 ```
 
 ## Identity

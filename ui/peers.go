@@ -3,7 +3,6 @@ package ui
 import (
 	"fmt"
 	"sort"
-	"time"
 
 	"github.com/bahner/go-ma-actor/p2p"
 	"github.com/bahner/go-ma-actor/peer"
@@ -27,8 +26,7 @@ func (ui *ChatUI) handleAliasCommand(args []string) {
 func (ui *ChatUI) refreshPeers() {
 
 	// Tweak this to change the timeout for peer discovery
-	peerConnectTimeout := 2
-	peers := p2p.GetConnectedPeers(time.Duration(peerConnectTimeout) * time.Second)
+	peers := p2p.GetConnectedPeers()
 
 	// clear is thread-safe
 	ui.peersList.Clear()

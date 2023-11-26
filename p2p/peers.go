@@ -1,8 +1,6 @@
 package p2p
 
 import (
-	"time"
-
 	"github.com/bahner/go-ma"
 	"github.com/libp2p/go-libp2p/core/network"
 	"github.com/libp2p/go-libp2p/core/peer"
@@ -13,7 +11,7 @@ var (
 )
 
 // Get list of connected peers.
-func GetConnectedPeers(connectTimeout time.Duration) map[string]*peer.AddrInfo {
+func GetConnectedPeers() map[string]*peer.AddrInfo {
 
 	for _, p := range n.Network().Peers() {
 
