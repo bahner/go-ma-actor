@@ -9,10 +9,6 @@ dmitri.shuralyov.com/state v0.0.0-20180228185332-28bcc343414c/go.mod h1:0PRwlb0D
 git.apache.org/thrift.git v0.0.0-20180902110319-2566ecd5d999/go.mod h1:fPE2ZNJGynbRyZ4dJvy6G277gSllfV2HJqblrnkyeyg=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/anmitsu/go-shlex v0.0.0-20161002113705-648efa622239/go.mod h1:2FmKhYUyUczH0OGQWaF5ceTx0UBShxjsH6f8oGKYe2c=
-github.com/bahner/go-ma v0.0.5 h1:RgQrINqn6zU4avHDwoYfPCtMnpU9OpTkOUaFcTsS0MM=
-github.com/bahner/go-ma v0.0.5/go.mod h1:l9ty9QbOZfRUtovECXES7a01Su7xBYIBphFak1TOjVs=
-github.com/bahner/go-ma v0.0.6-0.20231125235358-e5f8a113aef4 h1:/YfOUHvRcDYO3nAYOXzwwosZzSmOgbEQVhMM6m2N2Ew=
-github.com/bahner/go-ma v0.0.6-0.20231125235358-e5f8a113aef4/go.mod h1:l9ty9QbOZfRUtovECXES7a01Su7xBYIBphFak1TOjVs=
 github.com/bahner/go-ma v0.0.6-0.20231126000006-ea6d3230b7c5 h1:Olf3MlIvYYfgdDQnofqcKSQOdO7hcGleD68ofrptxsA=
 github.com/bahner/go-ma v0.0.6-0.20231126000006-ea6d3230b7c5/go.mod h1:l9ty9QbOZfRUtovECXES7a01Su7xBYIBphFak1TOjVs=
 github.com/benbjohnson/clock v1.1.0/go.mod h1:J11/hYXuz8f4ySSvYwY0FKfm+ezbsZBKZxNJlLklBHA=

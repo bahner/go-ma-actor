@@ -70,7 +70,7 @@ func Init(ctx context.Context, i *ipns.Key, discoveryTimeout time.Duration, p2pO
 	ctxDiscovery, cancel = context.WithTimeout(ctx, discoveryTimeout)
 	defer cancel()
 
-	err = StartPeerDiscovery(ctxDiscovery, n)
+	err = StartPeerDiscovery(ctxDiscovery, n, nil)
 	if err != nil {
 		return nil, nil, fmt.Errorf("p2p.Init: failed to start peer discovery: %w", err)
 	}
