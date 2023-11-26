@@ -32,18 +32,24 @@ var (
 // discoveryTimeout is the timeout duration for peer discovery.
 // It's a time.Duration type.
 //
+// Also takes a variadic list of libp2p options.
+// Of it's nil, an empty list will be used.
+//
 // The function return the libp2p node and a PubSub Service
 
-func Init(ctx context.Context, i *ipns.Key, discoveryTimeout time.Duration) (host.Host, *p2ppubsub.PubSub, error) {
+func Init(ctx context.Context, i *ipns.Key, discoveryTimeout time.Duration, p2pOpts ...libp2p.Option) (host.Host, *p2ppubsub.PubSub, error) {
 
+	// Initiate libp2p options, if none are provided
+	if p2pOpts == nil {
+		p2pOpts = []libp2p.Option{}
+	}
+
+	// Add the connection manager to the options
 	connMgr, err := connmgr.Init()
 	if err != nil {
 		return nil, nil, fmt.Errorf("p2p.Init: failed to create connection manager: %w", err)
 	}
-
-	p2pOpts := []libp2p.Option{
-		libp2p.ConnectionManager(connMgr),
-	}
+	p2pOpts = append(p2pOpts, libp2p.ConnectionManager(connMgr))
 
 	// Create a new libp2p Host that listens on a random TCP port
 	n, err = node.New(i, p2pOpts...)

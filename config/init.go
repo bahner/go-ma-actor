@@ -5,20 +5,17 @@ import (
 	"os"
 	"time"
 
+	"github.com/bahner/go-ma"
 	"github.com/bahner/go-ma/key/set"
 	log "github.com/sirupsen/logrus"
 	"go.deanishe.net/env"
 )
 
 const (
-	name                  = "go-ma-actor"
-	keyset_var            = "GO_MA_ACTOR_KEYSET"
-	entity_var            = "GO_MA_ACTOR_ENTITY"
-	discovery_timeout_var = "GO_MA_ACTOR_DISCOVERY_TIMEOUT"
-	low_watermark_var     = "GO_MA_ACTOR_LOW_WATERMARK"
-	high_watermark_var    = "GO_MA_ACTOR_HIGH_WATERMARK"
-	connmgr_grace_var     = "GO_MA_ACTOR_CONNMGR_GRACE"
-	log_level_var         = "GO_MA_ACTOR_LOG_LEVEL"
+	name = "go-ma-actor"
+
+	// The default entity to connect to.
+	GO_MA_ACTOR_ENTITY_VAR = "GO_MA_ACTOR_ENTITY"
 
 	defaultDiscoveryTimeout int           = 300
 	defaultLowWaterMark     int           = 2
@@ -38,19 +35,19 @@ var (
 )
 
 var (
-	discoveryTimeout   int           = env.GetInt(discovery_timeout_var, defaultDiscoveryTimeout)
-	lowWaterMark       int           = env.GetInt(low_watermark_var, defaultLowWaterMark)
-	highWaterMark      int           = env.GetInt(high_watermark_var, defaultHighWaterMark)
-	connmgrGracePeriod time.Duration = env.GetDuration(connmgr_grace_var, defaultConnMgrGrace)
+	discoveryTimeout   int           = env.GetInt(ma.DISCOVERY_TIMEOUT_VAR, defaultDiscoveryTimeout)
+	lowWaterMark       int           = env.GetInt(ma.LOW_WATERMARK_VAR, defaultLowWaterMark)
+	highWaterMark      int           = env.GetInt(ma.HIGH_WATERMARK_VAR, defaultHighWaterMark)
+	connmgrGracePeriod time.Duration = env.GetDuration(ma.CONNMGR_GRACE_VAR, defaultConnMgrGrace)
 
-	logLevel string = env.Get(log_level_var, "info")
-	logfile  string = env.Get("GO_MA_LOG_FILE", name+"log")
+	logLevel string = env.Get(ma.LOGLEVEL_VAR, "info")
+	logfile  string = env.Get(ma.LOGFILE_VAR, name+".log")
 
 	// What we want to communicate with initially
-	entity string = env.Get(entity_var, "")
+	entity string = env.Get(GO_MA_ACTOR_ENTITY_VAR, "")
 
 	// Actor
-	keyset_string string = env.Get(keyset_var, "")
+	keyset_string string = env.Get(ma.KEYSET_VAR, "")
 
 	// Nick is only used for keyset generation. Must be a valid NanoID.
 	nick string = env.Get("USER")
