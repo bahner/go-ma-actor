@@ -60,10 +60,5 @@ func Init(d *dht.DHT, p2pOpts ...libp2p.Option) (*P2P, error) {
 		DHT:    d,
 	}
 
-	err = myP2P.DiscoverPeers()
-	if err != nil {
-		return nil, fmt.Errorf("p2p.Init: failed to start peer discovery: %w", err)
-	}
-
 	return myP2P, nil
 }
