@@ -14,10 +14,25 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func Init(ctx context.Context, h host.Host, dhtOpts ...p2pDHT.Option) (*p2pDHT.IpfsDHT, error) {
-	log.Info("Initializing DHT.")
+var dhtStructInstance *dhtStruct
+var _ DHT = (*dhtStruct)(nil)
 
-	kademliaDHT, err := p2pDHT.New(ctx, h)
+type DHT interface {
+	DiscoverPeers(context.Context) error
+}
+
+type dhtStruct struct {
+	*p2pDHT.IpfsDHT
+	h host.Host
+}
+
+func Init(ctx context.Context, h host.Host, dhtOpts ...p2pDHT.Option) (DHT, error) {
+	log.Info("Initializing Kademlia DHT.")
+
+	var err error
+	dhtStructInstance = &dhtStruct{h: h}
+
+	dhtStructInstance.IpfsDHT, err = p2pDHT.New(ctx, h, dhtOpts...)
 	if err != nil {
 		log.Error("Failed to create Kademlia DHT.")
 		return nil, err
@@ -25,7 +40,7 @@ func Init(ctx context.Context, h host.Host, dhtOpts ...p2pDHT.Option) (*p2pDHT.I
 		log.Debug("Kademlia DHT created.")
 	}
 
-	err = kademliaDHT.Bootstrap(ctx)
+	err = dhtStructInstance.IpfsDHT.Bootstrap(ctx)
 	if err != nil {
 		log.Error("Failed to bootstrap Kademlia DHT.")
 		return nil, err
@@ -79,16 +94,16 @@ func Init(ctx context.Context, h host.Host, dhtOpts ...p2pDHT.Option) (*p2pDHT.I
 	}
 
 	log.Info("Kademlia DHT bootstrapped successfully.")
-	return kademliaDHT, nil
+	return dhtStructInstance, nil
 }
 
 // Takes a context and a DHT instance and discovers peers using the DHT.
 // You might want to se server option or not for the DHT.
-func DiscoverPeers(ctx context.Context, dhtInstance *p2pDHT.IpfsDHT, h host.Host) error {
+func (d *dhtStruct) DiscoverPeers(ctx context.Context) error {
 
 	log.Debug("Starting DHT route discovery.")
 
-	routingDiscovery := drouting.NewRoutingDiscovery(dhtInstance)
+	routingDiscovery := drouting.NewRoutingDiscovery(d.IpfsDHT)
 	dutil.Advertise(ctx, routingDiscovery, ma.RENDEZVOUS)
 
 	log.Infof("Starting DHT peer discovery for rendezvous string: %s", ma.RENDEZVOUS)
@@ -107,11 +122,11 @@ discoveryLoop:
 					peerChan = nil
 					break
 				}
-				if p.ID == h.ID() {
+				if p.ID == d.h.ID() {
 					continue // Skip self connection
 				}
 
-				err := h.Connect(ctx, p) // Using the outer context directly
+				err := d.h.Connect(ctx, p) // Using the outer context directly
 				if err != nil {
 					log.Debugf("Failed connecting to %s, error: %v", p.ID.String(), err)
 				} else {
@@ -119,8 +134,8 @@ discoveryLoop:
 
 					// Add peer to list of known peers
 					log.Debugf("Protecting peer: %s", p.ID.String())
-					h.ConnManager().TagPeer(p.ID, ma.RENDEZVOUS, 10)
-					h.ConnManager().Protect(p.ID, ma.RENDEZVOUS)
+					d.h.ConnManager().TagPeer(p.ID, ma.RENDEZVOUS, 10)
+					d.h.ConnManager().Protect(p.ID, ma.RENDEZVOUS)
 
 					break discoveryLoop
 
@@ -137,4 +152,8 @@ discoveryLoop:
 
 	log.Info("DHT Peer discovery complete")
 	return nil
+}
+
+func Get() *p2pDHT.IpfsDHT {
+	return dhtStructInstance.IpfsDHT
 }

@@ -21,7 +21,10 @@ import (
 func StartPeerDiscovery(ctx context.Context, h host.Host, dhtInstance *p2pdht.IpfsDHT) error {
 	log.Debug("Starting peer discovery...")
 	var err error
-	done := make(chan struct{}, 2) // Buffered channel to avoid blocking
+
+	// Only required for the first discovery process
+	// We *need* DHT, but MDNS is just a bonus.
+	done := make(chan struct{}, 1) // Buffered channel to avoid blocking
 
 	if dhtInstance == nil {
 		dhtInstance, err = dht.Init(ctx, h)
@@ -47,7 +50,6 @@ func StartPeerDiscovery(ctx context.Context, h host.Host, dhtInstance *p2pdht.Ip
 	// Start MDNS discovery in a new goroutine
 	go func() {
 		mdns.DiscoverPeers(ctx, h)
-		done <- struct{}{} // Signal completion
 	}()
 
 	// Wait for a discovery process to complete

@@ -3,8 +3,8 @@ package p2p
 import (
 	"context"
 	"fmt"
-	"time"
 
+	"github.com/bahner/go-ma-actor/config"
 	"github.com/bahner/go-ma-actor/p2p/connmgr"
 	"github.com/bahner/go-ma-actor/p2p/node"
 	"github.com/bahner/go-ma-actor/p2p/pubsub"
@@ -37,7 +37,7 @@ var (
 //
 // The function return the libp2p node and a PubSub Service
 
-func Init(ctx context.Context, i *ipns.Key, discoveryTimeout time.Duration, p2pOpts ...libp2p.Option) (host.Host, *p2ppubsub.PubSub, error) {
+func Init(ctx context.Context, i *ipns.Key, p2pOpts ...libp2p.Option) (host.Host, *p2ppubsub.PubSub, error) {
 
 	// Initiate libp2p options, if none are provided
 	if p2pOpts == nil {
@@ -67,6 +67,7 @@ func Init(ctx context.Context, i *ipns.Key, discoveryTimeout time.Duration, p2pO
 		ctx = context.Background()
 	}
 
+	discoveryTimeout := config.GetDiscoveryTimeout()
 	ctxDiscovery, cancel = context.WithTimeout(ctx, discoveryTimeout)
 	defer cancel()
 
