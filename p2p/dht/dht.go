@@ -4,9 +4,12 @@ import (
 	"context"
 	"fmt"
 	"sync"
+	"time"
 
 	"github.com/bahner/go-ma"
+	"github.com/bahner/go-ma-actor/config"
 	p2pDHT "github.com/libp2p/go-libp2p-kad-dht"
+	"github.com/libp2p/go-libp2p/core/discovery"
 	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/libp2p/go-libp2p/core/peer"
 	drouting "github.com/libp2p/go-libp2p/p2p/discovery/routing"
@@ -14,39 +17,44 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-var dhtStructInstance *dhtStruct
-var _ DHT = (*dhtStruct)(nil)
-
-type DHT interface {
-	DiscoverPeers(context.Context) error
-}
-
-type dhtStruct struct {
+type DHT struct {
 	*p2pDHT.IpfsDHT
 	h host.Host
 }
 
-func Init(ctx context.Context, h host.Host, dhtOpts ...p2pDHT.Option) (DHT, error) {
-	log.Info("Initializing Kademlia DHT.")
+// Initialise The Kademlia DHT and bootstrap it.
+// The context is used to abort the process, but context.Background() probably works fine.
+// If nil is passed, a background context will be used.
+//
+// The host is a libp2p host.
+//
+// Takes a variadic list of dht.Option. You'll need this if you want to set a custom routing table.
+// or set the mode to server. None is fine for ordinary use.
+
+func New(h host.Host, dhtOpts ...p2pDHT.Option) (*DHT, error) {
 
 	var err error
-	dhtStructInstance = &dhtStruct{h: h}
 
-	dhtStructInstance.IpfsDHT, err = p2pDHT.New(ctx, h, dhtOpts...)
+	d := &DHT{h: h}
+
+	d.IpfsDHT, err = p2pDHT.New(context.Background(), h, dhtOpts...)
 	if err != nil {
-		log.Error("Failed to create Kademlia DHT.")
-		return nil, err
-	} else {
-		log.Debug("Kademlia DHT created.")
+		return nil, fmt.Errorf("failed to create Kademlia DHT: %w", err)
 	}
 
-	err = dhtStructInstance.IpfsDHT.Bootstrap(ctx)
+	d.Bootstrap(context.Background())
+
+	return d, nil
+}
+
+func (d *DHT) Bootstrap(ctx context.Context) error {
+	log.Info("Initializing Kademlia DHT.")
+
+	err := d.IpfsDHT.Bootstrap(context.Background())
 	if err != nil {
-		log.Error("Failed to bootstrap Kademlia DHT.")
-		return nil, err
-	} else {
-		log.Debug("Kademlia DHT bootstrap setup.")
+		return fmt.Errorf("failed to bootstrap Kademlia DHT: %w", err)
 	}
+	log.Debug("Kademlia DHT bootstrap setup.")
 
 	var wg sync.WaitGroup
 	for _, peerAddr := range p2pDHT.DefaultBootstrapPeers {
@@ -62,98 +70,92 @@ func Init(ctx context.Context, h host.Host, dhtOpts ...p2pDHT.Option) (DHT, erro
 		go func(pInfo peer.AddrInfo) {
 			defer wg.Done()
 
-			errCh := make(chan error, 1)
-			go func() {
-				errCh <- h.Connect(ctx, pInfo)
-			}()
-
-			select {
-			case <-ctx.Done():
-				log.Debug("Context cancelled, aborting connection attempt.")
-				return
-			case err := <-errCh:
-				if err != nil {
-					log.Warnf("Bootstrap warning: %v", err)
-				}
+			if err := d.h.Connect(ctx, pInfo); err != nil {
+				log.Warnf("Bootstrap warning: %v", err)
 			}
 		}(*peerinfo)
 	}
 
 	// Wait for all bootstrap attempts to complete or context cancellation
-	go func() {
-		wg.Wait()
-		log.Info("All bootstrap attempts completed.")
-	}()
+	wg.Wait()
+	log.Info("All bootstrap attempts completed.")
 
 	select {
 	case <-ctx.Done():
-		log.Info("Context cancelled during bootstrap.")
-		return nil, ctx.Err()
+		log.Warn("Context cancelled during bootstrap.")
+		return ctx.Err()
 	default:
-		// Continue with other operations if context is not cancelled
+		log.Info("Kademlia DHT bootstrapped successfully.")
+		return nil
 	}
-
-	log.Info("Kademlia DHT bootstrapped successfully.")
-	return dhtStructInstance, nil
 }
 
 // Takes a context and a DHT instance and discovers peers using the DHT.
 // You might want to se server option or not for the DHT.
-func (d *dhtStruct) DiscoverPeers(ctx context.Context) error {
+// Takes a variadic list of discovery.Option. You'll need this if you want to set a custom routing table.
+func (d *DHT) DiscoverPeers(discoveryOpts ...discovery.Option) error {
+	desiredPeers := config.GetDesiredPeers()
+	log.Debugf("Starting DHT peer discovery searching for %d peers for rendezvous string: %s", desiredPeers, ma.RENDEZVOUS)
 
-	log.Debug("Starting DHT route discovery.")
+	// ctx, cancel := config.GetDiscoveryContext()
+	// defer cancel()
+
+	ctx := context.Background()
+
+	log.Debugf("Peer discovery timeout: %v", config.GetDiscoveryTimeout())
+	log.Debugf("Peer discovery context %v", ctx)
 
 	routingDiscovery := drouting.NewRoutingDiscovery(d.IpfsDHT)
-	dutil.Advertise(ctx, routingDiscovery, ma.RENDEZVOUS)
+	if routingDiscovery == nil {
+		return fmt.Errorf("dht:discovery: failed to create routing discovery")
+	}
+	log.Debugf("Routing discovery created: %v", routingDiscovery)
 
-	log.Infof("Starting DHT peer discovery for rendezvous string: %s", ma.RENDEZVOUS)
+	dutil.Advertise(ctx, routingDiscovery, ma.RENDEZVOUS, discoveryOpts...)
+	log.Debugf("Advertising rendezvous string: %s", ma.RENDEZVOUS)
 
-discoveryLoop:
-	for {
-		peerChan, err := routingDiscovery.FindPeers(ctx, ma.RENDEZVOUS)
+	var foundPeers int
+	for foundPeers < desiredPeers {
+		log.Debugf("Searching for %d more peers", desiredPeers-foundPeers)
+
+		peerChan, err := routingDiscovery.FindPeers(ctx, ma.RENDEZVOUS, discoveryOpts...)
 		if err != nil {
-			return fmt.Errorf("peer discovery error: %w", err)
+			return fmt.Errorf("dht:discovery: peer discovery error: %w", err)
 		}
 
-		for {
-			select {
-			case p, ok := <-peerChan:
-				if !ok {
-					peerChan = nil
-					break
-				}
-				if p.ID == d.h.ID() {
-					continue // Skip self connection
-				}
+		for p := range peerChan {
+			if p.ID == d.h.ID() {
+				continue // Skip self connection
+			}
 
-				err := d.h.Connect(ctx, p) // Using the outer context directly
-				if err != nil {
-					log.Debugf("Failed connecting to %s, error: %v", p.ID.String(), err)
-				} else {
-					log.Infof("Connected to DHT peer: %s", p.ID.String())
+			err := d.h.Connect(ctx, p)
+			if err != nil {
+				log.Debugf("Failed connecting to %s, error: %v", p.ID.String(), err)
+				continue
+			}
 
-					// Add peer to list of known peers
-					log.Debugf("Protecting peer: %s", p.ID.String())
-					d.h.ConnManager().TagPeer(p.ID, ma.RENDEZVOUS, 10)
-					d.h.ConnManager().Protect(p.ID, ma.RENDEZVOUS)
+			log.Debugf("Connected to DHT peer: %s", p.ID.String())
+			d.h.ConnManager().TagPeer(p.ID, ma.RENDEZVOUS, 10)
+			d.h.ConnManager().Protect(p.ID, ma.RENDEZVOUS)
+			foundPeers++
+			log.Debugf("(Found %d/%d peers)", foundPeers, desiredPeers)
 
-					break discoveryLoop
-
-				}
-			case <-ctx.Done():
-				log.Info("Context cancelled, stopping DHT peer discovery.")
+			if foundPeers >= desiredPeers {
+				log.Infof("Desired number of peers (%d) discovered.", foundPeers)
 				return nil
 			}
-			if peerChan == nil {
-				break
-			}
 		}
+
+		// Check if the context was cancelled or timed out
+		if ctx.Err() != nil {
+			log.Warn("Context cancelled or timed out, stopping DHT peer discovery.")
+			return ctx.Err()
+		}
+
+		log.Debugf("Sleeping for %v before retrying peer discovery.", config.GetDiscoveryRetryInterval())
+		time.Sleep(config.GetDiscoveryRetryInterval())
 	}
 
 	log.Info("DHT Peer discovery complete")
 	return nil
-}
-
-func Get() *p2pDHT.IpfsDHT {
-	return dhtStructInstance.IpfsDHT
 }

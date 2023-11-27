@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/bahner/go-ma-actor/config"
@@ -21,6 +22,9 @@ func (ui *ChatUI) displayChatMessage(cm *msg.Message) {
 
 func (ui *ChatUI) handleChatMessage(input string) error {
 	// Wrapping the string message into the msg.Message structure
+
+	// This could be a timeout for topic publishing
+	ctx := context.Background()
 
 	log.Debugf("Handling chatMessage: %s", input)
 	msgBytes := []byte(input)
@@ -65,7 +69,7 @@ func (ui *ChatUI) handleChatMessage(input string) error {
 		return fmt.Errorf("message serialization error: %s", err)
 	}
 
-	err = topic.Topic.Publish(ui.ctx, letter)
+	err = topic.Topic.Publish(ctx, letter)
 	if err != nil {
 		log.Debugf("message publishing error: %s", err)
 		return fmt.Errorf("message publishing error: %w", err)

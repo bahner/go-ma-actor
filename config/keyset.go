@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/bahner/go-ma/did/doc"
+	"github.com/bahner/go-ma/key/ipns"
 	"github.com/bahner/go-ma/key/set"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
@@ -107,4 +108,8 @@ func publishIdentity(k *set.Keyset) {
 
 func GetKeyset() *set.Keyset {
 	return keyset
+}
+
+func GetIPNSKey() *ipns.Key {
+	return keyset.IPNSKey
 }

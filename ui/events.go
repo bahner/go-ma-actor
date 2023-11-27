@@ -45,9 +45,6 @@ func (ui *ChatUI) handleEvents() {
 		case <-peerRefreshTicker.C:
 			ui.refreshPeers()
 
-		case <-ui.ctx.Done():
-			return
-
 		case <-ui.chDone:
 			return
 		}

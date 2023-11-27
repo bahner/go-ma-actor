@@ -1,17 +1,16 @@
 package ui
 
 import (
-	"context"
 	"fmt"
 	"io"
 
 	"github.com/bahner/go-ma-actor/actor"
 	"github.com/bahner/go-ma-actor/entity"
+	"github.com/bahner/go-ma-actor/p2p"
 	"github.com/bahner/go-ma/did"
 	"github.com/bahner/go-ma/did/doc"
 	"github.com/bahner/go-ma/msg"
 	"github.com/gdamore/tcell/v2"
-	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/rivo/tview"
 	log "github.com/sirupsen/logrus"
 )
@@ -21,8 +20,7 @@ import (
 // mode. You can quit with Ctrl-C, or by typing "/quit" into the
 // chat prompt.
 type ChatUI struct {
-	ctx context.Context
-	n   host.Host
+	p *p2p.P2P
 
 	e *entity.Entity
 
@@ -44,17 +42,11 @@ type ChatUI struct {
 
 // NewChatUI returns a new ChatUI struct that controls the text UI.
 // It won't actually do anything until you call Run().
-func NewChatUI(ctx context.Context, n host.Host, a *actor.Actor, id string) *ChatUI {
+func NewChatUI(p *p2p.P2P, a *actor.Actor, id string) *ChatUI {
 
 	var (
 		err error
 	)
-
-	// Check for valid inputs
-	if ctx == nil {
-		log.Error("invalid context: nil")
-		return nil
-	}
 
 	if a == nil {
 		log.Error("invalid Actor: nil")
@@ -144,9 +136,8 @@ func NewChatUI(ctx context.Context, n host.Host, a *actor.Actor, id string) *Cha
 	}
 
 	return &ChatUI{
-		ctx:       ctx,
-		n:         n,
 		a:         a,
+		p:         p,
 		e:         e,
 		app:       app,
 		peersList: peersList,
