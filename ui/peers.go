@@ -25,7 +25,7 @@ func (ui *ChatUI) handleAliasCommand(args []string) {
 func (ui *ChatUI) refreshPeers() {
 
 	// Tweak this to change the timeout for peer discovery
-	peers := ui.p.GetConnectedPeers()
+	peers := ui.p.GetConnectedProtectedPeersAddrInfo()
 
 	// clear is thread-safe
 	ui.peersList.Clear()
