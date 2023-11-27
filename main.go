@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"os"
 
 	"github.com/bahner/go-ma-actor/actor"
@@ -12,6 +13,9 @@ import (
 )
 
 func main() {
+
+	flag.Parse()
+	config.Init()
 
 	p, err := p2p.Init(nil)
 	if err != nil {
