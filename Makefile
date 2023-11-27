@@ -1,7 +1,8 @@
 #!/usr/bin/make -ef
 
-NAME = go-ma-actor
+export NAME = go-ma-actor
 MODULE_NAME = github.com/bahner/go-ma-actor
+export VERSION = "0.0.2"
 
 GO ?= go
 PREFIX ?= /usr/local
