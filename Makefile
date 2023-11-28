@@ -49,6 +49,8 @@ image:
 install: $(NAME)
 	sudo install -Dm755 $(NAME) $(DESTDIR)$(PREFIX)/bin/$(NAME)
 
+webui:
+
 run: clean $(NAME)
 	./$(NAME)
 

@@ -1,0 +1,5 @@
+#!/bin/bash
+
+CID=$(2>/dev/null ipfs add -r static | tail -n1 | awk '{print $2}')
+
+echo ${CID}
