@@ -60,7 +60,7 @@ func New(e *entity.Entity, forcePublish bool) (*Actor, error) {
 	a.Messages = make(chan *msg.Message, MESSAGES_BUFFERSIZE)
 
 	// Publish the entity
-	err = a.Entity.Publish(forcePublish)
+	_, err = a.Entity.Doc.Publish()
 	if err != nil {
 		return nil, fmt.Errorf("actor.New: Failed to publish Entity: %w", err)
 	}

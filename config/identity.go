@@ -2,13 +2,11 @@ package config
 
 import (
 	"flag"
-	"fmt"
 	"os"
 
 	"github.com/bahner/go-ma/did/doc"
-	"github.com/bahner/go-ma/key/ipns"
+	"github.com/bahner/go-ma/key/ipfs"
 	"github.com/bahner/go-ma/key/set"
-	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"go.deanishe.net/env"
 )
@@ -16,19 +14,18 @@ import (
 var (
 
 	// Booleans with control flow
-	generate     = flag.Bool("generate", false, "Generates one-time keyset and uses it")
-	genenv       = flag.Bool("genenv", false, "Generates a keyset and prints it to stdout and uses it")
-	publish      = flag.Bool("publish", false, "Publishes keyset to IPFS when using genenv or generate")
-	forcePublish = flag.Bool("forcePublish", false, "Like -publish, force publication even if keyset is already published. This is probably the one you want.")
+	generate = flag.Bool("generate", false, "Generates one-time keyset and uses it")
+	genenv   = flag.Bool("genenv", false, "Generates a keyset and prints environment to stdout")
+	publish  = flag.Bool("publish", false, "Publishes keyset to IPFS when using genenv or generate")
 
 	// Entities
 	nick          = flag.String("nick", env.Get("USER", defaultNick), "Nickname to use in character creation")
 	keyset        *set.Keyset
-	keyset_string = flag.String("keyset", env.Get(GO_MA_ACTOR_KEYSET_VAR, defaultKeyset),
-		"Base58 encoded *secret* keyset used to identify the client. You. You can use environment variable "+GO_MA_ACTOR_KEYSET_VAR+" to set this.")
+	keyset_string = flag.String("keyset", env.Get(GO_MA_ACTOR_IDENTITY_VAR, defaultKeyset),
+		"Base58 encoded *secret* keyset used to identify the client. You. You can use environment variable "+GO_MA_ACTOR_IDENTITY_VAR+" to set this.")
 )
 
-func InitKeyset() {
+func InitIdentity() {
 
 	keyset = GetKeyset()
 
@@ -36,24 +33,24 @@ func InitKeyset() {
 
 	// Generate a new keysets if requested
 	if *generate || *genenv {
-		log.Debugf("config.initKeyset: Generating new keyset for %s", *nick)
+		log.Debugf("config.initIdentity: Generating new keyset for %s", *nick)
 		*keyset_string = generateKeyset()
 	}
 
-	log.Debugf("config.initKeyset: %s", *keyset_string)
+	log.Debugf("config.initIdentity: %s", *keyset_string)
 	// Create the actor keyset
 	if *keyset_string == "" {
-		log.Errorf("config.initKeyset: You need to define actorKeyset or generate a new one.")
+		log.Errorf("config.initIdentity: You need to define actorKeyset or generate a new one.")
 		os.Exit(64) // EX_USAGE
 	}
 
 	keyset, err = set.Unpack(*keyset_string)
 	if err != nil {
-		log.Errorf("config.initKeyset: Failed to unpack keyset: %v", err)
+		log.Errorf("config.initIdentity: Failed to unpack keyset: %v", err)
 		os.Exit(65) // EX_DATAERR
 	}
 
-	if *publish || *forcePublish {
+	if *publish {
 		if *keyset_string != "" {
 			publishIdentity(keyset)
 		} else {
@@ -62,6 +59,7 @@ func InitKeyset() {
 	}
 
 	if *genenv {
+		PrintEnvironment()
 		os.Exit(0)
 	}
 
@@ -74,36 +72,27 @@ func generateKeyset() string {
 		os.Exit(64) // EX_USAGE
 	}
 
-	ks, err := set.New(*nick, *forcePublish)
+	// ks, err := set.New(*nick, *forcePublish)
+	ks, err := set.GetOrCreate(*nick)
 	if err != nil {
 		log.Errorf("Failed to generate new keyset: %v", err)
 		os.Exit(70) // EX_SOFTWARE
 	}
+	log.Debugf("Created new keyset: %v", ks)
 
 	pks, err := ks.Pack()
 	if err != nil {
 		log.Errorf("Failed to pack keyset: %v", err)
 		os.Exit(70) // EX_SOFTWARE
 	}
-
-	if *genenv {
-		fmt.Println("export " + GO_MA_ACTOR_KEYSET_VAR + "=" + pks)
-	}
+	log.Debugf("Packed keyset: %v", pks)
 
 	return pks
 }
 
 func publishIdentity(k *set.Keyset) {
 
-	err := k.IPNSKey.ExportToIPFS(*forcePublish)
-	if err != nil {
-		log.Debugf(errors.Cause(err).Error())
-		log.Errorf("config.publishIdentity: failed to export keyset: %v", err)
-		os.Exit(75) // EX_TEMPFAIL
-	}
-	log.Infof("Exported IPNSkey to IPFS: %s", k.IPNSKey.DID)
-
-	d, err := doc.NewFromKeyset(keyset, k.IPNSKey.DID)
+	d, err := doc.NewFromKeyset(keyset)
 	if err != nil {
 		log.Errorf("config.publishIdentity: failed to create DOC: %v", err)
 		os.Exit(75) // EX_TEMPFAIL
@@ -129,11 +118,11 @@ func GetKeyset() *set.Keyset {
 	return keyset
 }
 
-func GetIPNSKey() *ipns.Key {
-	return keyset.IPNSKey
+func GetIPFSKey() *ipfs.Key {
+	return keyset.IPFSKey
 }
 
-func GetKeysetString() string {
+func GetIdentityString() string {
 	return *keyset_string
 }
 
@@ -144,8 +133,4 @@ func GetNick() string {
 func GetPublish() bool {
 
 	return *publish
-}
-
-func GetForcePublish() bool {
-	return *forcePublish
 }

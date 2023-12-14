@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strconv"
 
-	ipnskey "github.com/bahner/go-ma/key/ipns"
 	"github.com/libp2p/go-libp2p"
+	"github.com/libp2p/go-libp2p/core/crypto"
 	"github.com/libp2p/go-libp2p/core/host"
 	log "github.com/sirupsen/logrus"
 )
@@ -19,11 +19,11 @@ var (
 
 // Creates a new libp2p node, meant to be the only one used in an application.
 // Requires an IPNS key for identity libp2p options as parameters.
-func New(i *ipnskey.Key, opts ...libp2p.Option) (host.Host, error) {
+func New(i crypto.PrivKey, opts ...libp2p.Option) (host.Host, error) {
 
 	p2pOptions := []libp2p.Option{
 		libp2p.ListenAddrStrings(getListenAddrStrings()...),
-		libp2p.Identity(i.PrivKey),
+		libp2p.Identity(i),
 	}
 
 	p2pOptions = append(p2pOptions, opts...)

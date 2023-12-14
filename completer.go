@@ -2,7 +2,8 @@ package main
 
 import "github.com/c-bata/go-prompt"
 
-func completer(d prompt.Document) []prompt.Suggest {
+// FIXME: should be completer
+func Completer(d prompt.Document) []prompt.Suggest {
 	s := []prompt.Suggest{
 		{Text: "users", Description: "Store the username and age"},
 		{Text: "articles", Description: "Store the article text posted by user"},

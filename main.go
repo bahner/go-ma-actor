@@ -30,7 +30,7 @@ func main() {
 		os.Exit(75)
 	}
 
-	a, err := actor.NewFromKeyset(config.GetKeyset(), config.GetForcePublish())
+	a, err := actor.NewFromKeyset(config.GetKeyset(), config.GetPublish())
 	if err != nil || a == nil {
 		log.Errorf("failed to create actor: %v", err)
 		os.Exit(70)

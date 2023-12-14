@@ -3,6 +3,7 @@ package config
 import (
 	"context"
 	"flag"
+	"fmt"
 	"time"
 
 	"go.deanishe.net/env"
@@ -30,16 +31,32 @@ func GetDiscoveryTimeout() time.Duration {
 	return time.Duration(*discoveryTimeout) * time.Second
 }
 
+func GetDiscoveryTimeoutString() string {
+	return discoveryTimeout.String()
+}
+
 func GetLowWaterMark() int {
 	return *lowWaterMark
+}
+
+func GetLowWatermarkString() string {
+	return fmt.Sprint(*lowWaterMark)
 }
 
 func GetHighWaterMark() int {
 	return *highWaterMark
 }
 
+func GetHighWatermarkString() string {
+	return fmt.Sprint(*highWaterMark)
+}
+
 func GetConnMgrGracePeriod() time.Duration {
 	return *connmgrGracePeriod
+}
+
+func GetConnMgrGraceString() string {
+	return GetConnMgrGracePeriod().String()
 }
 
 func GetDiscoveryContext() (context.Context, func()) {
@@ -55,6 +72,14 @@ func GetDiscoveryRetryInterval() time.Duration {
 	return *discoveryRetryInterval
 }
 
+func GetDiscoveryRetryIntervalString() string {
+	return GetDiscoveryRetryInterval().String()
+}
+
 func GetDesiredPeers() int {
 	return *desiredPeers
+}
+
+func GetDesiredPeersString() string {
+	return fmt.Sprint(*desiredPeers)
 }
