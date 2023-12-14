@@ -2,6 +2,7 @@ package config
 
 import (
 	"flag"
+	"fmt"
 	"os"
 
 	log "github.com/sirupsen/logrus"
@@ -22,13 +23,13 @@ func InitLogging() {
 	// Init logger
 	level, err := log.ParseLevel(*logLevel)
 	if err != nil {
-		log.Error(err)
+		fmt.Println(err)
 		os.Exit(64) // EX_USAGE
 	}
 	log.SetLevel(level)
-	file, err := os.OpenFile(Name+".log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+	file, err := os.OpenFile(*logfile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 	if err != nil {
-		log.Errorf("Failed to open log file: %v", err)
+		fmt.Println(err)
 		os.Exit(73) // EX_CANTCREAT
 	}
 	log.SetOutput(file)

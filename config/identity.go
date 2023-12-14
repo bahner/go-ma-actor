@@ -14,8 +14,7 @@ import (
 var (
 
 	// Booleans with control flow
-	generate = flag.Bool("generate", false, "Generates one-time keyset and uses it")
-	genenv   = flag.Bool("genenv", false, "Generates a keyset and prints environment to stdout")
+	generate = flag.Bool("generate", false, "Generates a new keyset")
 	publish  = flag.Bool("publish", false, "Publishes keyset to IPFS when using genenv or generate")
 
 	// Entities
@@ -32,7 +31,7 @@ func InitIdentity() {
 	var err error
 
 	// Generate a new keysets if requested
-	if *generate || *genenv {
+	if *generate {
 		log.Debugf("config.initIdentity: Generating new keyset for %s", *nick)
 		*keyset_string = generateKeyset()
 	}
@@ -56,11 +55,6 @@ func InitIdentity() {
 		} else {
 			log.Errorf("No actor keyset to publish.")
 		}
-	}
-
-	if *genenv {
-		PrintEnvironment()
-		os.Exit(0)
 	}
 
 }

@@ -14,7 +14,3 @@ var (
 func GetEntity() string {
 	return *entity
 }
-
-func GetEntityString() string {
-	return *entity
-}
