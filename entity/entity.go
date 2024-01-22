@@ -24,7 +24,7 @@ func New(id string, alias string) (*Entity, error) {
 		Alias: alias,
 	}
 
-	e.Doc, err = doc.FetchFromDID(e.DID)
+	e.Doc, err = doc.GetOrFetch(id)
 	if err != nil {
 		return nil, fmt.Errorf("entity/newfromdid: failed to fetch document: %w", err)
 	}

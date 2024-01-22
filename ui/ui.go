@@ -128,7 +128,7 @@ func NewChatUI(p *p2p.P2P, a *actor.Actor, id string) *ChatUI {
 
 	// There should be a document there, but ...
 	if e.Doc == nil {
-		e.Doc, err = doc.FetchFromDID(id)
+		e.Doc, err = doc.GetOrFetch(id)
 		if err != nil {
 			log.Errorf("Failed to fetch DIDDOcument. %v", err)
 			return nil

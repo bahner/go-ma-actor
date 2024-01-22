@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/bahner/go-ma/msg"
-	"github.com/bahner/go-ma/msg/envelope"
 	pubsub "github.com/libp2p/go-libp2p-pubsub"
 )
 
@@ -25,7 +24,7 @@ type Topic struct {
 	chDone chan struct{}
 
 	Messages  chan *msg.Message
-	Envelopes chan *envelope.Envelope
+	Envelopes chan *msg.Envelope
 
 	Topic        *pubsub.Topic
 	Subscription *pubsub.Subscription
@@ -41,7 +40,7 @@ func GetOrCreate(id string) (*Topic, error) {
 	t = &Topic{
 		chDone:    make(chan struct{}),
 		Messages:  make(chan *msg.Message, MESSAGES_BUFFERSIZE),
-		Envelopes: make(chan *envelope.Envelope, ENVELOPES_BUFFERSIZE),
+		Envelopes: make(chan *msg.Envelope, ENVELOPES_BUFFERSIZE),
 	}
 
 	// Topic

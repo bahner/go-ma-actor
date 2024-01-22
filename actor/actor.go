@@ -38,7 +38,7 @@ type Actor struct {
 // Creates a new actor from an entity.
 // Takes an entity and a forcePublish flag.
 // The forcePublish is to override existing keys in IPFS.
-func New(e *entity.Entity, forcePublish bool) (*Actor, error) {
+func New(e *entity.Entity) (*Actor, error) {
 
 	var err error
 
@@ -60,7 +60,7 @@ func New(e *entity.Entity, forcePublish bool) (*Actor, error) {
 	a.Messages = make(chan *msg.Message, MESSAGES_BUFFERSIZE)
 
 	// Publish the entity
-	_, err = a.Entity.Doc.Publish()
+	_, err = a.Entity.Doc.Publish(nil)
 	if err != nil {
 		return nil, fmt.Errorf("actor.New: Failed to publish Entity: %w", err)
 	}
@@ -73,7 +73,7 @@ func New(e *entity.Entity, forcePublish bool) (*Actor, error) {
 // Creates a new actor from a keyset.
 // Takes a context, a keyset and a forcePublish flag.
 // If ctx is nil a background context is used.
-func NewFromKeyset(k *set.Keyset, forcePublish bool) (*Actor, error) {
+func NewFromKeyset(k *set.Keyset, publish bool) (*Actor, error) {
 
 	log.Debugf("Setting Actor Entity: %v", k)
 	e, err := entity.NewFromKeyset(k)
@@ -85,7 +85,7 @@ func NewFromKeyset(k *set.Keyset, forcePublish bool) (*Actor, error) {
 		return nil, fmt.Errorf("actor.NewFromKeyset: Failed to create Entity: %w", err)
 	}
 
-	a, err := New(e, forcePublish)
+	a, err := New(e)
 	if err != nil {
 		return nil, fmt.Errorf("actor.NewFromKeyset: Failed to create Actor: %w", err)
 	}

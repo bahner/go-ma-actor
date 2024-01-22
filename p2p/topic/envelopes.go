@@ -2,13 +2,12 @@ package topic
 
 import (
 	"context"
-	"fmt"
 
-	"github.com/bahner/go-ma/msg/envelope"
+	"github.com/bahner/go-ma/msg"
 	log "github.com/sirupsen/logrus"
 )
 
-func (t *Topic) SubscribeEnvelopes(ctx context.Context) (envelopes <-chan *envelope.Envelope) {
+func (t *Topic) SubscribeEnvelopes(ctx context.Context) (envelopes <-chan *msg.Envelope) {
 
 	t.ctx = ctx
 	var err error
@@ -19,7 +18,7 @@ func (t *Topic) SubscribeEnvelopes(ctx context.Context) (envelopes <-chan *envel
 		return
 	}
 
-	t.Envelopes = make(chan *envelope.Envelope, ENVELOPES_BUFFERSIZE)
+	t.Envelopes = make(chan *msg.Envelope, ENVELOPES_BUFFERSIZE)
 
 	go t.envelopeSubscriptionLoop()
 
@@ -27,7 +26,7 @@ func (t *Topic) SubscribeEnvelopes(ctx context.Context) (envelopes <-chan *envel
 
 }
 
-func (t *Topic) NextEnvelope() (*envelope.Envelope, error) {
+func (t *Topic) NextEnvelope() (*msg.Envelope, error) {
 
 	message, err := t.Subscription.Next(t.ctx)
 	if err != nil {
@@ -35,9 +34,9 @@ func (t *Topic) NextEnvelope() (*envelope.Envelope, error) {
 	}
 
 	// Here we should distinguish between packed and unpacked envelopes
-	e, err := envelope.UnmarshalFromCBOR(message.Data)
+	e, err := msg.UnmarshalEnvelopeFromCBOR(message.Data)
 	if err != nil {
-		log.Debugf("Failed to unmarshal envelope: %v", err)
+		log.Errorf("Failed to unmarshal envelope: %v", err)
 	}
 
 	return e, err
@@ -46,19 +45,11 @@ func (t *Topic) NextEnvelope() (*envelope.Envelope, error) {
 
 // Publish a message to the topic.
 // NB! Check that it's the correct topic!
-func (t *Topic) SendEnvelope(e *envelope.Envelope) error {
+func (t *Topic) SendMessage(m *msg.Message) error {
 
-	data, err := e.MarshalToCBOR()
-	if err != nil {
-		return err
-	}
+	// Should this just be a goroutine. Message delivery is not guaranteed anyway.
+	return m.Send(t.ctx, t.Topic)
 
-	err = t.Topic.Publish(t.ctx, data)
-	if err != nil {
-		return fmt.Errorf("failed to publish message: %w", err)
-	}
-
-	return nil
 }
 
 func (t *Topic) envelopeSubscriptionLoop() {

@@ -26,8 +26,6 @@ var (
 
 func InitIdentity() {
 
-	keyset = GetKeyset()
-
 	var err error
 
 	// Generate a new keysets if requested
@@ -99,7 +97,7 @@ func publishIdentity(k *set.Keyset) {
 	}
 	d.Sign(k.SigningKey, assertionMethod)
 
-	_, err = d.Publish()
+	_, err = d.Publish(nil)
 	if err != nil {
 		log.Errorf("config.publishIdentity: failed to publish DOC: %v", err)
 		os.Exit(75) // EX_TEMPFAIL
