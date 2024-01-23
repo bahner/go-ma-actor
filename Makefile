@@ -49,6 +49,9 @@ image:
 install: $(NAME)
 	sudo install -Dm755 $(NAME) $(DESTDIR)$(PREFIX)/bin/$(NAME)
 
+lint:
+	find -name "*.yaml" -exec yamllint -c .yamllintrc {} \;
+
 webui:
 
 run: clean $(NAME)
