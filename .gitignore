@@ -21,7 +21,6 @@
 go.work
 go-space-thumb
 go-space-thumb*
-.env
 *secret
 # Log, config and binary
 go-ma-actor*
