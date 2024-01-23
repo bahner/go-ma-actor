@@ -8,27 +8,9 @@ import (
 	"github.com/bahner/go-ma-actor/p2p"
 	"github.com/bahner/go-ma-actor/ui"
 	"github.com/spf13/pflag"
-	"github.com/spf13/viper"
 
 	log "github.com/sirupsen/logrus"
 )
-
-func init() {
-
-	viper.SetConfigName(config.NAME)
-	viper.SetConfigType("yaml")
-	viper.AddConfigPath(".")
-
-	viper.SetEnvPrefix(config.NAME)
-	viper.AutomaticEnv()
-
-	// Read the configuration file
-	err := viper.ReadInConfig()
-	if err != nil {
-		// Handle the error, e.g., file not found
-		log.Fatalf("Error reading config file: %s\n", err)
-	}
-}
 
 func main() {
 
