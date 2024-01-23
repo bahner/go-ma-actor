@@ -45,6 +45,7 @@ func init() {
 
 	pflag.String("identity", "", "Multibaseencoded libp2p privkey for the node.")
 	viper.BindPFlag("libp2p.dentity", pflag.Lookup("identity"))
+	viper.RegisterAlias("libp2p.identity", "GO_MA_ACTOR_IDENTITY")
 }
 
 // P2P Node identity

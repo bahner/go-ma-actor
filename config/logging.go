@@ -17,9 +17,8 @@ const (
 
 func init() {
 
-	// Logging
 	pflag.String("loglevel", defaultLogLevel, "Loglevel to use for application.")
-	viper.BindPFlag("log.level", pflag.Lookup("logLevel"))
+	viper.BindPFlag("log.level", pflag.Lookup("loglevel"))
 
 	pflag.String("logfile", defaultLogfile, "Logfile to use for application.")
 	viper.BindPFlag("log.file", pflag.Lookup("logfile"))
@@ -41,7 +40,7 @@ func InitLogging() {
 	}
 	log.SetOutput(file)
 
-	log.Info("Logger initialized")
+	log.Info("Logger initialized with loglevel ", viper.GetString("log.level"), " and logfile ", viper.GetString("log.file"))
 
 }
 

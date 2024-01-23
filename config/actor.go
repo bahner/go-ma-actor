@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/spf13/pflag"
@@ -14,37 +15,45 @@ import (
 
 const defaultNick string = "ghost"
 
-var keyset *set.Keyset
+var (
+	keyset *set.Keyset
+)
 
 func init() {
 	// Keyset
 	pflag.Bool("generate", false, "Generates a new keyset")
-	pflag.Bool("publish", false, "Publishes keyset to IPFS when using genenv or generate")
-	viper.RegisterAlias("actor.keyset", "GO_MA_ACTOR_KEYSET")
+	viper.BindPFlag("generate", pflag.Lookup("generate"))
+
+	pflag.BoolP("publish", "p", false, "Publishes keyset to IPFS when using genenv or generate")
+	viper.BindPFlag("publish", pflag.Lookup("publish"))
 
 	// Nick used for keyset generation (fragment)
-	pflag.String("nick", defaultNick, "Nickname to use in character creation")
-	viper.RegisterAlias("actor.nick", "USER")
+	pflag.StringP("nick", "n", defaultNick, "Nickname to use in character creation")
+	viper.BindPFlag("actor.nick", pflag.Lookup("nick"))
+	err := viper.BindEnv("actor.nick", "USER")
+	if err != nil {
+		log.Fatalf("Error binding environment variable 'USER': %s\n", err)
+	}
 
-	pflag.String("home", "", "DID of the initial location.")
+	pflag.StringP("home", "h", "", "DID of the initial location.")
 	viper.BindPFlag("actor.home", pflag.Lookup("home"))
 
 	pflag.String("keyset", "", "Keyset to use for actor.")
 	viper.BindPFlag("actor.keyset", pflag.Lookup("keyset"))
+
 }
 func InitIdentity() {
 
-	var err error
-
-	var (
-		keyset_string = viper.GetString("keyset")
-		nick          = viper.GetString("nick")
-	)
+	keyset_string := viper.GetString("actor.keyset")
+	nick := viper.GetString("actor.nick")
 
 	// Generate a new keysets if requested
 	if viper.GetBool("generate") {
+		fmt.Println(nick)
 		log.Debugf("config.initIdentity: Generating new keyset for %s", nick)
-		keyset_string = generateKeyset()
+		keyset_string = generateKeyset(nick)
+		fmt.Println(keyset_string)
+		os.Exit(0)
 	}
 
 	log.Debugf("config.initIdentity: %s", keyset_string)
@@ -54,7 +63,7 @@ func InitIdentity() {
 		os.Exit(64) // EX_USAGE
 	}
 
-	keyset, err = set.Unpack(viper.GetString("actor.keyset"))
+	keyset, err := set.Unpack(viper.GetString("actor.keyset"))
 	if err != nil {
 		log.Errorf("config.initIdentity: Failed to unpack keyset: %v", err)
 		os.Exit(65) // EX_DATAERR
@@ -70,14 +79,7 @@ func InitIdentity() {
 
 }
 
-func generateKeyset() string {
-
-	nick := viper.GetString("nick")
-
-	if nick == "ghost" {
-		log.Errorf("You need to set a nick when generating an identity.")
-		os.Exit(64) // EX_USAGE
-	}
+func generateKeyset(nick string) string {
 
 	ks, err := set.GetOrCreate(nick)
 	if err != nil {
