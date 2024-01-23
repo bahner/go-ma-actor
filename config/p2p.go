@@ -42,10 +42,6 @@ func init() {
 
 	pflag.Duration("discovery_timeout", defaultDiscoveryTimeout, "Timeout for peer discovery.")
 	viper.BindPFlag("libp2p.connmgr.discovery_timeout", pflag.Lookup("discoveryTimeout"))
-
-	pflag.String("identity", "", "Multibaseencoded libp2p privkey for the node.")
-	viper.BindPFlag("libp2p.dentity", pflag.Lookup("identity"))
-	viper.RegisterAlias("libp2p.identity", "GO_MA_ACTOR_IDENTITY")
 }
 
 // P2P Node identity
@@ -69,7 +65,7 @@ func GetNodeMultibasePrivKey() string {
 
 func GetNodeIdentity() crypto.PrivKey {
 
-	_, privKeyBytes, err := mb.Decode(viper.GetString("identity"))
+	_, privKeyBytes, err := mb.Decode(viper.GetString("libp2p.identity"))
 	if err != nil {
 		return nil
 	}

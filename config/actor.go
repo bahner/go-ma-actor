@@ -21,10 +21,10 @@ var (
 
 func init() {
 	// Keyset
-	pflag.Bool("generate", false, "Generates a new keyset")
+	pflag.BoolP("generate", "g", false, "Generates a new keyset")
 	viper.BindPFlag("generate", pflag.Lookup("generate"))
 
-	pflag.BoolP("publish", "p", false, "Publishes keyset to IPFS when using genenv or generate")
+	pflag.BoolP("publish", "p", false, "Publishes keyset to IPFS")
 	viper.BindPFlag("publish", pflag.Lookup("publish"))
 
 	// Nick used for keyset generation (fragment)
@@ -38,9 +38,6 @@ func init() {
 	pflag.StringP("home", "h", "", "DID of the initial location.")
 	viper.BindPFlag("actor.home", pflag.Lookup("home"))
 
-	pflag.String("keyset", "", "Keyset to use for actor.")
-	viper.BindPFlag("actor.keyset", pflag.Lookup("keyset"))
-
 }
 func InitIdentity() {
 
@@ -49,10 +46,15 @@ func InitIdentity() {
 
 	// Generate a new keysets if requested
 	if viper.GetBool("generate") {
-		fmt.Println(nick)
+
 		log.Debugf("config.initIdentity: Generating new keyset for %s", nick)
 		keyset_string = generateKeyset(nick)
 		fmt.Println(keyset_string)
+
+		if viper.GetBool("publish") {
+			publishIdentity(keyset)
+		}
+
 		os.Exit(0)
 	}
 
