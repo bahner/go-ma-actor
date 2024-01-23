@@ -35,7 +35,7 @@ func init() {
 		log.Fatalf("Error binding environment variable 'USER': %s\n", err)
 	}
 
-	pflag.StringP("home", "h", "", "DID of the initial location.")
+	pflag.StringP("location", "l", "", "DID of the initial location.")
 	viper.BindPFlag("actor.home", pflag.Lookup("home"))
 
 }
