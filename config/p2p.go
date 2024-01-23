@@ -2,57 +2,137 @@ package config
 
 import (
 	"context"
-	"flag"
 	"fmt"
 	"time"
 
-	"go.deanishe.net/env"
+	"github.com/libp2p/go-libp2p/core/crypto"
+	mb "github.com/multiformats/go-multibase"
+	log "github.com/sirupsen/logrus"
+	"github.com/spf13/pflag"
+	"github.com/spf13/viper"
 )
 
-var (
+const (
+	defaultLowWaterMark  int = 3
+	defaultHighWaterMark int = 10
+	defaultDesiredPeers  int = 3
+
+	defaultDiscoveryTimeout       time.Duration = time.Second * 30
+	defaultConnMgrGrace           time.Duration = time.Minute * 1
+	defaultDiscoveryRetryInterval time.Duration = time.Second * 1
+)
+
+func init() {
+
 	// P2P Settings
-	lowWaterMark = flag.Int("lowWaterMark", env.GetInt(GO_MA_ACTOR_LOW_WATERMARK_VAR, defaultLowWaterMark),
-		"Low watermark for peer discovery. You can use environment variable "+GO_MA_ACTOR_LOW_WATERMARK_VAR+" to set this.")
-	highWaterMark = flag.Int("highWaterMark", env.GetInt(GO_MA_ACTOR_HIGH_WATERMARK_VAR, defaultHighWaterMark),
-		"High watermark for peer discovery. You can use environment variable "+GO_MA_ACTOR_HIGH_WATERMARK_VAR+" to set this.")
-	desiredPeers = flag.Int("desiredPeers", env.GetInt(GO_MA_ACTOR_DESIRED_PEERS_VAR, defaultDesiredPeers),
-		"Desired number of peers to connect to. You can use environment variable "+GO_MA_ACTOR_DESIRED_PEERS_VAR+" to set this.")
+	pflag.Int("low_watermark", defaultLowWaterMark, "Low watermark for peer discovery.")
+	viper.BindPFlag("libp2p.connmgr.low_watermark", pflag.Lookup("low_watermark"))
 
-	connmgrGracePeriod = flag.Duration("connmgrGracePeriod", env.GetDuration(GO_MA_ACTOR_CONNMGR_GRACE_VAR, defaultConnMgrGrace),
-		"Grace period for connection manager. You can use environment variable "+GO_MA_ACTOR_CONNMGR_GRACE_VAR+" to set this.")
-	discoveryRetryInterval = flag.Duration("discoveryRetryInterval", env.GetDuration(GO_MA_ACTOR_DISCOVERY_RETRY_INTERVAL_VAR, defaultDiscoveryRetryInterval),
-		"Retry interval for peer discovery. You can use environment variable "+GO_MA_ACTOR_DISCOVERY_RETRY_INTERVAL_VAR+" to set this.")
-	discoveryTimeout = flag.Duration("discoveryTimeout", env.GetDuration(GO_MA_ACTOR_DISCOVERY_TIMEOUT_VAR, defaultDiscoveryTimeout),
-		"Timeout for peer discovery. You can use environment variable "+GO_MA_ACTOR_DISCOVERY_TIMEOUT_VAR+" to set this.")
-)
+	pflag.Int("high_watermark", defaultHighWaterMark, "High watermark for peer discovery.")
+	viper.BindPFlag("libp2p.connmgr.high_watermark", pflag.Lookup("high_watermark"))
+
+	pflag.Int("desired_peers", defaultDesiredPeers, "Desired number of peers to connect to.")
+	viper.BindPFlag("libp2p.connmgr.desired_peers", pflag.Lookup("desired_peers"))
+
+	pflag.Duration("grace_period", defaultConnMgrGrace, "Grace period for connection manager.")
+	viper.BindPFlag("libp2p.connmgr.grace_period", pflag.Lookup("grace_period"))
+
+	pflag.Duration("discovery_retry", defaultDiscoveryRetryInterval, "Retry interval for peer discovery.")
+	viper.BindPFlag("libp2p.discovery_retry", pflag.Lookup("discovery_retryl"))
+
+	pflag.Duration("discovery_timeout", defaultDiscoveryTimeout, "Timeout for peer discovery.")
+	viper.BindPFlag("libp2p.connmgr.discovery_timeout", pflag.Lookup("discoveryTimeout"))
+
+	pflag.String("identity", "", "Multibaseencoded libp2p privkey for the node.")
+	viper.BindPFlag("libp2p.dentity", pflag.Lookup("identity"))
+	viper.RegisterAlias("libp2p.identity", "GO_MA_ACTOR_IDENTITY")
+}
+
+// P2P Node identity
+func InitNodeIdentity() {
+
+	var i string
+
+	if viper.GetString("identity") == "" {
+		i, _ = generateNodeIdentity()
+
+		viper.Set("identity", i)
+	}
+
+	log.Debugf("Node identity: %s", i)
+}
+
+func GetNodeMultibasePrivKey() string {
+
+	return viper.GetString("identity")
+}
+
+func GetNodeIdentity() crypto.PrivKey {
+
+	_, privKeyBytes, err := mb.Decode(viper.GetString("identity"))
+	if err != nil {
+		return nil
+	}
+
+	privKey, err := crypto.UnmarshalPrivateKey(privKeyBytes)
+	if err != nil {
+		return nil
+	}
+
+	return privKey
+
+}
+
+func generateNodeIdentity() (string, error) {
+	pk, _, err := crypto.GenerateKeyPair(crypto.Ed25519, -1)
+	if err != nil {
+		log.Errorf("failed to generate node identity: %s", err)
+		return "", err
+	}
+
+	pkBytes, err := pk.Raw()
+	if err != nil {
+		log.Errorf("failed to generate node identity: %s", err)
+		return "", err
+	}
+
+	ni, err := mb.Encode(mb.Base58BTC, pkBytes)
+	if err != nil {
+		log.Errorf("failed to encode node identity: %s", err)
+		return "", err
+	}
+
+	return ni, nil
+
+}
 
 // P2P Settings
 func GetDiscoveryTimeout() time.Duration {
-	return time.Duration(*discoveryTimeout) * time.Second
+	return time.Duration(viper.GetDuration("discoveryTimeout")) * time.Second
 }
 
 func GetDiscoveryTimeoutString() string {
-	return discoveryTimeout.String()
+	return GetDiscoveryTimeout().String()
 }
 
 func GetLowWaterMark() int {
-	return *lowWaterMark
+	return viper.GetInt("lowWaterMark")
 }
 
 func GetLowWatermarkString() string {
-	return fmt.Sprint(*lowWaterMark)
+	return fmt.Sprint(GetLowWaterMark())
 }
 
 func GetHighWaterMark() int {
-	return *highWaterMark
+	return viper.GetInt("highWaterMark")
 }
 
 func GetHighWatermarkString() string {
-	return fmt.Sprint(*highWaterMark)
+	return fmt.Sprint(GetHighWaterMark())
 }
 
 func GetConnMgrGracePeriod() time.Duration {
-	return *connmgrGracePeriod
+	return viper.GetDuration("connmgrGracePeriod")
 }
 
 func GetConnMgrGraceString() string {
@@ -69,7 +149,7 @@ func GetDiscoveryContext() (context.Context, func()) {
 }
 
 func GetDiscoveryRetryInterval() time.Duration {
-	return *discoveryRetryInterval
+	return viper.GetDuration("discoveryRetryInterval")
 }
 
 func GetDiscoveryRetryIntervalString() string {
@@ -77,9 +157,9 @@ func GetDiscoveryRetryIntervalString() string {
 }
 
 func GetDesiredPeers() int {
-	return *desiredPeers
+	return viper.GetInt("desiredPeers")
 }
 
 func GetDesiredPeersString() string {
-	return fmt.Sprint(*desiredPeers)
+	return fmt.Sprint(GetDesiredPeers())
 }
