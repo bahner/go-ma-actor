@@ -20,15 +20,14 @@ default: clean tidy $(NAME)
 
 all: default image push
 
-#init: go.mod tidy
-#
-#go.mod:
-#	$(GO) mod init $(MODULE_NAME)
-#
-#tidy: go.mod
-#	$(GO) mod tidy
+init: go.mod tidy
 
-#$(NAME): tidy
+go.mod:
+	$(GO) mod init $(MODULE_NAME)
+
+tidy: go.mod
+	$(GO) mod tidy
+
 $(NAME): tidy
 	$(GO) build -o $(NAME)
 

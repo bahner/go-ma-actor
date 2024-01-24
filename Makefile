@@ -52,8 +52,8 @@ image:
 		--build-arg "BUILD_IMAGE=$(BUILD_IMAGE)" \
 		.
 
-install: $(NAME)
-	sudo install -Dm755 $(NAME) $(DESTDIR)$(PREFIX)/bin/$(NAME)
+install: relay home
+	sudo make -C cmd/home install
 	sudo make -C cmd/relay install
 
 lint:
