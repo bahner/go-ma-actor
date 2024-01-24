@@ -1,3 +1,13 @@
+# TODO
+
+Just reminders here
+## Features
+
+Make cmd use proper files under /etc/opt/ma. Eg.
+
+* relay.yaml
+* actor.yaml
+* home.yaml
+
 ## Bugs
 
-* fix redraw of ui when issuing commands

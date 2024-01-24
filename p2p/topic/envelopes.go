@@ -2,9 +2,11 @@ package topic
 
 import (
 	"context"
+	"encoding/hex"
 
 	"github.com/bahner/go-ma/msg"
 	log "github.com/sirupsen/logrus"
+	"lukechampine.com/blake3"
 )
 
 func (t *Topic) SubscribeEnvelopes(ctx context.Context) (envelopes <-chan *msg.Envelope) {
@@ -31,6 +33,14 @@ func (t *Topic) NextEnvelope() (*msg.Envelope, error) {
 	message, err := t.Subscription.Next(t.ctx)
 	if err != nil {
 		return nil, err
+	}
+
+	if log.GetLevel() >= log.DebugLevel {
+		// blake3 is very fast, so this is not a problem in debugging mode
+		// This is just so we can see that messages are actually received
+		bs := blake3.Sum256(message.Data)
+		checksum := hex.EncodeToString(bs[:])
+		log.Debugf("Received message with checksum: %s", checksum)
 	}
 
 	// Here we should distinguish between packed and unpacked envelopes

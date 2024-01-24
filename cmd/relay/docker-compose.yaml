@@ -1,0 +1,10 @@
+---
+
+services:
+  go-ma-relay:
+    image: docker.io/bahner/go-ma-relay
+    network_mode: "host"
+    environment:
+      - GOLOG_FILE=/tmp/go-ma-relay.log
+      - GOLOG_LEVEL=debug
+      - GOLOG_OUTPUT=file

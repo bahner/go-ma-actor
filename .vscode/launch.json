@@ -5,15 +5,27 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Launch Package without args",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${fileDirname}",
+            "console": "integratedTerminal",
+            "env": {
+                "GOLOG_FILE": "debug.log",
+                "GOLOG_LOG_LEVEL": "debug",
+                "GOLOG_STDOUT": "false",
+                "GOLOG_OUTPUT": "file"
+            }
+        },
+        {
             "name": "Launch Package",
             "type": "go",
             "request": "launch",
             "mode": "auto",
             "program": "${fileDirname}",
             "args": [
-                "-loglevel", "debug",
-                "-keyset", "z26KDSJuV59AECvt1Ez7RkXusp5FQuoqK6hykFEYrGbZ9Bhyn6EVjiFEzCe9wNwfw5TGjkNsAw16RjrnE3NFmTfVqLAnH5kJVpnc9sVon7rJJLup8xREDV2yJ13gwM86yeS7qNwxdecJMSqBDJLtvue69KxzQFExvG9osYGevNrQXToPz8341zGbbzxF5AxvbzDQrub7Fqhzd891tcjbQMjmsoqa1eARjvfNtRhwXB3DqSKzPSe5e1wC6UStN8h3Qzsf2qkEooDrXxCERW9h5crhsKqa2brFFc9QGdThi9NAN53gPdociXmRLLpHWQ7LTbn8mAUVgiz6gYTw7Qmm42c7dMGNXkmjQXqZtAbrwYnipWFWTJkJPFv84k4xAL4WDoFtMsBbABio6LR9J7wLkiiRbeFJfZeDHKGPgBnCkdQhbrtbJvDttPGzaoWjFVED7pebbssPnLTpcVUxA29a5cVphwhdbUqYXNimyx29geFBn3pWy7zLWfp9jt2hxUrBJeCWjcjKM4JhhHy8yfu8KBR42nacNo1p3DNAxYedCuGWyahs7QbkgbvHnpBESsKEc3QpiD6RuApZ6LNFYn2AM7PeFAR33P9CGt9qmzTti3dQmxdn6cpsHyGm5FsnG37QB9GJ9GDvfV7koCnBsx8BDgeEUhd5REinkibG925qRV8Ktc8UNnhyt8sNzz6PyiZZygoHsbjJAa3VwdWaB2UztB9U4e9ad6ZefWv7BwajasRxgrHDYbLNv5h16EJid91hNdnZNava71t3NN6fkgtwYqdkkc56E7vpQq3fgqDLeufMTgSRoj4pidr3MxZ7G5inpH5hvciBpY1CCarakyR6csAM5EAoJNAFyQDA3kbB3NFvvz7QzJhDUEsWND7rZxJp2Y2aaGC6ukhGZCYVZc2X4QhZvYzCwFPwbBNttNSEd8FuEADXxVe7n5FUDmfKvysJQNL12YvMfdyVCh6pUZnQSgkaoww3PXC5uwE6NcFjEpCxDVXw2n79j329NNojW7rK98UkWwtVd3bWcVbdKPtzxYjpZB4Woyfzeu9TsNXuNq37URpVR6VUQ9eW9Y6TLwTQ4F1oH5jhmLn45rUm1VK1LMGJV2aciT3A6GeUQxL1iJTQkK",
-                "-entity", "did:ma:k51qzi5uqu5dmd4sku82zehgj2fklfj05huo0ra3l9ntel7rd4blewdk74vyx4#home"
+                "-g",
             ],
             "console": "integratedTerminal"
         }

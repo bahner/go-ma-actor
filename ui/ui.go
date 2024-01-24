@@ -66,6 +66,7 @@ func NewChatUI(p *p2p.P2P, a *actor.Actor, id string) *ChatUI {
 	msgBox := tview.NewTextView()
 	msgBox.SetDynamicColors(true)
 	msgBox.SetBorder(true)
+	msgBox.SetScrollable(true)
 	msgBox.SetTitle(fmt.Sprintf("Entity: %s", e.Alias))
 
 	// text views are io.Writers, but they don't automatically refresh.
@@ -73,6 +74,7 @@ func NewChatUI(p *p2p.P2P, a *actor.Actor, id string) *ChatUI {
 	// new messages to display.
 	msgBox.SetChangedFunc(func() {
 		app.Draw()
+		msgBox.ScrollToEnd()
 	})
 
 	// an input field for typing messages into

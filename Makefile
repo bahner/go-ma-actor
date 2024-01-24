@@ -14,6 +14,8 @@ endif
 
 default: clean tidy $(NAME)
 
+all: clean tidy install
+
 build: $(NAME)
 
 init: go.mod tidy
@@ -29,6 +31,8 @@ $(NAME): tidy
 
 clean:
 	rm -f $(NAME)
+	make -C cmd/home clean
+	make -C cmd/relay clean
 
 console:
 	docker-compose up -d
@@ -40,14 +44,26 @@ distclean: clean
 down:
 	docker-compose down
 
+home:
+	make -C cmd/home
+
+relay:
+	make -C cmd/relay go-ma-relay
+
 image:
 	docker build \
 		-t $(IMAGE) \
 		--build-arg "BUILD_IMAGE=$(BUILD_IMAGE)" \
 		.
 
-install: $(NAME)
-	sudo install -Dm755 $(NAME) $(DESTDIR)$(PREFIX)/bin/$(NAME)
+install: relay home $(NAME)
+	sudo make -C cmd/home install
+	sudo make -C cmd/relay install
+	sudo install -m755 $(NAME) $(DESTDIR)$(PREFIX)/bin/$(NAME)
+
+
+lint:
+	find -name "*.yaml" -exec yamllint -c .yamllintrc {} \;
 
 webui:
 

@@ -1,21 +1,25 @@
 package main
 
 import (
-	"flag"
 	"os"
 
 	"github.com/bahner/go-ma-actor/actor"
 	"github.com/bahner/go-ma-actor/config"
 	"github.com/bahner/go-ma-actor/p2p"
 	"github.com/bahner/go-ma-actor/ui"
+	"github.com/spf13/pflag"
 
 	log "github.com/sirupsen/logrus"
 )
 
 func main() {
 
-	flag.Parse()
-	config.Init()
+	pflag.Parse()
+
+	config.Init(config.NAME)
+	config.InitLogging()
+	config.InitP2P()
+	config.InitActor()
 
 	p, err := p2p.Init(nil)
 	if err != nil {
@@ -36,7 +40,7 @@ func main() {
 		os.Exit(70)
 	}
 
-	e := config.GetEntity()
+	e := config.GetHome()
 	// Draw the UI.
 	log.Debugf("Starting text UI")
 	ui := ui.NewChatUI(p, a, e)

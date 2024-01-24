@@ -50,18 +50,18 @@ func (ui *ChatUI) handleChatMessage(input string) error {
 		ui.displaySelfMessage(string(msgJson))
 	}
 	ui.displayChatMessage(msg)
-	topic, err := topic.GetOrCreate(ui.e.DID)
+	t, err := topic.GetOrCreate(ui.e.DID)
 	if err != nil {
 		log.Debugf("topic creation error: %s", err)
 		return fmt.Errorf("topic creation error: %w", err)
 	}
 
-	err = msg.Send(ctx, topic.Topic)
+	err = msg.Send(ctx, t.Topic)
 	if err != nil {
 		log.Debugf("message publishing error: %s", err)
 		return fmt.Errorf("message publishing error: %w", err)
 	}
-	log.Debugf("Message published to topic: %s", topic.Topic.String())
+	log.Debugf("Message published to topic: %s", t.Topic.String())
 
 	return nil
 }
