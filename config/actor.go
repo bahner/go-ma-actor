@@ -41,35 +41,6 @@ func init() {
 func InitActor() {
 
 	keyset_string := viper.GetString("actor.identity")
-	nick := viper.GetString("actor.nick")
-
-	// Generate a new keysets if requested
-	if viper.GetBool("generate") {
-
-		log.Debugf("config.initIdentity: Generating new keyset for %s", nick)
-		keyset_string = generateKeyset(nick)
-		fmt.Println(ENV_PREFIX + "_ACTOR_IDENTITY=" + keyset_string)
-
-		keyset, err := set.Unpack(keyset_string)
-		if err != nil {
-			log.Errorf("config.initIdentity: Failed to unpack keyset: %v", err)
-			os.Exit(65) // EX_DATAERR
-		}
-
-		if viper.GetBool("publish") {
-			publishIdentity(keyset)
-		}
-
-		p2pPrivKey, err := generateNodeIdentity()
-		if err != nil {
-			log.Errorf("config.initIdentity: Failed to generate node identity: %v", err)
-			os.Exit(70) // EX_SOFTWARE
-		}
-
-		fmt.Println(ENV_PREFIX + "_LIBP2P_IDENTITY=" + p2pPrivKey)
-
-		os.Exit(0)
-	}
 
 	log.Debugf("config.initIdentity: %s", keyset_string)
 	// Create the actor keyset
@@ -78,17 +49,16 @@ func InitActor() {
 		os.Exit(64) // EX_USAGE
 	}
 
-	keyset, err := set.Unpack(viper.GetString("actor.identity"))
+	keyset, err := set.Unpack(keyset_string)
 	if err != nil {
 		log.Errorf("config.initIdentity: Failed to unpack keyset: %v", err)
-		os.Exit(65) // EX_DATAERR
 	}
 
-	if viper.GetBool("publish") {
-		if GetActorIdentity() != "" {
-			publishIdentity(keyset)
-		} else {
-			log.Errorf("No actor keyset to publish.")
+	if viper.GetBool("publish") && keyset_string != "" {
+		err := publishIdentityFromKeyset(keyset)
+		if err != nil {
+			log.Errorf("config.initIdentity: Failed to publish keyset: %v", err)
+			os.Exit(75) // EX_TEMPFAIL
 		}
 	}
 
@@ -96,47 +66,98 @@ func InitActor() {
 
 }
 
-func generateKeyset(nick string) string {
+func handleGenerateOrExit() {
+	// Generate a new keysets if requested
+
+	keyset_string, err := generateAndPrintActorIdentity()
+	if err != nil {
+		log.Errorf("config.initIdentity: Failed to generate keyset: %v", err)
+		os.Exit(70) // EX_SOFTWARE
+	}
+
+	if viper.GetBool("publish") {
+		err = publishActorIdentityFromString(keyset_string)
+		if err != nil {
+			log.Errorf("config.initIdentity: Failed to publish keyset: %v", err)
+			os.Exit(75) // EX_TEMPFAIL
+		}
+	}
+
+	err = generateAndPrintNodeIdentity()
+	if err != nil {
+		log.Errorf("config.initIdentity: Failed to generate node identity: %v", err)
+		os.Exit(70) // EX_SOFTWARE
+	}
+
+}
+
+func generateAndPrintActorIdentity() (string, error) {
+
+	nick := viper.GetString("actor.nick")
+
+	keyset_string, err := generateKeyset(nick)
+	if err != nil {
+		return "", fmt.Errorf("config.initIdentity: Failed to generate keyset: %v", err)
+	}
+
+	fmt.Println(ENV_PREFIX + "_ACTOR_IDENTITY=" + keyset_string)
+
+	return keyset_string, nil
+}
+
+func publishActorIdentityFromString(keyset_string string) error {
+
+	keyset, err := set.Unpack(keyset_string)
+	if err != nil {
+		log.Errorf("config.initIdentity: Failed to unpack keyset: %v", err)
+	}
+
+	err = publishIdentityFromKeyset(keyset)
+	if err != nil {
+		return fmt.Errorf("config.initIdentity: Failed to publish keyset: %v", err)
+	}
+
+	return nil
+}
+
+func generateKeyset(nick string) (string, error) {
 
 	ks, err := set.GetOrCreate(nick)
 	if err != nil {
-		log.Errorf("Failed to generate new keyset: %v", err)
-		os.Exit(70) // EX_SOFTWARE
+		return "", fmt.Errorf("failed to generate new keyset: %w", err)
 	}
 	log.Debugf("Created new keyset: %v", ks)
 
 	pks, err := ks.Pack()
 	if err != nil {
-		log.Errorf("Failed to pack keyset: %v", err)
-		os.Exit(70) // EX_SOFTWARE
+		return "", fmt.Errorf("failed to pack keyset: %w", err)
 	}
 	log.Debugf("Packed keyset: %v", pks)
 
-	return pks
+	return pks, nil
 }
 
-func publishIdentity(k *set.Keyset) {
+func publishIdentityFromKeyset(k *set.Keyset) error {
 
 	d, err := doc.NewFromKeyset(k)
 	if err != nil {
-		log.Errorf("config.publishIdentity: failed to create DOC: %v", err)
-		os.Exit(75) // EX_TEMPFAIL
+		return fmt.Errorf("config.publishIdentity: failed to create DOC: %v", err)
 	}
 
 	assertionMethod, err := d.GetAssertionMethod()
 	if err != nil {
-		log.Errorf("config.publishIdentity: failed to get verification method: %v", err)
-		os.Exit(75) // EX_TEMPFAIL
+		return fmt.Errorf("config.publishIdentity: failed to get verification method: %v", err)
 	}
 	d.Sign(k.SigningKey, assertionMethod)
 
 	_, err = d.Publish(nil)
 	if err != nil {
-		log.Errorf("config.publishIdentity: failed to publish DOC: %v", err)
-		os.Exit(75) // EX_TEMPFAIL
+		return fmt.Errorf("config.publishIdentity: failed to publish DOC: %v", err)
+
 	}
 	log.Debugf("config.publishIdentity: published DOC: %s", d.ID)
 
+	return nil
 }
 
 func GetKeyset() *set.Keyset {

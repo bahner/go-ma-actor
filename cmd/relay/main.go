@@ -22,7 +22,7 @@ func main() {
 
 	pflag.Parse()
 
-	config.Init("relay.yaml")
+	config.Init("relay")
 	config.InitLogging()
 	config.InitP2P()
 

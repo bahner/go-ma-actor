@@ -79,6 +79,18 @@ func GetNodeIdentity() crypto.PrivKey {
 
 }
 
+func generateAndPrintNodeIdentity() error {
+
+	p2pPrivKey, err := generateNodeIdentity()
+	if err != nil {
+		return fmt.Errorf("config.initIdentity: Failed to generate node identity: %v", err)
+	}
+
+	fmt.Println(ENV_PREFIX + "_LIBP2P_IDENTITY=" + p2pPrivKey)
+
+	return nil
+}
+
 func generateNodeIdentity() (string, error) {
 	pk, _, err := crypto.GenerateKeyPair(crypto.Ed25519, -1)
 	if err != nil {

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
@@ -44,13 +45,13 @@ func init() {
 }
 
 // This should be called after pflag.Parse() in main.
-// The name parameter is the name of the config file to search for.
-func Init(config string) error {
+// The name parameter is the name of the config file to search for without the extension.
+func Init(configName string) error {
 
 	if configFile != "" {
 		viper.SetConfigFile(configFile)
-	} else if config != "" {
-		viper.SetConfigFile(config)
+	} else if configName != "" {
+		viper.SetConfigName(configName)
 	}
 
 	err := viper.ReadInConfig()
@@ -63,6 +64,14 @@ func Init(config string) error {
 		os.Exit(0)
 	}
 
+	// This will exit when done. It will also publish if applicable.
+	if viper.GetBool("generate") {
+		log.Info("Generating new keyset and node identity")
+		handleGenerateOrExit()
+		os.Exit(0)
+	}
+
+	os.Exit(0)
 	return nil
 
 }

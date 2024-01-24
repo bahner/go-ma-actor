@@ -15,7 +15,8 @@ import (
 func main() {
 
 	pflag.Parse()
-	config.Init("actor.yaml")
+
+	config.Init(config.NAME)
 	config.InitLogging()
 	config.InitP2P()
 	config.InitActor()

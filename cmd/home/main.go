@@ -19,7 +19,7 @@ func main() {
 
 	pflag.Parse()
 
-	config.Init("home.yaml")
+	config.Init("home")
 	config.InitLogging()
 	config.InitP2P()
 	config.InitActor()
