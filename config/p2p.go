@@ -45,7 +45,7 @@ func init() {
 }
 
 // P2P Node identity
-func InitNodeIdentity() {
+func InitP2P() {
 
 	var i string
 

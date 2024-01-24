@@ -2,10 +2,11 @@ package main
 
 import (
 	"context"
-	"flag"
 	"fmt"
 	"net/http"
 	"os"
+
+	"github.com/spf13/pflag"
 
 	"github.com/bahner/go-ma-actor/actor"
 	"github.com/bahner/go-ma-actor/config"
@@ -14,21 +15,14 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// var (
-// 	ctx context.Context
-// 	err error
-
-// 	a *actor.Actor
-// 	p *p2p.P2P
-// 	n host.Host
-
-// 	envelopes <-chan *msg.Envelope
-// )
-
 func main() {
 
-	flag.Parse()
-	config.Init()
+	pflag.Parse()
+
+	config.Init("home.yaml")
+	config.InitLogging()
+	config.InitP2P()
+	config.InitActor()
 
 	ctx := context.Background()
 
@@ -53,14 +47,14 @@ func main() {
 	fmt.Printf("I am : %s\n", a.Entity.DID.String())
 	fmt.Printf("My public key is: %s\n", n.ID().String())
 
-	go discoveryHandler(p)
+	go p.DiscoverPeers()
 	go handleEvents(ctx, a)
 
 	// This is defined in web.go. It makes it possible to add extra parameters to the handler.
 	h := &WebHandlerData{n, a}
 	http.HandleFunc("/", h.WebHandler)
-	fmt.Println("Listening on port 5003...")
-	err = http.ListenAndServe("0.0.0.0:5003", nil)
+	log.Infof("Listening on %s\n", getHttpSocket())
+	err = http.ListenAndServe(getHttpSocket(), nil)
 	if err != nil {
 		log.Fatal(err)
 	}

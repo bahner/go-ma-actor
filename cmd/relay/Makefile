@@ -1,7 +1,7 @@
 #!/usr/bin/make -ef
 
 NAME		= go-ma-relay
-VERSION		= v2.0.0
+VERSION		= v2.0.1
 GO_VERSION	= 1.21.6
 
 export BUILD_IMAGE	?= golang:$(GO_VERSION)-alpine
@@ -59,6 +59,6 @@ release: image push
 	docker push $(IMAGE):$(VERSION)
 
 install:
-	install -Dm755 $(NAME) $(DESTDIR)$(PREFIX)/bin/$(NAME)
+	install -m755 $(NAME) $(DESTDIR)$(PREFIX)/bin/$(NAME)
 
 .PHONY: default init tidy install clean distclean

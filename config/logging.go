@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 
 	log "github.com/sirupsen/logrus"
@@ -14,15 +13,6 @@ const (
 	defaultLogLevel string = "info"
 	defaultLogfile  string = NAME + ".log"
 )
-
-func init() {
-
-	pflag.String("loglevel", defaultLogLevel, "Loglevel to use for application.")
-	viper.BindPFlag("log.level", pflag.Lookup("loglevel"))
-
-	pflag.String("logfile", defaultLogfile, "Logfile to use for application.")
-	viper.BindPFlag("log.file", pflag.Lookup("logfile"))
-}
 
 func InitLogging() {
 

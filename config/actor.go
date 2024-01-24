@@ -35,9 +35,12 @@ func init() {
 	viper.BindPFlag("location.home", pflag.Lookup("home"))
 
 }
-func InitIdentity() {
 
-	keyset_string := viper.GetString("actor.keyset")
+// Load a keyset from string and initiate an Actor.
+// This is optional, but if you want to use the actor package, you need to call this.
+func InitActor() {
+
+	keyset_string := viper.GetString("actor.identity")
 	nick := viper.GetString("actor.nick")
 
 	// Generate a new keysets if requested
@@ -45,7 +48,7 @@ func InitIdentity() {
 
 		log.Debugf("config.initIdentity: Generating new keyset for %s", nick)
 		keyset_string = generateKeyset(nick)
-		fmt.Println(keyset_string)
+		fmt.Println(ENV_PREFIX + "_ACTOR_IDENTITY=" + keyset_string)
 
 		keyset, err := set.Unpack(keyset_string)
 		if err != nil {
@@ -57,6 +60,14 @@ func InitIdentity() {
 			publishIdentity(keyset)
 		}
 
+		p2pPrivKey, err := generateNodeIdentity()
+		if err != nil {
+			log.Errorf("config.initIdentity: Failed to generate node identity: %v", err)
+			os.Exit(70) // EX_SOFTWARE
+		}
+
+		fmt.Println(ENV_PREFIX + "_LIBP2P_IDENTITY=" + p2pPrivKey)
+
 		os.Exit(0)
 	}
 
@@ -67,14 +78,14 @@ func InitIdentity() {
 		os.Exit(64) // EX_USAGE
 	}
 
-	keyset, err := set.Unpack(viper.GetString("actor.keyset"))
+	keyset, err := set.Unpack(viper.GetString("actor.identity"))
 	if err != nil {
 		log.Errorf("config.initIdentity: Failed to unpack keyset: %v", err)
 		os.Exit(65) // EX_DATAERR
 	}
 
 	if viper.GetBool("publish") {
-		if GetKeysetString() != "" {
+		if GetActorIdentity() != "" {
 			publishIdentity(keyset)
 		} else {
 			log.Errorf("No actor keyset to publish.")
@@ -136,11 +147,11 @@ func GetIPFSKey() *ipfs.Key {
 	return GetKeyset().IPFSKey
 }
 
-func GetKeysetString() string {
-	return viper.GetString("actor.keyset")
+func GetActorIdentity() string {
+	return viper.GetString("actor.identity")
 }
 
-func GetNick() string {
+func GetActorNick() string {
 	return viper.GetString("actor.nick")
 }
 

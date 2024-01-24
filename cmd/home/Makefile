@@ -12,7 +12,7 @@ $(NAME):
 	go build -o $(NAME) .
 
 install: $(NAME)
-	sudo mv $(NAME) $(PREFIX)/bin
+	sudo install -m755 $(NAME) $(DESTDIR)$(PREFIX)/bin/$(NAME)
 
 clean:
 	rm -f $(NAME)

@@ -15,7 +15,10 @@ import (
 func main() {
 
 	pflag.Parse()
-	config.Init()
+	config.Init("actor.yaml")
+	config.InitLogging()
+	config.InitP2P()
+	config.InitActor()
 
 	p, err := p2p.Init(nil)
 	if err != nil {

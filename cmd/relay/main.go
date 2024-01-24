@@ -21,8 +21,10 @@ var (
 func main() {
 
 	pflag.Parse()
+
+	config.Init("relay.yaml")
 	config.InitLogging()
-	config.InitNodeIdentity()
+	config.InitP2P()
 
 	var err error
 
@@ -43,8 +45,8 @@ func main() {
 
 	http.HandleFunc("/", webHandler)
 
-	log.Infof("Serving info on %s", httpSocket)
-	err = http.ListenAndServe(httpSocket, nil)
+	log.Infof("Serving info on %s", getHttpSocket())
+	err = http.ListenAndServe(getHttpSocket(), nil)
 	if err != nil {
 		log.Fatal(err)
 	}
