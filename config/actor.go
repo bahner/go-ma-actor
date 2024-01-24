@@ -15,10 +15,6 @@ import (
 
 const defaultNick string = "ghost"
 
-var (
-	keyset *set.Keyset
-)
-
 func init() {
 	// Keyset
 	pflag.BoolP("generate", "g", false, "Generates a new keyset")
@@ -36,7 +32,7 @@ func init() {
 	}
 
 	pflag.StringP("location", "l", "", "DID of the initial location.")
-	viper.BindPFlag("actor.home", pflag.Lookup("home"))
+	viper.BindPFlag("location.home", pflag.Lookup("home"))
 
 }
 func InitIdentity() {
@@ -50,6 +46,12 @@ func InitIdentity() {
 		log.Debugf("config.initIdentity: Generating new keyset for %s", nick)
 		keyset_string = generateKeyset(nick)
 		fmt.Println(keyset_string)
+
+		keyset, err := set.Unpack(keyset_string)
+		if err != nil {
+			log.Errorf("config.initIdentity: Failed to unpack keyset: %v", err)
+			os.Exit(65) // EX_DATAERR
+		}
 
 		if viper.GetBool("publish") {
 			publishIdentity(keyset)
@@ -79,6 +81,8 @@ func InitIdentity() {
 		}
 	}
 
+	viper.Set("keyset", keyset)
+
 }
 
 func generateKeyset(nick string) string {
@@ -102,7 +106,7 @@ func generateKeyset(nick string) string {
 
 func publishIdentity(k *set.Keyset) {
 
-	d, err := doc.NewFromKeyset(keyset)
+	d, err := doc.NewFromKeyset(k)
 	if err != nil {
 		log.Errorf("config.publishIdentity: failed to create DOC: %v", err)
 		os.Exit(75) // EX_TEMPFAIL
@@ -125,11 +129,11 @@ func publishIdentity(k *set.Keyset) {
 }
 
 func GetKeyset() *set.Keyset {
-	return keyset
+	return viper.Get("keyset").(*set.Keyset)
 }
 
 func GetIPFSKey() *ipfs.Key {
-	return keyset.IPFSKey
+	return GetKeyset().IPFSKey
 }
 
 func GetKeysetString() string {
@@ -146,5 +150,5 @@ func GetPublish() bool {
 }
 
 func GetHome() string {
-	return viper.GetString("entity")
+	return viper.GetString("location.home")
 }

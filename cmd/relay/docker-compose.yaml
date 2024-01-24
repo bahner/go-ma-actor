@@ -1,0 +1,16 @@
+---
+
+services:
+  go-ma-relay:
+    image: docker.io/bahner/go-ma-relay
+    network_mode: "host"
+    environment:
+      - GO_MA_RELAY_CONN_MGR_GRACE_PERIOD
+      - GO_MA_RELAY_DISCOVERY_SLEEP
+      - GO_MA_RELAY_HIGH_WATER_MARK
+      - GO_MA_RELAY_HTTP_ADDR
+      - GO_MA_RELAY_HTTP_PORT
+      - GO_MA_RELAY_LISTEN_PORT
+      - GO_MA_RELAY_LOG_LEVEL
+      - GO_MA_RELAY_LOW_WATER_MARK
+      - GO_MA_RELAY_KEYSET

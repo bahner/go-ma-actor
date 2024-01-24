@@ -1,0 +1,12 @@
+# TODO
+
+## Create a useful README
+The code is approaching useful state, but needs to have the documentation leveraged significantly.
+
+## kubo/rpc
+
+go-ipfs-api has been archived and needs to be replaced with kubo rpc
+
+## resource usage
+
+Something in the setup here starts huge resource usage. But the other users of the underlying p2p code doesn't. So fix it.

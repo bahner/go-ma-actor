@@ -40,6 +40,12 @@ distclean: clean
 down:
 	docker-compose down
 
+home:
+	make -C cmd/home install
+
+relay:
+	make -C cmd/relay go-ma-relay
+
 image:
 	docker build \
 		-t $(IMAGE) \
@@ -48,6 +54,7 @@ image:
 
 install: $(NAME)
 	sudo install -Dm755 $(NAME) $(DESTDIR)$(PREFIX)/bin/$(NAME)
+	sudo make -C cmd/relay install
 
 lint:
 	find -name "*.yaml" -exec yamllint -c .yamllintrc {} \;
