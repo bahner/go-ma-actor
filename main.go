@@ -16,7 +16,7 @@ func main() {
 
 	pflag.Parse()
 
-	config.Init(config.NAME)
+	config.Init("actor")
 	config.InitLogging()
 	config.InitP2P()
 	config.InitActor()

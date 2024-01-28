@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/bahner/go-ma-actor/config"
 	"github.com/bahner/go-ma-actor/p2p/topic"
 	"github.com/bahner/go-ma/entity"
 	"github.com/bahner/go-ma/key/set"
@@ -60,7 +61,7 @@ func New(e *entity.Entity) (*Actor, error) {
 	a.Messages = make(chan *msg.Message, MESSAGES_BUFFERSIZE)
 
 	// Publish the entity
-	_, err = a.Entity.Doc.Publish(nil)
+	_, err = a.Entity.Doc.Publish(config.GetDocPublishOptions())
 	if err != nil {
 		log.Errorf("actor.New: Failed to publish Entity: %v", err)
 	}

@@ -183,3 +183,9 @@ func GetPublish() bool {
 func GetHome() string {
 	return viper.GetString("location.home")
 }
+
+func GetDocPublishOptions() *doc.PublishOptions {
+	return &doc.PublishOptions{
+		Force: viper.GetBool("publish"),
+	}
+}

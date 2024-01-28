@@ -59,7 +59,7 @@ func Init(configName string) error {
 
 	err := viper.ReadInConfig()
 	if err != nil {
-		return fmt.Errorf("fatal error config file: %s", err)
+		log.Warnf("No config file found: %s", err)
 	}
 
 	if viper.GetBool("version") {
