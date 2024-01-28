@@ -154,6 +154,7 @@ func NewChatUI(p *p2p.P2P, a *actor.Actor, id string) *ChatUI {
 // the event loop for the text UI.
 func (ui *ChatUI) Run() error {
 	go ui.handleEvents()
+	go ui.handleTopicEvents()
 	defer ui.end()
 
 	return ui.app.Run()

@@ -1,4 +1,4 @@
-module go-ma-home
+module go-ma-pong
 
 go 1.21.6
 

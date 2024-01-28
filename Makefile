@@ -31,7 +31,7 @@ $(NAME): tidy
 
 clean:
 	rm -f $(NAME)
-	make -C cmd/home clean
+	make -C cmd/pong clean
 	make -C cmd/relay clean
 
 console:
@@ -44,8 +44,8 @@ distclean: clean
 down:
 	docker-compose down
 
-home:
-	make -C cmd/home
+pong:
+	make -C cmd/pong
 
 relay:
 	make -C cmd/relay go-ma-relay
@@ -56,8 +56,8 @@ image:
 		--build-arg "BUILD_IMAGE=$(BUILD_IMAGE)" \
 		.
 
-install: relay home $(NAME)
-	sudo make -C cmd/home install
+install: relay pong $(NAME)
+	sudo make -C cmd/pong install
 	sudo make -C cmd/relay install
 	sudo install -m755 $(NAME) $(DESTDIR)$(PREFIX)/bin/$(NAME)
 

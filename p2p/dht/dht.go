@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"sync"
-	"time"
 
 	"github.com/bahner/go-ma"
 	"github.com/bahner/go-ma-actor/config"
@@ -93,14 +92,8 @@ func (d *DHT) Bootstrap(ctx context.Context) error {
 // Takes a context and a DHT instance and discovers peers using the DHT.
 // You might want to se server option or not for the DHT.
 // Takes a variadic list of discovery.Option. You'll need this if you want to set a custom routing table.
-func (d *DHT) DiscoverPeers(discoveryOpts ...discovery.Option) error {
-	desiredPeers := config.GetDesiredPeers()
-	log.Debugf("Starting DHT peer discovery searching for %d peers for rendezvous string: %s", desiredPeers, ma.RENDEZVOUS)
-
-	// ctx, cancel := config.GetDiscoveryContext()
-	// defer cancel()
-
-	ctx := context.Background()
+func (d *DHT) DiscoverPeers(ctx context.Context, discoveryOpts ...discovery.Option) error {
+	log.Debugf("Starting DHT peer discovery searching for peers with rendezvous string: %s", ma.RENDEZVOUS)
 
 	log.Debugf("Peer discovery timeout: %v", config.GetDiscoveryTimeout())
 	log.Debugf("Peer discovery context %v", ctx)
@@ -114,37 +107,27 @@ func (d *DHT) DiscoverPeers(discoveryOpts ...discovery.Option) error {
 	dutil.Advertise(ctx, routingDiscovery, ma.RENDEZVOUS, discoveryOpts...)
 	log.Debugf("Advertising rendezvous string: %s", ma.RENDEZVOUS)
 
-	var foundPeers int
-	for foundPeers < desiredPeers {
-		log.Debugf("Searching for %d more peers", desiredPeers-foundPeers)
+	peerChan, err := routingDiscovery.FindPeers(ctx, ma.RENDEZVOUS, discoveryOpts...)
+	if err != nil {
+		return fmt.Errorf("dht:discovery: peer discovery error: %w", err)
+	}
 
-		peerChan, err := routingDiscovery.FindPeers(ctx, ma.RENDEZVOUS, discoveryOpts...)
+	for p := range peerChan {
+		if p.ID == d.h.ID() {
+			continue // Skip self connection
+		}
+
+		err := d.h.Connect(ctx, p)
 		if err != nil {
-			return fmt.Errorf("dht:discovery: peer discovery error: %w", err)
+			log.Debugf("Failed connecting to %s, error: %v", p.ID.String(), err)
+			d.h.ConnManager().UntagPeer(p.ID, ma.RENDEZVOUS)
+			d.h.ConnManager().Unprotect(p.ID, ma.RENDEZVOUS)
+			continue
 		}
 
-		for p := range peerChan {
-			if p.ID == d.h.ID() {
-				continue // Skip self connection
-			}
-
-			err := d.h.Connect(ctx, p)
-			if err != nil {
-				log.Debugf("Failed connecting to %s, error: %v", p.ID.String(), err)
-				continue
-			}
-
-			log.Debugf("Connected to DHT peer: %s", p.ID.String())
-			d.h.ConnManager().TagPeer(p.ID, ma.RENDEZVOUS, 10)
-			d.h.ConnManager().Protect(p.ID, ma.RENDEZVOUS)
-			foundPeers++
-			log.Debugf("(Found %d/%d peers)", foundPeers, desiredPeers)
-
-			if foundPeers >= desiredPeers {
-				log.Infof("Desired number of peers (%d) discovered.", foundPeers)
-				return nil
-			}
-		}
+		log.Debugf("Connected to DHT peer: %s", p.ID.String())
+		d.h.ConnManager().TagPeer(p.ID, ma.RENDEZVOUS, 10)
+		d.h.ConnManager().Protect(p.ID, ma.RENDEZVOUS)
 
 		// Check if the context was cancelled or timed out
 		if ctx.Err() != nil {
@@ -152,10 +135,7 @@ func (d *DHT) DiscoverPeers(discoveryOpts ...discovery.Option) error {
 			return ctx.Err()
 		}
 
-		log.Debugf("Sleeping for %v before retrying peer discovery.", config.GetDiscoveryRetryInterval())
-		time.Sleep(config.GetDiscoveryRetryInterval())
 	}
 
-	log.Info("DHT Peer discovery complete")
 	return nil
 }

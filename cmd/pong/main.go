@@ -19,7 +19,7 @@ func main() {
 
 	pflag.Parse()
 
-	config.Init("home")
+	config.Init("pong")
 	config.InitLogging()
 	config.InitP2P()
 	config.InitActor()

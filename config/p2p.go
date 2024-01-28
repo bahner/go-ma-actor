@@ -15,7 +15,7 @@ import (
 const (
 	defaultLowWaterMark  int = 3
 	defaultHighWaterMark int = 10
-	defaultDesiredPeers  int = 3
+	// defaultDesiredPeers  int = 3
 
 	defaultDiscoveryTimeout       time.Duration = time.Second * 30
 	defaultConnMgrGrace           time.Duration = time.Minute * 1
@@ -33,9 +33,9 @@ func init() {
 	viper.SetDefault("libp2p.connmgr.high_watermark", defaultHighWaterMark)
 	viper.BindPFlag("libp2p.connmgr.high_watermark", pflag.Lookup("high_watermark"))
 
-	pflag.Int("desired_peers", defaultDesiredPeers, "Desired number of peers to connect to.")
-	viper.SetDefault("libp2p.connmgr.desired_peers", defaultDesiredPeers)
-	viper.BindPFlag("libp2p.connmgr.desired_peers", pflag.Lookup("desired_peers"))
+	// pflag.Int("desired_peers", defaultDesiredPeers, "Desired number of peers to connect to.")
+	// viper.SetDefault("libp2p.connmgr.desired_peers", defaultDesiredPeers)
+	// viper.BindPFlag("libp2p.connmgr.desired_peers", pflag.Lookup("desired_peers"))
 
 	pflag.Duration("grace_period", defaultConnMgrGrace, "Grace period for connection manager.")
 	viper.SetDefault("libp2p.connmgr.grace_period", defaultConnMgrGrace)
@@ -167,13 +167,13 @@ func GetConnMgrGraceString() string {
 	return GetConnMgrGracePeriod().String()
 }
 
-func GetDesiredPeers() int {
-	return viper.GetInt("libp2p.connmgr.desired_peers")
-}
+// func GetDesiredPeers() int {
+// 	return viper.GetInt("libp2p.connmgr.desired_peers")
+// }
 
-func GetDesiredPeersString() string {
-	return fmt.Sprint(GetDesiredPeers())
-}
+// func GetDesiredPeersString() string {
+// 	return fmt.Sprint(GetDesiredPeers())
+// }
 
 func GetDiscoveryRetryInterval() time.Duration {
 	return viper.GetDuration("libp2p.discovery_retry")

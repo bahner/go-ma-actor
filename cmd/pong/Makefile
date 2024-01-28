@@ -1,7 +1,7 @@
 #!/usr/bin/make -ef
 
 
-NAME = go-ma-home
+NAME = go-ma-pong
 PREFIX ?= /usr/local
 
 default: clean $(NAME)

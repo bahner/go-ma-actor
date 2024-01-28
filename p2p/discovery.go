@@ -23,7 +23,7 @@ func (p *P2P) DiscoverPeers() error {
 	ctx, cancel := config.GetDiscoveryContext()
 	defer cancel()
 
-	err := p.DHT.DiscoverPeers()
+	err := p.DHT.DiscoverPeers(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to initialise DHT. Peer discovery unsuccessful: %w", err)
 	}
@@ -50,7 +50,7 @@ func (p *P2P) DiscoveryLoop(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		default:
-			p.DHT.DiscoverPeers()
+			p.DHT.DiscoverPeers(ctx)
 			sleepTime := config.GetDiscoveryRetryInterval()
 			log.Debugf("Sleeping for %s", sleepTime.String())
 			time.Sleep(sleepTime)
