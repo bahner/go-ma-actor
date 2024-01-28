@@ -37,9 +37,11 @@ func init() {
 	viper.BindPFlag("version", pflag.Lookup("version"))
 
 	pflag.String("loglevel", defaultLogLevel, "Loglevel to use for application.")
+	viper.SetDefault("log.level", defaultLogLevel)
 	viper.BindPFlag("log.level", pflag.Lookup("loglevel"))
 
 	pflag.String("logfile", defaultLogfile, "Logfile to use for application.")
+	viper.SetDefault("log.file", defaultLogfile)
 	viper.BindPFlag("log.file", pflag.Lookup("logfile"))
 
 }
@@ -49,6 +51,7 @@ func init() {
 func Init(configName string) error {
 
 	if configFile != "" {
+		log.Infof("Using config file: %s", configFile)
 		viper.SetConfigFile(configFile)
 	} else if configName != "" {
 		viper.SetConfigName(configName)
@@ -71,7 +74,6 @@ func Init(configName string) error {
 		os.Exit(0)
 	}
 
-	os.Exit(0)
 	return nil
 
 }
