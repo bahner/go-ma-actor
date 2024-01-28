@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"net/http"
-	"time"
 
 	"github.com/spf13/pflag"
 
@@ -40,8 +39,9 @@ func main() {
 	}
 	log.Info("libp2p node created: ", p.Node.ID())
 
-	// Boostrap Kademlia DHT and wait for it to finish.
-	go discoveryLoop(ctx, p)
+	// Start a continous discovery process in the background
+	// relay shouldn't require peers initially, so this'll just keep running.
+	go p.DiscoveryLoop(ctx)
 
 	http.HandleFunc("/", webHandler)
 
@@ -51,16 +51,4 @@ func main() {
 		log.Fatal(err)
 	}
 
-}
-
-func discoveryLoop(ctx context.Context, p *p2p.P2P) {
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		default:
-			p.DHT.DiscoverPeers()
-			time.Sleep(config.GetDiscoveryRetryInterval())
-		}
-	}
 }

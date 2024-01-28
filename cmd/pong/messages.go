@@ -36,19 +36,25 @@ import (
 // }
 
 func pong(ctx context.Context, a *actor.Actor, m *msg.Message) error {
-	to, err := topic.GetOrCreate(m.From)
+
+	// Answer in the same channel, ie. my address. It's kinda like a broadcast to a "room"
+	to, err := topic.GetOrCreate(a.Entity.DID.String())
 	if err != nil {
 		return fmt.Errorf("failed subscribing to recipients topic: %w", errors.Cause(err))
 	}
 
+	// p means pong :-)
 	p, err := msg.New(m.To, m.From, []byte("Pong!"), "text/plain", a.Entity.Keyset.SigningKey.PrivKey)
 	if err != nil {
 		return fmt.Errorf("failed creating new message: %w", errors.Cause(err))
 	}
 
-	p.Send(ctx, to.Topic)
+	err = p.Send(ctx, to.Topic)
+	if err != nil {
+		return fmt.Errorf("failed sending message: %w", errors.Cause(err))
+	}
 
-	log.Debugf("Sending pong to %s", p.To)
+	log.Debugf("Sending pong to %s over %s", p.To, to.Topic.String())
 
 	return nil
 }

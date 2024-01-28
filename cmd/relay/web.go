@@ -15,8 +15,6 @@ import (
 
 func webHandler(w http.ResponseWriter, r *http.Request) {
 
-	desiredPeers := config.GetDesiredPeers()
-
 	allConnected := p.GetAllConnectedPeers()
 	if allConnected == nil {
 		log.Error("Failed to get connected peers.")
@@ -31,7 +29,7 @@ func webHandler(w http.ResponseWriter, r *http.Request) {
 	doc := New()
 	doc.Title = fmt.Sprintf("Bootstrap peer for rendezvous %s. Version %s ", ma.RENDEZVOUS, VERSION)
 	doc.H1 = fmt.Sprintf("%s@%s v%s", ma.RENDEZVOUS, (p.Node.ID().String()), VERSION)
-	doc.H1 += fmt.Sprintf("<br>Found %d/%d peers with rendezvous %s", len(peersWithRendezvous), desiredPeers, ma.RENDEZVOUS)
+	doc.H1 += fmt.Sprintf("<br>Found %d peers with rendezvous %s", len(peersWithRendezvous), ma.RENDEZVOUS)
 	doc.Addrs = p.Node.Addrs()
 	if allConnected == nil {
 		allConnected = peer.IDSlice{}

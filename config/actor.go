@@ -1,6 +1,7 @@
 package config
 
 import (
+	"context"
 	"fmt"
 	"os"
 
@@ -57,8 +58,7 @@ func InitActor() {
 	if viper.GetBool("publish") && keyset_string != "" {
 		err := publishIdentityFromKeyset(keyset)
 		if err != nil {
-			log.Errorf("config.initIdentity: Failed to publish keyset: %v", err)
-			os.Exit(75) // EX_TEMPFAIL
+			log.Warnf("config.initIdentity: Failed to publish keyset: %v", err)
 		}
 	}
 
@@ -182,5 +182,16 @@ func GetPublish() bool {
 }
 
 func GetHome() string {
-	return viper.GetString("location.home")
+	return viper.GetString("actor.home")
+}
+
+func GetDocPublishOptions() *doc.PublishOptions {
+	return &doc.PublishOptions{
+		Ctx:   GetPublishContext(),
+		Force: viper.GetBool("publish"),
+	}
+}
+
+func GetPublishContext() context.Context {
+	return context.Background()
 }

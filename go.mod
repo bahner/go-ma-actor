@@ -3,8 +3,7 @@ module github.com/bahner/go-ma-actor
 go 1.21
 
 require (
-	github.com/bahner/go-ma v0.2.2-0.20240124041938-01002a44dac4
-	github.com/c-bata/go-prompt v0.2.6
+	github.com/bahner/go-ma v0.2.2
 	github.com/gdamore/tcell/v2 v2.7.0
 	github.com/libp2p/go-libp2p v0.32.2
 	github.com/libp2p/go-libp2p-kad-dht v0.25.2
@@ -93,10 +92,8 @@ require (
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/marten-seemann/tcp v0.0.0-20210406111302-dfbc87cc63fd // indirect
 	github.com/matoous/go-nanoid/v2 v2.0.0 // indirect
-	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-runewidth v0.0.15 // indirect
-	github.com/mattn/go-tty v0.0.3 // indirect
 	github.com/matttproud/golang_protobuf_extensions/v2 v2.0.0 // indirect
 	github.com/miekg/dns v1.1.57 // indirect
 	github.com/mikioh/tcpinfo v0.0.0-20190314235526-30a79bb1804b // indirect
@@ -122,7 +119,6 @@ require (
 	github.com/pbnjay/memory v0.0.0-20210728143218-7b4eea64cf58 // indirect
 	github.com/pelletier/go-toml/v2 v2.1.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/pkg/term v1.2.0-beta.2 // indirect
 	github.com/polydawn/refmt v0.89.0 // indirect
 	github.com/prometheus/client_golang v1.17.0 // indirect
 	github.com/prometheus/client_model v0.5.0 // indirect
@@ -174,3 +170,5 @@ require (
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+replace github.com/ipfs/boxo => github.com/bahner/boxo v0.16.1-0.20240128093808-68fa6cc904ec
