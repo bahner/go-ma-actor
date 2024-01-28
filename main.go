@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"os"
 
 	"github.com/bahner/go-ma-actor/actor"
@@ -27,12 +28,17 @@ func main() {
 		os.Exit(75)
 	}
 
-	p.DHT.DiscoverPeers()
+	// We need to discover peers before we can do anything else.
+	// So this is a blocking call.
+	p.DiscoverPeers()
 
 	if err != nil {
 		log.Errorf("failed to initialize p2p: %v", err)
 		os.Exit(75)
 	}
+
+	// Now we can start continuous discovery in the background.
+	go p.DiscoveryLoop(context.Background())
 
 	a, err := actor.NewFromKeyset(config.GetKeyset(), config.GetPublish())
 	if err != nil || a == nil {

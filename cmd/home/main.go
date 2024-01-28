@@ -37,6 +37,9 @@ func main() {
 		os.Exit(69) // EX_UNAVAILABLE
 	}
 
+	// We need to discover peers before we can do anything else.
+	p.DiscoverPeers()
+
 	n := p.Node
 
 	a, err := actor.NewFromKeyset(config.GetKeyset(), config.GetPublish())
@@ -47,7 +50,8 @@ func main() {
 	fmt.Printf("I am : %s\n", a.Entity.DID.String())
 	fmt.Printf("My public key is: %s\n", n.ID().String())
 
-	go p.DiscoverPeers()
+	// Now we can start continuous discovery in the background.
+	go p.DiscoveryLoop(ctx)
 	go handleEvents(ctx, a)
 
 	// This is defined in web.go. It makes it possible to add extra parameters to the handler.

@@ -1,10 +1,13 @@
 package p2p
 
 import (
+	"context"
 	"fmt"
+	"time"
 
 	"github.com/bahner/go-ma-actor/config"
 	"github.com/bahner/go-ma-actor/p2p/mdns"
+	log "github.com/sirupsen/logrus"
 )
 
 // DiscoverPeers starts the peer discovery process.
@@ -33,4 +36,24 @@ func (p *P2P) DiscoverPeers() error {
 	// Wait for a discovery process to complete
 
 	return nil
+}
+
+// DiscoveryLoop is a blocking function that will periodically
+// call DiscoverPeers() until the context is cancelled.
+// This shouldn't be cancelled in normal operation.
+// Each iteration will have a timeout of its own.
+
+func (p *P2P) DiscoveryLoop(ctx context.Context) {
+	log.Infof("Starting discovery with retry interval %s", config.GetDiscoveryRetryIntervalString())
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		default:
+			p.DHT.DiscoverPeers()
+			sleepTime := config.GetDiscoveryRetryInterval()
+			log.Debugf("Sleeping for %s", sleepTime.String())
+			time.Sleep(sleepTime)
+		}
+	}
 }
