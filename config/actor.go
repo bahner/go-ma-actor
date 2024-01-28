@@ -57,8 +57,7 @@ func InitActor() {
 	if viper.GetBool("publish") && keyset_string != "" {
 		err := publishIdentityFromKeyset(keyset)
 		if err != nil {
-			log.Errorf("config.initIdentity: Failed to publish keyset: %v", err)
-			os.Exit(75) // EX_TEMPFAIL
+			log.Warnf("config.initIdentity: Failed to publish keyset: %v", err)
 		}
 	}
 

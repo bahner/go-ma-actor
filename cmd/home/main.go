@@ -41,7 +41,7 @@ func main() {
 
 	a, err := actor.NewFromKeyset(config.GetKeyset(), config.GetPublish())
 	if err != nil {
-		log.Fatalf("Error initializing actor: %v", err)
+		log.Warnf("Error initializing actor: %v", err)
 	}
 
 	fmt.Printf("I am : %s\n", a.Entity.DID.String())

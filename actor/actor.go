@@ -62,7 +62,7 @@ func New(e *entity.Entity) (*Actor, error) {
 	// Publish the entity
 	_, err = a.Entity.Doc.Publish(nil)
 	if err != nil {
-		return nil, fmt.Errorf("actor.New: Failed to publish Entity: %w", err)
+		log.Errorf("actor.New: Failed to publish Entity: %v", err)
 	}
 
 	log.Debugf("actor.New: Actor initialized: %s", a.Entity.DID.Fragment)
