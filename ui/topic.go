@@ -11,17 +11,10 @@ import (
 // when topic (localtion/home) changes.
 func (ui *ChatUI) handleTopicEvents() {
 
-	ctx := context.Background()
-
-	t, err := topic.GetOrCreate(ui.e.DID)
-	envelopes := t.SubscribeEnvelopes(ctx)
-	if err != nil {
-		log.Debugf("topic creation error: %s", err)
-		return
-	}
+	envelopes := ui.t.SubscribeEnvelopes(ui.currentCtx)
 
 	for {
-		log.Debugf("Waiting for messages...")
+		log.Debugf("Waiting for messages from topic %s", ui.t.Topic.String())
 		select {
 		case e, ok := <-envelopes:
 			if !ok {
@@ -47,9 +40,43 @@ func (ui *ChatUI) handleTopicEvents() {
 				log.Debugf("Received message from self, ignoring...")
 			}
 
-		case <-ctx.Done():
-			log.Debug("Context done, exiting...")
+		case <-ui.currentCtx.Done():
+			log.Debug("Context done, closing envelope channel...")
 			return
 		}
 	}
+}
+
+func (ui *ChatUI) changeTopic(topicName string) {
+
+	var err error
+
+	// If there is an ongoing topic, cancel its context to stop the goroutine
+	if ui.currentCancel != nil {
+		log.Debugf("Cancelling current context")
+		ui.currentCancel()
+	}
+
+	// Create a new context for the new topic
+	ui.currentCtx, ui.currentCancel = context.WithCancel(context.Background())
+
+	log.Debugf("Creating entity for topic %s", topicName)
+	ui.e, err = getOrCreateEntity(topicName)
+	if err != nil {
+		log.Errorf("Failed to get or create entity: %v", err)
+		return
+	}
+
+	// The channel for incoming messages
+	log.Debugf("Creating topic for entity %s", ui.e.DID)
+	ui.t, err = topic.GetOrCreate(ui.e.DID)
+	if err != nil {
+		log.Errorf("topic creation error: %s", err)
+	}
+
+	log.Infof("Topic changed to %s", ui.t.Topic.String())
+
+	// Start handling the new topic
+	go ui.handleTopicEvents()
+
 }

@@ -1,14 +1,15 @@
 package ui
 
 import (
+	"context"
 	"fmt"
 	"io"
 
 	"github.com/bahner/go-ma-actor/actor"
 	"github.com/bahner/go-ma-actor/entity"
 	"github.com/bahner/go-ma-actor/p2p"
+	"github.com/bahner/go-ma-actor/p2p/topic"
 	"github.com/bahner/go-ma/did"
-	"github.com/bahner/go-ma/did/doc"
 	"github.com/bahner/go-ma/msg"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
@@ -26,6 +27,13 @@ type ChatUI struct {
 
 	// The actor is need to encrypt and sign messages in the event loop.
 	a *actor.Actor
+
+	// The Topic is used for publication of messages after encryption and signing.
+	t *topic.Topic
+
+	// Context is used to cancel the event loop.
+	currentCtx    context.Context
+	currentCancel context.CancelFunc
 
 	// The Topic is used for publication of messages after encryption and signing.
 	// The names are obviously, from the corresponding DIDDocument.
@@ -58,7 +66,12 @@ func NewChatUI(p *p2p.P2P, a *actor.Actor, id string) *ChatUI {
 		return nil
 	}
 
-	e := entity.GetOrCreate(id)
+	// Entity
+	e, err := getOrCreateEntity(id)
+	if err != nil {
+		log.Errorf("Failed to get or create entity: %v", err)
+		return nil
+	}
 
 	app := tview.NewApplication()
 
@@ -110,7 +123,7 @@ func NewChatUI(p *p2p.P2P, a *actor.Actor, id string) *ChatUI {
 	// make a text view to hold the list of peers in the room, updated by ui.refreshPeers()
 	peersList := tview.NewTextView()
 	peersList.SetBorder(true)
-	peersList.SetTitle("TODO")
+	peersList.SetTitle("Peers")
 	peersList.SetChangedFunc(func() { app.Draw() })
 
 	// chatPanel is a horizontal box with messages on the left and peers on the right
@@ -128,32 +141,44 @@ func NewChatUI(p *p2p.P2P, a *actor.Actor, id string) *ChatUI {
 
 	app.SetRoot(flex, true)
 
-	// There should be a document there, but ...
-	if e.Doc == nil {
-		e.Doc, err = doc.GetOrFetch(id)
-		if err != nil {
-			log.Errorf("Failed to fetch DIDDOcument. %v", err)
-			return nil
-		}
+	// The context which allows us to stop the topichandler goroutine
+	ctx, cancel := context.WithCancel(context.Background())
+
+	// The channel for incoming messages
+	t, err := topic.GetOrCreate(e.DID)
+	if err != nil {
+		log.Errorf("topic creation error: %s", err)
 	}
 
 	return &ChatUI{
-		a:         a,
-		p:         p,
-		e:         e,
-		app:       app,
-		peersList: peersList,
-		msgW:      msgBox,
-		msgBox:    msgBox,
-		chInput:   chInput,
-		chDone:    make(chan struct{}, 1),
+		a:             a,
+		p:             p,
+		e:             e,
+		t:             t,
+		currentCtx:    ctx,
+		currentCancel: cancel,
+		app:           app,
+		peersList:     peersList,
+		msgW:          msgBox,
+		msgBox:        msgBox,
+		chInput:       chInput,
+		chDone:        make(chan struct{}, 1),
 	}
 }
 
 // Run starts the chat event loop in the background, then starts
 // the event loop for the text UI.
 func (ui *ChatUI) Run() error {
+
+	var err error
+	ui.t, err = topic.GetOrCreate(ui.e.DID)
+	if err != nil {
+		log.Debugf("topic creation error: %s", err)
+		return fmt.Errorf("topic creation error: %w", err)
+	}
+
 	go ui.handleEvents()
+
 	go ui.handleTopicEvents()
 	defer ui.end()
 

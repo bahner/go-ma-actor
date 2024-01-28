@@ -3,6 +3,7 @@ package config
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/libp2p/go-libp2p/core/crypto"
@@ -15,7 +16,7 @@ import (
 const (
 	defaultLowWaterMark  int = 3
 	defaultHighWaterMark int = 10
-	// defaultDesiredPeers  int = 3
+	defaultListenPort    int = 0
 
 	defaultDiscoveryTimeout       time.Duration = time.Second * 30
 	defaultConnMgrGrace           time.Duration = time.Minute * 1
@@ -48,6 +49,10 @@ func init() {
 	pflag.Duration("discovery_timeout", defaultDiscoveryTimeout, "Timeout for peer discovery.")
 	viper.SetDefault("libp2p.discovery_timeout", defaultDiscoveryTimeout)
 	viper.BindPFlag("libp2p.connmgr.discovery_timeout", pflag.Lookup("discoveryTimeout"))
+
+	pflag.Int("listen_port", defaultListenPort, "Port for libp2p node to listen on.")
+	viper.SetDefault("libp2p.port", defaultListenPort)
+	viper.BindPFlag("libp2p.port", pflag.Lookup("listen_port"))
 }
 
 // P2P Node identity
@@ -167,13 +172,13 @@ func GetConnMgrGraceString() string {
 	return GetConnMgrGracePeriod().String()
 }
 
-// func GetDesiredPeers() int {
-// 	return viper.GetInt("libp2p.connmgr.desired_peers")
-// }
+func GetListenPort() int {
+	return viper.GetInt("libp2p.port")
+}
 
-// func GetDesiredPeersString() string {
-// 	return fmt.Sprint(GetDesiredPeers())
-// }
+func GetListenPortString() string {
+	return strconv.Itoa(GetListenPort())
+}
 
 func GetDiscoveryRetryInterval() time.Duration {
 	return viper.GetDuration("libp2p.discovery_retry")

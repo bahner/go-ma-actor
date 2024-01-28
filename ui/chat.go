@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/bahner/go-ma-actor/p2p/topic"
 	"github.com/bahner/go-ma/did"
 	"github.com/bahner/go-ma/msg"
 	log "github.com/sirupsen/logrus"
@@ -50,18 +49,13 @@ func (ui *ChatUI) handleChatMessage(input string) error {
 		ui.displaySelfMessage(string(msgJson))
 	}
 	ui.displayChatMessage(msg)
-	t, err := topic.GetOrCreate(ui.e.DID)
-	if err != nil {
-		log.Debugf("topic creation error: %s", err)
-		return fmt.Errorf("topic creation error: %w", err)
-	}
 
-	err = msg.Send(ctx, t.Topic)
+	err = msg.Send(ctx, ui.t.Topic)
 	if err != nil {
 		log.Debugf("message publishing error: %s", err)
 		return fmt.Errorf("message publishing error: %w", err)
 	}
-	log.Debugf("Message published to topic: %s", t.Topic.String())
+	log.Debugf("Message published to topic: %s", ui.t.Topic.String())
 
 	return nil
 }

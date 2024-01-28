@@ -2,15 +2,13 @@ package node
 
 import (
 	"fmt"
-	"strconv"
 
+	"github.com/bahner/go-ma-actor/config"
 	"github.com/libp2p/go-libp2p"
 	"github.com/libp2p/go-libp2p/core/crypto"
 	"github.com/libp2p/go-libp2p/core/host"
 	log "github.com/sirupsen/logrus"
 )
-
-const NODE_LISTEN_PORT = 4001
 
 var (
 	err     error
@@ -49,9 +47,7 @@ func Get() host.Host {
 
 func getListenAddrStrings() []string {
 
-	// Converting this to s string so quickly, is a little ugly,
-	// but it is an integer to begin with, co it feels more correct.
-	port := strconv.Itoa(NODE_LISTEN_PORT)
+	port := config.GetListenPortString()
 
 	return []string{
 		"/ip4/0.0.0.0/tcp/" + port,
