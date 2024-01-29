@@ -5,6 +5,7 @@ Just reminders here
 
 ## Bugs
 
+### Broadcast
 There is no way to broadcast a message at this time. Either
 it should be able to differ between and encrypted and signed missages,
 or each actor should have a stream connection to the room.
@@ -19,3 +20,8 @@ MIME type message could be sent to everybody.
 Maybe secret messages should be sent as envelopes, but only broadcasts
 should be sent over streams? This way only the actual lines of text
 need be sent.
+
+### Decayer
+The routing table is not well handled and a little too flaky.
+I don't understand the decayer, but'll look at it later. For now protect 
+recognized hosts
