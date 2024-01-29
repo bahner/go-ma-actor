@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"net/http"
 	"os"
 
 	"github.com/bahner/go-ma-actor/actor"
@@ -45,6 +46,13 @@ func main() {
 		log.Errorf("failed to create actor: %v", err)
 		os.Exit(70)
 	}
+
+	// Start a simple web server to handle incoming requests.
+	// This is defined in web.go. It makes it possible to add extra parameters to the handler.
+	h := &WebHandlerData{p.Node, a}
+	http.HandleFunc("/", h.WebHandler)
+	log.Infof("Listening on %s\n", config.GetHttpSocket())
+	go http.ListenAndServe(config.GetHttpSocket(), nil)
 
 	e := config.GetHome()
 	// Draw the UI.
