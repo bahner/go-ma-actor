@@ -141,7 +141,7 @@ func GetDiscoveryContext() (context.Context, func()) {
 }
 
 func GetDiscoveryTimeout() time.Duration {
-	return time.Duration(viper.GetDuration("libp2p.discovery_retry")) * time.Second
+	return time.Duration(viper.GetDuration("libp2p.discovery_timeout")) * time.Second
 }
 
 func GetDiscoveryTimeoutString() string {
