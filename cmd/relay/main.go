@@ -45,8 +45,8 @@ func main() {
 
 	http.HandleFunc("/", webHandler)
 
-	log.Infof("Serving info on %s", getHttpSocket())
-	err = http.ListenAndServe(getHttpSocket(), nil)
+	log.Infof("Serving info on %s", config.GetHttpSocket())
+	err = http.ListenAndServe(config.GetHttpSocket(), nil)
 	if err != nil {
 		log.Fatal(err)
 	}
