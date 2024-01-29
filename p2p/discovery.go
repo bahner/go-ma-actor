@@ -52,7 +52,7 @@ func (p *P2P) DiscoveryLoop(ctx context.Context) {
 		default:
 			p.DHT.DiscoverPeers(ctx)
 			sleepTime := config.GetDiscoveryRetryInterval()
-			log.Debugf("Sleeping for %s", sleepTime.String())
+			log.Debugf("Discovery sleeping for %s", sleepTime.String())
 			time.Sleep(sleepTime)
 		}
 	}

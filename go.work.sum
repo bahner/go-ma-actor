@@ -178,8 +178,8 @@ github.com/aws/aws-sdk-go v1.27.0/go.mod h1:KmX6BPdI08NWTb3/sm4ZGu5ShLoqVDhKgpiN
 github.com/aws/aws-sdk-go-v2 v0.18.0/go.mod h1:JWVYvqSMppoMJC0x5wdwiImzgXTI9FuZwxzkQq9wy+g=
 github.com/bahner/boxo v0.16.1-0.20240128093537-93fa04691236 h1:fcZVx0i70Kdli6/A551nyEJAmOa0z7LKoNJ8TUQWtAQ=
 github.com/bahner/boxo v0.16.1-0.20240128093537-93fa04691236/go.mod h1:jAgpNQn7T7BnibUeReXcKU9Ha1xmYNyOlwVEl193ow0=
-github.com/bahner/go-ma v0.3.0 h1:3h8yejv27O0bCghzW394+cMVwfDrdLSlVfXJpTD15tM=
-github.com/bahner/go-ma v0.3.0/go.mod h1:LE2npYmet0zJ4VD/eSng4jZ37JTAEwWacQXNwsxQRmE=
+github.com/bahner/go-ma v0.3.2 h1:75rnWwcQJzFgjFxThW7OaUK591GPiVPkkseQfPzwm2c=
+github.com/bahner/go-ma v0.3.2/go.mod h1:LE2npYmet0zJ4VD/eSng4jZ37JTAEwWacQXNwsxQRmE=
 github.com/beorn7/perks v1.0.0/go.mod h1:KWe93zE9D1o94FZ5RNwFwVgaQK1VOXiVxmqh+CedLV8=
 github.com/bgentry/speakeasy v0.1.0/go.mod h1:+zsyZBPWlz7T6j88CTgSN5bM796AkVf0kBD4zp0CCIs=
 github.com/boombuler/barcode v1.0.0/go.mod h1:paBWMcWSl3LHKBqUq+rly7CNSldXjb2rDl3JlRe0mD8=

@@ -24,7 +24,7 @@ func New(id string, alias string) (*Entity, error) {
 		Alias: alias,
 	}
 
-	e.Doc, err = doc.GetOrFetch(id)
+	e.Doc, err = doc.Fetch(id, true) // Accept cached version
 	if err != nil {
 		return nil, fmt.Errorf("entity/newfromdid: failed to fetch document: %w", err)
 	}
@@ -49,7 +49,7 @@ func (e *Entity) GetDoc() *doc.Document {
 	return e.Doc
 }
 
-func GetOrCreate(id string) *Entity {
+func GetOrCreate(id string) (*Entity, error) {
 
 	var err error
 
@@ -57,8 +57,8 @@ func GetOrCreate(id string) *Entity {
 	if e == nil {
 		e, err = NewFromDID(id)
 		if err != nil {
-			return nil
+			return nil, fmt.Errorf("entity/getorcreate: failed to create entity: %w", err)
 		}
 	}
-	return e
+	return e, nil
 }

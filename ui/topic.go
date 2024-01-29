@@ -14,7 +14,7 @@ func (ui *ChatUI) handleTopicEvents(ctx context.Context, t *topic.Topic) {
 	envelopes := t.SubscribeEnvelopes(ctx)
 
 	for {
-		log.Debugf("Waiting for messages from topic %s", ui.t.Topic.String())
+		log.Debugf("Waiting for messages from topic %s", t.Topic.String())
 		select {
 		case e, ok := <-envelopes:
 			if !ok {

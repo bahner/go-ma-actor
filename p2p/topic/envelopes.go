@@ -49,6 +49,7 @@ func (t *Topic) NextEnvelope() (*msg.Envelope, error) {
 		log.Errorf("Failed to unmarshal envelope: %v", err)
 	}
 
+	log.Debugf("Received envelope: %v", e)
 	return e, err
 
 }

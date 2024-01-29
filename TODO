@@ -25,3 +25,24 @@ need be sent.
 The routing table is not well handled and a little too flaky.
 I don't understand the decayer, but'll look at it later. For now protect 
 recognized hosts
+
+### Aliases
+
+Any ID should be able to be aliased. A simple two functions which
+when queried for an alias returns the did or nil.
+
+Or otherwise returns the alias or nil.
+
+The alias will often be the fragment, but this is not trustworthy, so
+the actor should be able to define their own.
+
+The should be store in the config file. Actually,
+maybe rather a separate config file (configurable but default to .ma/aliases.yaml
+
+### Pong broadcast
+Pong should keep a list of respondents and ping them all. The list should
+be cached and ever so often the lastKnownLocation should be looked up and
+the non-present entries be deleted.
+
+It doesn't matter if we send a few lost messages, but we shouldnæt overdo it.
+
