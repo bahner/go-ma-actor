@@ -1,4 +1,4 @@
-ARG BUILD_IMAGE=golang:1.20-alpine
+ARG BUILD_IMAGE=golang:1.21-alpine
 FROM ${BUILD_IMAGE} as Build
 
 COPY . . 

@@ -3,11 +3,19 @@
 Just reminders here
 ## Features
 
-Make cmd use proper files under /etc/opt/ma. Eg.
-
-* relay.yaml
-* actor.yaml
-* home.yaml
-
 ## Bugs
 
+There is no way to broadcast a message at this time. Either
+it should be able to differ between and encrypted and signed missages,
+or each actor should have a stream connection to the room.
+
+The latter is the better, because it doesn't leak and only uses established
+streams, so no sending to dead actors.
+
+Messages over streams are already encrypted, so no need to reencrypt.
+Just sign messages. A special recipient, eg. "broadcast" or a special
+MIME type message could be sent to everybody.
+
+Maybe secret messages should be sent as envelopes, but only broadcasts
+should be sent over streams? This way only the actual lines of text
+need be sent.
