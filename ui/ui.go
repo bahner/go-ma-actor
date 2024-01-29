@@ -171,15 +171,24 @@ func NewChatUI(p *p2p.P2P, a *actor.Actor, id string) *ChatUI {
 func (ui *ChatUI) Run() error {
 
 	var err error
+
+	// Listen for the current location.
 	ui.t, err = topic.GetOrCreate(ui.e.DID)
 	if err != nil {
 		log.Debugf("topic creation error: %s", err)
 		return fmt.Errorf("topic creation error: %w", err)
 	}
+	go ui.handleTopicEvents(ui.currentCtx, ui.t)
+
+	// Always listen for messages to myself.
+	t, err := topic.GetOrCreate(ui.a.Entity.DID.String())
+	if err != nil {
+		log.Debugf("topic creation error: %s", err)
+		return fmt.Errorf("topic creation error: %w", err)
+	}
+	go ui.handleTopicEvents(context.Background(), t)
 
 	go ui.handleEvents()
-
-	go ui.handleTopicEvents()
 	defer ui.end()
 
 	return ui.app.Run()

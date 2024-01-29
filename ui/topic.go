@@ -9,9 +9,9 @@ import (
 
 // Handle incoming messages. NB! This must be cancelled,
 // when topic (localtion/home) changes.
-func (ui *ChatUI) handleTopicEvents() {
+func (ui *ChatUI) handleTopicEvents(ctx context.Context, t *topic.Topic) {
 
-	envelopes := ui.t.SubscribeEnvelopes(ui.currentCtx)
+	envelopes := t.SubscribeEnvelopes(ctx)
 
 	for {
 		log.Debugf("Waiting for messages from topic %s", ui.t.Topic.String())
@@ -77,6 +77,6 @@ func (ui *ChatUI) changeTopic(topicName string) {
 	log.Infof("Topic changed to %s", ui.t.Topic.String())
 
 	// Start handling the new topic
-	go ui.handleTopicEvents()
+	go ui.handleTopicEvents(ui.currentCtx, ui.t)
 
 }
