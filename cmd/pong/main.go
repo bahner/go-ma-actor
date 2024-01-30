@@ -57,7 +57,7 @@ func main() {
 	// This is defined in web.go. It makes it possible to add extra parameters to the handler.
 	h := &WebHandlerData{n, a}
 	http.HandleFunc("/", h.WebHandler)
-	log.Infof("Listening on %s\n", config.GetHttpSocket())
+	log.Infof("Listening on %s", config.GetHttpSocket())
 	err = http.ListenAndServe(config.GetHttpSocket(), nil)
 	if err != nil {
 		log.Fatal(err)

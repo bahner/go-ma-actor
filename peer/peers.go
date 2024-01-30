@@ -6,13 +6,13 @@ func init() {
 	peers = make(map[string]*Peer)
 }
 
-// Add adds a peer to the map
-func Add(p *Peer) {
+// add adds a peer to the map
+func add(p *Peer) {
 	peers[p.ID] = p
 }
 
-// Get returns a peer from the map
-func Get(id string) *Peer {
+// get returns a peer from the map
+func get(id string) *Peer {
 	return peers[id]
 }
 

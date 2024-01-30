@@ -7,19 +7,6 @@ import (
 	"github.com/bahner/go-ma-actor/peer"
 )
 
-// handleAliasCommand handles the /alias command
-func (ui *ChatUI) handleAliasCommand(args []string) {
-
-	if len(args) == 3 {
-		p := peer.GetByAlias(args[1])
-		p.Alias = args[2]
-		ui.displaySystemMessage("Peer " + p.ID + " is now known as " + p.Alias)
-	} else {
-		ui.displaySystemMessage("Usage: /alias <current alias> <alias>")
-	}
-
-}
-
 // refreshPeers pulls the list of peers currently in the chat room and
 // displays the last 8 chars of their peer id in the Peers panel in the ui.
 func (ui *ChatUI) refreshPeers() {
@@ -30,19 +17,18 @@ func (ui *ChatUI) refreshPeers() {
 	// clear is thread-safe
 	ui.peersList.Clear()
 
-	// Create a slice for aliases
-	var aliases []string
+	plist := []string{}
+
 	for _, p := range peers {
+
 		ap := peer.GetOrCreate(p)
-		aliases = append(aliases, ap.Alias)
+		plist = append(plist, ap.Alias)
 	}
 
-	// Sort the aliases
-	sort.Strings(aliases)
+	sort.Strings(plist)
 
-	// Display sorted aliases
-	for _, alias := range aliases {
-		fmt.Fprintln(ui.peersList, alias)
+	for _, p := range plist {
+		fmt.Fprintln(ui.peersList, p)
 	}
 
 	ui.app.Draw()
