@@ -5,15 +5,11 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/bahner/go-ma-actor/actor"
 	"github.com/bahner/go-ma-actor/entity"
 	"github.com/bahner/go-ma-actor/p2p"
-	"github.com/bahner/go-ma-actor/p2p/topic"
-	"github.com/bahner/go-ma/did"
 	"github.com/bahner/go-ma/msg"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
-	log "github.com/sirupsen/logrus"
 )
 
 // ChatUI is a Text User Interface (TUI) for a Room.
@@ -26,10 +22,7 @@ type ChatUI struct {
 	e *entity.Entity
 
 	// The actor is need to encrypt and sign messages in the event loop.
-	a *actor.Actor
-
-	// The Topic is used for publication of messages after encryption and signing.
-	t *topic.Topic
+	a *entity.Entity
 
 	// Context is used to cancel the event loop.
 	currentCtx    context.Context
@@ -50,27 +43,12 @@ type ChatUI struct {
 
 // NewChatUI returns a new ChatUI struct that controls the text UI.
 // It won't actually do anything until you call Run().
-func NewChatUI(p *p2p.P2P, a *actor.Actor, id string) *ChatUI {
+// The enity is the "room" we are convering with.
+func NewChatUI(p *p2p.P2P, a *entity.Entity, e *entity.Entity) (*ChatUI, error) {
 
-	var (
-		err error
-	)
-
-	if a == nil {
-		log.Error("invalid Actor: nil")
-		return nil
-	}
-
-	if id == "" || !did.IsValidDID(id) {
-		log.Errorf("invalid DID %s", id)
-		return nil
-	}
-
-	// Entity
-	e, err := getOrCreateEntity(id)
+	err := e.Verify()
 	if err != nil {
-		log.Errorf("Failed to get or create entity: %v", err)
-		return nil
+		return nil, fmt.Errorf("entity verification error: %w", err)
 	}
 
 	app := tview.NewApplication()
@@ -80,7 +58,7 @@ func NewChatUI(p *p2p.P2P, a *actor.Actor, id string) *ChatUI {
 	msgBox.SetDynamicColors(true)
 	msgBox.SetBorder(true)
 	msgBox.SetScrollable(true)
-	msgBox.SetTitle(fmt.Sprintf("Entity: %s", e.Alias))
+	msgBox.SetTitle(fmt.Sprintf("Entity: %s", e.Nick))
 
 	// text views are io.Writers, but they don't automatically refresh.
 	// this sets a change handler to force the app to redraw when we get
@@ -93,7 +71,7 @@ func NewChatUI(p *p2p.P2P, a *actor.Actor, id string) *ChatUI {
 	// an input field for typing messages into
 	chInput := make(chan string, 32)
 	input := tview.NewInputField().
-		SetLabel(e.Alias + " > ").
+		SetLabel(e.Nick + " > ").
 		SetFieldWidth(0).
 		SetFieldBackgroundColor(tcell.ColorBlack)
 
@@ -144,17 +122,10 @@ func NewChatUI(p *p2p.P2P, a *actor.Actor, id string) *ChatUI {
 	// The context which allows us to stop the topichandler goroutine
 	ctx, cancel := context.WithCancel(context.Background())
 
-	// The channel for incoming messages
-	t, err := topic.GetOrCreate(e.DID)
-	if err != nil {
-		log.Errorf("topic creation error: %s", err)
-	}
-
 	return &ChatUI{
 		a:             a,
 		p:             p,
 		e:             e,
-		t:             t,
 		currentCtx:    ctx,
 		currentCancel: cancel,
 		app:           app,
@@ -163,30 +134,16 @@ func NewChatUI(p *p2p.P2P, a *actor.Actor, id string) *ChatUI {
 		msgBox:        msgBox,
 		chInput:       chInput,
 		chDone:        make(chan struct{}, 1),
-	}
+	}, nil
 }
 
 // Run starts the chat event loop in the background, then starts
 // the event loop for the text UI.
 func (ui *ChatUI) Run() error {
 
-	var err error
+	go ui.handleTopicEvents(ui.currentCtx, ui.e.Topic)
 
-	// Listen for the current location.
-	ui.t, err = topic.GetOrCreate(ui.e.DID)
-	if err != nil {
-		log.Debugf("topic creation error: %s", err)
-		return fmt.Errorf("topic creation error: %w", err)
-	}
-	go ui.handleTopicEvents(ui.currentCtx, ui.t)
-
-	// Always listen for messages to myself.
-	t, err := topic.GetOrCreate(ui.a.Entity.DID.String())
-	if err != nil {
-		log.Debugf("topic creation error: %s", err)
-		return fmt.Errorf("topic creation error: %w", err)
-	}
-	go ui.handleTopicEvents(context.Background(), t)
+	go ui.handleTopicEvents(context.Background(), ui.a.Topic)
 
 	go ui.handleEvents()
 	defer ui.end()

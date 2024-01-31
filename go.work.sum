@@ -180,6 +180,8 @@ github.com/bahner/boxo v0.16.1-0.20240128093537-93fa04691236 h1:fcZVx0i70Kdli6/A
 github.com/bahner/boxo v0.16.1-0.20240128093537-93fa04691236/go.mod h1:jAgpNQn7T7BnibUeReXcKU9Ha1xmYNyOlwVEl193ow0=
 github.com/bahner/go-ma v0.3.2 h1:75rnWwcQJzFgjFxThW7OaUK591GPiVPkkseQfPzwm2c=
 github.com/bahner/go-ma v0.3.2/go.mod h1:LE2npYmet0zJ4VD/eSng4jZ37JTAEwWacQXNwsxQRmE=
+github.com/bahner/go-ma v0.3.4 h1:j5NzY+QPKGxNvmr1fefXJVc8cy3ZIS2/O0lH5cYpmMA=
+github.com/bahner/go-ma v0.3.4/go.mod h1:WM8wAs1tYjIuQLnM5kGkOo177N0dRQ4bXO4p/t63w+E=
 github.com/beorn7/perks v1.0.0/go.mod h1:KWe93zE9D1o94FZ5RNwFwVgaQK1VOXiVxmqh+CedLV8=
 github.com/bgentry/speakeasy v0.1.0/go.mod h1:+zsyZBPWlz7T6j88CTgSN5bM796AkVf0kBD4zp0CCIs=
 github.com/boombuler/barcode v1.0.0/go.mod h1:paBWMcWSl3LHKBqUq+rly7CNSldXjb2rDl3JlRe0mD8=

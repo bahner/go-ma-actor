@@ -6,13 +6,13 @@ func init() {
 	entities = make(map[string]*Entity)
 }
 
-// Add adds a entity to the map
-func Add(e *Entity) {
-	entities[e.DID] = e
+// add adds a entity to the map
+func add(e *Entity) {
+	entities[e.DID.String()] = e
 }
 
-// Get returns a entity from the map
-func Get(id string) *Entity {
+// get returns a entity from the map
+func get(id string) *Entity {
 	return entities[id]
 }
 
@@ -33,7 +33,7 @@ func Delete(id string) {
 func ListAliases() []string {
 	var result []string
 	for _, e := range entities {
-		result = append(result, e.Alias)
+		result = append(result, e.Nick)
 	}
 	return result
 }
@@ -41,7 +41,7 @@ func ListAliases() []string {
 func ListDIDs() []string {
 	var result []string
 	for _, e := range entities {
-		result = append(result, e.DID)
+		result = append(result, e.DID.String())
 	}
 	return result
 }

@@ -53,8 +53,12 @@ github.com/alibabacloud-go/tea-utils v1.3.5/go.mod h1:EI/o33aBfj3hETm4RLiAxF/ThQ
 github.com/aliyun/credentials-go v1.1.0/go.mod h1:ZXrrxv386Mj6z8NpihLKpexQE550m7j3LlyCvYub9aE=
 github.com/aliyun/credentials-go v1.1.2/go.mod h1:ozcZaMR5kLM7pwtCMEpVmQ242suV6qTJya2bDq4X1Tw=
 github.com/anmitsu/go-shlex v0.0.0-20161002113705-648efa622239/go.mod h1:2FmKhYUyUczH0OGQWaF5ceTx0UBShxjsH6f8oGKYe2c=
-github.com/bahner/go-ma v0.3.3-0.20240129205827-c03030c1ba2e h1:Qmza/PzQsaTkojauM2YllR6N8nUQoOK/yWlRGutUoB8=
-github.com/bahner/go-ma v0.3.3-0.20240129205827-c03030c1ba2e/go.mod h1:LE2npYmet0zJ4VD/eSng4jZ37JTAEwWacQXNwsxQRmE=
+github.com/bahner/go-ma v0.3.4 h1:j5NzY+QPKGxNvmr1fefXJVc8cy3ZIS2/O0lH5cYpmMA=
+github.com/bahner/go-ma v0.3.4/go.mod h1:WM8wAs1tYjIuQLnM5kGkOo177N0dRQ4bXO4p/t63w+E=
+github.com/bahner/go-ma v0.3.5-0.20240131212229-998e752582ec h1:ThVGFdjJm4S9Fu6g4VkdlCQnKvQkP5kp4pbjCTZddIM=
+github.com/bahner/go-ma v0.3.5-0.20240131212229-998e752582ec/go.mod h1:WM8wAs1tYjIuQLnM5kGkOo177N0dRQ4bXO4p/t63w+E=
+github.com/bahner/go-ma v0.3.5-0.20240131212734-07c0fab995c4 h1:phGJNxVjYb0L3xwWjdYteI5cm76gEgqc9ZTXw9/jEhI=
+github.com/bahner/go-ma v0.3.5-0.20240131212734-07c0fab995c4/go.mod h1:WM8wAs1tYjIuQLnM5kGkOo177N0dRQ4bXO4p/t63w+E=
 github.com/benbjohnson/clock v1.1.0/go.mod h1:J11/hYXuz8f4ySSvYwY0FKfm+ezbsZBKZxNJlLklBHA=
 github.com/benbjohnson/clock v1.3.0/go.mod h1:J11/hYXuz8f4ySSvYwY0FKfm+ezbsZBKZxNJlLklBHA=
 github.com/benbjohnson/clock v1.3.5 h1:VvXlSJBzZpA/zum6Sj74hxwYI2DIxRWuNIoXAzHZz5o=
@@ -714,8 +718,6 @@ github.com/yuin/goldmark v1.1.30/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9de
 github.com/yuin/goldmark v1.2.1/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.3.5/go.mod h1:mwnBkeHKe2W/ZEtQ+71ViKU8L12m81fl3OWwC1Zlc8k=
 github.com/yuin/goldmark v1.4.13/go.mod h1:6yULJ656Px+3vBD8DxQVa3kxgyrAnzto9xy5taEt/CY=
-go.deanishe.net/env v0.5.1 h1:WiOncK5uJj8Um57Vj2dc1bq1lMN7fgRag9up7I3LZy0=
-go.deanishe.net/env v0.5.1/go.mod h1:ihEYfDm0K0hq3f5ACTCQDrMTWxH9fTiA1lh1i0aMqm0=
 go.opencensus.io v0.18.0/go.mod h1:vKdFvxhtzZ9onBp9VKHK8z/sRpBMnKAsufL7wlDrCOA=
 go.opencensus.io v0.21.0/go.mod h1:mSImk1erAIZhrmZN+AvHh14ztQfjbGwt4TtuofqLduU=
 go.opencensus.io v0.22.0/go.mod h1:+kGneAE2xo2IficOXnaByMWTGM9T73dGwxeWcUqIpI8=

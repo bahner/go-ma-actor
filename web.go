@@ -5,8 +5,8 @@ import (
 	"net/http"
 
 	"github.com/bahner/go-ma"
-	"github.com/bahner/go-ma-actor/actor"
 	"github.com/bahner/go-ma-actor/config"
+	"github.com/bahner/go-ma-actor/entity"
 	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/multiformats/go-multiaddr"
@@ -15,19 +15,19 @@ import (
 // Assuming you have initialized variables like `h` and `rendezvous` somewhere in your main function or globally
 
 type WebHandlerData struct {
-	Host  host.Host
-	Actor *actor.Actor
+	Host   host.Host
+	Entity *entity.Entity
 }
 
 func (h *WebHandlerData) WebHandler(w http.ResponseWriter, r *http.Request) {
-	webHandler(w, r, h.Host, h.Actor)
+	webHandler(w, r, h.Host, h.Entity)
 }
 
-func webHandler(w http.ResponseWriter, r *http.Request, n host.Host, a *actor.Actor) {
+func webHandler(w http.ResponseWriter, r *http.Request, n host.Host, a *entity.Entity) {
 	allConnected := getLivePeerIDs(n)
 
 	doc := New()
-	doc.Title = fmt.Sprintf("Pong peer: %s", a.Entity.DID.String())
+	doc.Title = fmt.Sprintf("Pong peer: %s", a.DID.String())
 	doc.H1 = doc.Title
 	doc.H2 = fmt.Sprintf("%s@%s", ma.RENDEZVOUS, (n.ID().String()))
 	doc.Addrs = n.Addrs()

@@ -4,16 +4,16 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/bahner/go-ma-actor/actor"
+	"github.com/bahner/go-ma-actor/entity"
 	log "github.com/sirupsen/logrus"
 )
 
-func handleEvents(ctx context.Context, a *actor.Actor) {
-	envelopes := a.Topic.SubscribeEnvelopes(ctx)
+func handleEvents(ctx context.Context, e *entity.Entity) {
+	envelopes := e.Topic.SubscribeEnvelopes(ctx)
 	for {
 		fmt.Println("Waiting for messages...")
 		select {
-		case e, ok := <-envelopes:
+		case envelope, ok := <-envelopes:
 			if !ok {
 				fmt.Printf("Envelope channel closed, exiting...")
 				return
@@ -21,7 +21,7 @@ func handleEvents(ctx context.Context, a *actor.Actor) {
 			fmt.Printf("Received envelope: %v", e)
 
 			// Process the envelope and send a pong response
-			m, err := e.Open(a.Entity.Keyset.EncryptionKey.PrivKey[:])
+			m, err := envelope.Open(e.Keyset.EncryptionKey.PrivKey[:])
 			if err != nil {
 				fmt.Printf("Error opening envelope: %v\n", err)
 				continue
@@ -30,9 +30,9 @@ func handleEvents(ctx context.Context, a *actor.Actor) {
 			fmt.Printf("Received message: %v\n", string(m.Content))
 
 			// Check if the message is from self to prevent pong loop
-			if m.From != a.Entity.DID.String() {
-				log.Debugf("Sending pong to %s over %s", m.From, a.Entity.DID.String())
-				err := pong(ctx, a, m)
+			if m.From != e.DID.String() {
+				log.Debugf("Sending pong to %s over %s", m.From, e.DID.String())
+				err := pong(ctx, e, m)
 				if err != nil {
 					log.Errorf("Error sending pong: %v", err)
 				}

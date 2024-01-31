@@ -8,8 +8,8 @@ import (
 
 	"github.com/spf13/pflag"
 
-	"github.com/bahner/go-ma-actor/actor"
 	"github.com/bahner/go-ma-actor/config"
+	"github.com/bahner/go-ma-actor/entity"
 	"github.com/bahner/go-ma-actor/p2p"
 
 	log "github.com/sirupsen/logrus"
@@ -42,12 +42,13 @@ func main() {
 
 	n := p.Node
 
-	a, err := actor.NewFromKeyset(config.GetKeyset(), config.GetPublish())
+	k := config.GetKeyset()
+	a, err := entity.NewFromKeyset(k, k.DID.Fragment)
 	if err != nil {
 		log.Warnf("Error initializing actor: %v", err)
 	}
 
-	fmt.Printf("I am : %s\n", a.Entity.DID.String())
+	fmt.Printf("I am : %s\n", a.DID.String())
 	fmt.Printf("My public key is: %s\n", n.ID().String())
 
 	// Now we can start continuous discovery in the background.

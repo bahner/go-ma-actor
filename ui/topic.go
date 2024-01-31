@@ -3,6 +3,7 @@ package ui
 import (
 	"context"
 
+	"github.com/bahner/go-ma-actor/entity"
 	"github.com/bahner/go-ma-actor/p2p/topic"
 	log "github.com/sirupsen/logrus"
 )
@@ -24,7 +25,7 @@ func (ui *ChatUI) handleTopicEvents(ctx context.Context, t *topic.Topic) {
 			log.Debugf("Received envelope: %v", e)
 
 			// Process the envelope and send a pong response
-			m, err := e.Open(ui.a.Entity.Keyset.EncryptionKey.PrivKey[:])
+			m, err := e.Open(ui.a.Keyset.EncryptionKey.PrivKey[:])
 			if err != nil {
 				log.Errorf("Error opening envelope: %v\n", err)
 				continue
@@ -33,7 +34,7 @@ func (ui *ChatUI) handleTopicEvents(ctx context.Context, t *topic.Topic) {
 			log.Debugf("Received message: %v\n", string(m.Content))
 
 			// Check if the message is from self to prevent pong loop
-			if m.From != ui.a.Entity.DID.String() {
+			if m.From != ui.a.DID.String() {
 				log.Debugf("Received message from %s", m.From)
 				ui.displayChatMessage(m)
 			} else {
@@ -47,36 +48,26 @@ func (ui *ChatUI) handleTopicEvents(ctx context.Context, t *topic.Topic) {
 	}
 }
 
-func (ui *ChatUI) changeTopic(topicName string) {
+func (ui *ChatUI) changeEntity(did string) {
 
 	var err error
 
-	// If there is an ongoing topic, cancel its context to stop the goroutine
-	if ui.currentCancel != nil {
-		log.Debugf("Cancelling current context")
-		ui.currentCancel()
-	}
-
-	// Create a new context for the new topic
-	ui.currentCtx, ui.currentCancel = context.WithCancel(context.Background())
-
-	log.Debugf("Creating entity for topic %s", topicName)
-	ui.e, err = getOrCreateEntity(topicName)
+	log.Debugf("Creating entity for topic %s", did)
+	// e, err = getOrCreateEntity(did)
+	e, err := entity.GetOrCreate(did)
 	if err != nil {
 		log.Errorf("Failed to get or create entity: %v", err)
 		return
 	}
 
-	// The channel for incoming messages
-	log.Debugf("Creating topic for entity %s", ui.e.DID)
-	ui.t, err = topic.GetOrCreate(ui.e.DID)
-	if err != nil {
-		log.Errorf("topic creation error: %s", err)
-	}
+	// Now pivot to the new entity
+	old_entity := ui.e
+	ui.e = e
+	old_entity.Leave()
 
-	log.Infof("Topic changed to %s", ui.t.Topic.String())
+	log.Infof("Topic changed to %s", ui.e.Topic.Topic.String())
 
 	// Start handling the new topic
-	go ui.handleTopicEvents(ui.currentCtx, ui.t)
+	go ui.handleTopicEvents(ui.currentCtx, ui.e.Topic)
 
 }

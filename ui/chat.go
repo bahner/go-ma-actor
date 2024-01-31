@@ -27,9 +27,9 @@ func (ui *ChatUI) handleChatMessage(input string) error {
 
 	log.Debugf("Handling chatMessage: %s", input)
 	msgBytes := []byte(input)
-	log.Debugf("ui.a.Entity.DID.Fragment: %s", ui.a.Entity.DID.Fragment)
+	log.Debugf("ui.a.DID.Fragment: %s", ui.a.DID.Fragment)
 	log.Debugf("ui.e.ID: %s", ui.e.DID)
-	msg, err := msg.New(ui.a.Entity.DID.String(), ui.e.DID, msgBytes, "text/plain", ui.a.Entity.Keyset.SigningKey.PrivKey)
+	msg, err := msg.New(ui.a.DID.String(), ui.e.DID.String(), msgBytes, "text/plain", ui.a.Keyset.SigningKey.PrivKey)
 	if err != nil {
 		log.Debugf("message creation error: %s", err)
 		return fmt.Errorf("message creation error: %w", err)
@@ -50,12 +50,12 @@ func (ui *ChatUI) handleChatMessage(input string) error {
 	}
 	ui.displayChatMessage(msg)
 
-	err = msg.Send(ctx, ui.t.Topic)
+	err = msg.Send(ctx, ui.e.Topic.Topic)
 	if err != nil {
 		log.Debugf("message publishing error: %s", err)
 		return fmt.Errorf("message publishing error: %w", err)
 	}
-	log.Debugf("Message published to topic: %s", ui.t.Topic.String())
+	log.Debugf("Message published to topic: %s", ui.e.Topic.Topic.String())
 
 	return nil
 }

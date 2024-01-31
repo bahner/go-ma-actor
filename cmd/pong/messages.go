@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/bahner/go-ma-actor/actor"
+	"github.com/bahner/go-ma-actor/entity"
 	"github.com/bahner/go-ma-actor/p2p/topic"
 	"github.com/bahner/go-ma/msg"
 	"github.com/pkg/errors"
@@ -35,16 +35,16 @@ import (
 // 	return m, nil
 // }
 
-func pong(ctx context.Context, a *actor.Actor, m *msg.Message) error {
+func pong(ctx context.Context, ent *entity.Entity, m *msg.Message) error {
 
 	// Answer in the same channel, ie. my address. It's kinda like a broadcast to a "room"
-	to, err := topic.GetOrCreate(a.Entity.DID.String())
+	to, err := topic.GetOrCreate(ent.DID.String())
 	if err != nil {
 		return fmt.Errorf("failed subscribing to recipients topic: %w", errors.Cause(err))
 	}
 
 	// p means pong :-)
-	p, err := msg.New(m.To, m.From, []byte("Pong!"), "text/plain", a.Entity.Keyset.SigningKey.PrivKey)
+	p, err := msg.New(m.To, m.From, []byte("Pong!"), "text/plain", ent.Keyset.SigningKey.PrivKey)
 	if err != nil {
 		return fmt.Errorf("failed creating new message: %w", errors.Cause(err))
 	}
