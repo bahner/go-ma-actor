@@ -2,6 +2,7 @@ package ui
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/bahner/go-ma-actor/entity"
 	"github.com/bahner/go-ma-actor/p2p/topic"
@@ -48,7 +49,7 @@ func (ui *ChatUI) handleTopicEvents(ctx context.Context, t *topic.Topic) {
 	}
 }
 
-func (ui *ChatUI) changeEntity(did string) {
+func (ui *ChatUI) changeEntity(did string) error {
 
 	var err error
 
@@ -56,8 +57,7 @@ func (ui *ChatUI) changeEntity(did string) {
 	// e, err = getOrCreateEntity(did)
 	e, err := entity.GetOrCreate(did)
 	if err != nil {
-		log.Errorf("Failed to get or create entity: %v", err)
-		return
+		return fmt.Errorf("error getting or creating entity: %w", err)
 	}
 
 	// Now pivot to the new entity
@@ -65,9 +65,11 @@ func (ui *ChatUI) changeEntity(did string) {
 	ui.e = e
 	old_entity.Leave()
 
-	log.Infof("Topic changed to %s", ui.e.Topic.Topic.String())
+	log.Infof("Location changed to %s", ui.e.Topic.Topic.String())
 
 	// Start handling the new topic
 	go ui.handleTopicEvents(ui.currentCtx, ui.e.Topic)
+
+	return nil
 
 }

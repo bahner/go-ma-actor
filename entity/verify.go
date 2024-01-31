@@ -4,11 +4,11 @@ import "fmt"
 
 func (e *Entity) Verify() error {
 
-	if e.ctx == nil {
+	if e.Ctx == nil {
 		return fmt.Errorf("entity/verify: context is nil")
 	}
 
-	if e.cancel == nil {
+	if e.CancelFunc == nil {
 		return fmt.Errorf("entity/verify: cancel is nil")
 	}
 

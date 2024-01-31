@@ -74,6 +74,30 @@ func GetEntityAlias(did string) string {
 
 	return ""
 }
+func GetEntityDID(nick string) string {
+
+	aliases := GetEntityAliases()
+
+	for _, alias := range aliases {
+		if alias.Nick == nick {
+			return alias.Did
+		}
+	}
+
+	return ""
+}
+func GetNodeDID(nick string) string {
+
+	aliases := GetNodeAliases()
+
+	for _, alias := range aliases {
+		if alias.Nick == nick {
+			return alias.Id
+		}
+	}
+
+	return ""
+}
 
 func GetNodeAlias(id string) string {
 

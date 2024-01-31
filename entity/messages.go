@@ -11,7 +11,7 @@ func (e *Entity) openEnvelopes(a *Entity) (*msg.Message, error) {
 
 	var err error
 
-	ctx, cancel := context.WithCancel(e.ctx)
+	ctx, cancel := context.WithCancel(e.Ctx)
 	defer cancel()
 
 	envelopes := e.Topic.SubscribeEnvelopes(ctx)
@@ -37,11 +37,11 @@ func (e *Entity) openEnvelopes(a *Entity) (*msg.Message, error) {
 // The entity is the entity we are talking to, ie. "the Room", so we need
 // to pass in the actor for signing and decryption.
 func (e *Entity) receiveMessages(a *Entity) {
-	e.ctx, e.cancel = context.WithCancel(context.Background())
+	e.Ctx, e.CancelFunc = context.WithCancel(context.Background())
 
 	for {
 		select {
-		case <-e.ctx.Done():
+		case <-e.Ctx.Done():
 			return
 		default:
 			if msg, err := e.openEnvelopes(a); err == nil {

@@ -17,8 +17,8 @@ const (
 )
 
 type Entity struct {
-	ctx    context.Context
-	cancel context.CancelFunc
+	Ctx        context.Context
+	CancelFunc context.CancelFunc
 
 	// External structs
 	DID   *did.DID
@@ -54,8 +54,8 @@ func New(d *did.DID, k *set.Keyset, nick string) (*Entity, error) {
 	}
 
 	e := &Entity{
-		ctx:    ctx,
-		cancel: cancel,
+		Ctx:        ctx,
+		CancelFunc: cancel,
 
 		Nick: nick,
 
@@ -104,7 +104,7 @@ func GetOrCreate(id string) (*Entity, error) {
 }
 
 func (e *Entity) Leave() {
-	e.cancel()
+	e.CancelFunc()
 }
 
 // Takes a message channel and and actor entity and recieves messages

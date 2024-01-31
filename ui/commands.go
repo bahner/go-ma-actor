@@ -8,6 +8,8 @@ func (ui *ChatUI) handleCommands(input string) {
 	switch args[0] {
 	case "/status":
 		ui.handleStatusCommand(args)
+	case "/msg":
+		ui.handleMsgCommand(args)
 	case "/discover":
 		ui.triggerDiscovery()
 	case "/enter":
