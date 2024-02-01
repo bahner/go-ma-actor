@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/bahner/go-ma-actor/alias"
 	"github.com/bahner/go-ma-actor/entity"
 	"github.com/bahner/go-ma-actor/p2p/topic"
 	log "github.com/sirupsen/logrus"
@@ -59,6 +60,9 @@ func (ui *ChatUI) changeEntity(did string) error {
 	if err != nil {
 		return fmt.Errorf("error getting or creating entity: %w", err)
 	}
+
+	// Loog up the alias otherwise use the fragment
+	e.Nick = alias.Nick(did)
 
 	// Now pivot to the new entity
 	old_entity := ui.e

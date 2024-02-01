@@ -8,38 +8,46 @@ import (
 
 func (ui *ChatUI) handleEnterCommand(args []string) {
 
-	if len(args) > 1 {
+	if len(args) == 2 {
 
-		// Look up the DID, if possible and convert it to a proper did.DID
-		d, err := did.New(
-			alias.GetEntityDID(args[1]),
-		)
-		if err != nil {
-			ui.displaySystemMessage("Invalid DID: " + err.Error())
+		_did := args[1]
+		// If id is not a valid did, then try to find it in the aliases
+		if !did.IsValidDID(_did) {
+			_did = alias.GetEntityDID(_did)
+		}
+
+		// If it is still not a valid did, then return
+		if _did == "" {
+			ui.displaySystemMessage("Invalid DID")
 			return
 		}
-		log.Debugf("Trying to find: %s", d.String())
+
+		log.Debugf("Trying to find: %s", _did)
 
 		// If the DID is our own identity that is already handled.
-		if d.String() == ui.a.DID.String() {
-			ui.displaySystemMessage("You can't enter yourself. You are already here.")
+		if _did == ui.a.DID.String() {
+			ui.displaySystemMessage("You can't enter yourself.")
 			return
 		}
 
 		// If this is not the same as the last known location, then
 		// update the last known location
-		if ui.a.Doc.LastKnownLocation == d.String() {
-			ui.displaySystemMessage("You are already there.")
+		if ui.e.DID.String() == _did {
+			ui.displaySystemMessage("You are already here.")
 			return
 		}
 
 		// Update the UI
-		ui.changeEntity(ui.e.DID.String())
+		err := ui.changeEntity(_did)
+		if err != nil {
+			ui.displaySystemMessage("Error changing entity: " + err.Error())
+			return
+		}
 		ui.msgBox.SetTitle(ui.e.Nick)
-		ui.displaySystemMessage("Entered: " + d.String())
+		ui.displaySystemMessage("Entered: " + _did)
 
 		// Update the location
-		err = ui.a.UpdateLastKnowLocation(d.String())
+		err = ui.a.UpdateLastKnowLocation(_did)
 		if err != nil {
 			ui.displaySystemMessage("Error updating last known location: " + err.Error())
 			return

@@ -2,7 +2,6 @@ package ui
 
 import (
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/bahner/go-ma-actor/alias"
@@ -15,24 +14,32 @@ func (ui *ChatUI) handleMsgCommand(args []string) {
 
 	if len(args) > 1 {
 
-		recipient := alias.GetEntityDID(args[1])
-		if !did.IsValidDID(recipient) {
-			ui.displaySystemMessage(fmt.Sprintf("Invalid DID: %s", recipient))
-			return
-		}
-
 		if len(args) < 3 {
 			ui.displaySystemMessage("Message can't be empty")
 			return
 		}
 
+		recipient := args[1]
+		if !did.IsValidDID(recipient) {
+			recipient = alias.GetEntityDID(recipient)
+		}
+		if recipient == "" {
+			ui.displaySystemMessage(fmt.Sprintf("Invalid DID: %s", args[1]))
+			return
+		}
+
 		var message string
 		if len(args) > 3 {
-			message = strings.Join(os.Args[2:], " ")
+			message = strings.Join(args[2:], " ")
 		} else {
 			message = args[2]
 		}
 		msgBytes := []byte(message)
+		if log.GetLevel() == log.DebugLevel {
+			ui.displaySystemMessage(fmt.Sprintf("Sending message to %s: %s", recipient, message))
+		} else {
+			ui.displaySystemMessage(fmt.Sprintf("Sending message to %s", recipient))
+		}
 
 		msg, err := msg.New(ui.a.DID.String(), recipient, msgBytes, "text/plain", ui.a.Keyset.SigningKey.PrivKey)
 		if err != nil {

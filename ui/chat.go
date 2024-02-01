@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/bahner/go-ma/did"
+	"github.com/bahner/go-ma-actor/alias"
 	"github.com/bahner/go-ma/msg"
 	log "github.com/sirupsen/logrus"
 )
@@ -14,7 +14,7 @@ import (
 // with the sender's nick highlighted in green.
 // func (ui *ChatUI) displayChatMessage(cm *msg.Message) {
 func (ui *ChatUI) displayChatMessage(cm *msg.Message) {
-	from := did.GetFragment(cm.From)
+	from := alias.Nick(cm.From)
 	prompt := withColor("green", fmt.Sprintf("<%s>:", from))
 	fmt.Fprintf(ui.msgW, "%s %s\n", prompt, string(cm.Content))
 }

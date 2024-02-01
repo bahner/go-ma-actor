@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/bahner/go-ma-actor/alias"
 	"github.com/bahner/go-ma-actor/p2p/topic"
 	"github.com/bahner/go-ma/did"
 	"github.com/bahner/go-ma/did/doc"
@@ -51,6 +52,13 @@ func New(d *did.DID, k *set.Keyset, nick string) (*Entity, error) {
 	_doc, err := doc.Fetch(d.String(), true) // Accept cached version
 	if err != nil {
 		return nil, fmt.Errorf("entity/new: failed to create new document: %w", err)
+	}
+
+	// Look up nick if not set else set it.
+	if nick == "" {
+		alias.GetEntityAlias(d.String())
+	} else {
+		alias.AddEntityAlias(d.String(), nick)
 	}
 
 	e := &Entity{

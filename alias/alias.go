@@ -3,6 +3,7 @@ package alias
 import (
 	"fmt"
 
+	"github.com/bahner/go-ma/did"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
@@ -243,4 +244,30 @@ func PrintNodeAliases() string {
 	}
 
 	return aliases_string
+}
+
+func Nick(id string) string {
+
+	var nick string
+
+	// First check if this is a valid did
+	// Lookup it up or return the fragment
+	_did, err := did.New(id)
+
+	// _did is a *did.DID and id is a valid DID
+	if err == nil {
+		nick = GetEntityAlias(id)
+		if nick != "" {
+			return nick
+		}
+		nick = GetNodeAlias(id)
+		if nick != "" {
+			return nick
+		}
+		return _did.Fragment
+	}
+
+	// This means that what we got is not a valid DID
+	// but just a nick itself, so it was already the best
+	return nick
 }
