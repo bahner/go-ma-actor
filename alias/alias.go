@@ -8,8 +8,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-var aliases = viper.Viper{}
-
 type EntityAlias struct {
 	Nick string
 	Did  string
@@ -22,31 +20,16 @@ type NodeAlias struct {
 
 func init() {
 
-	// Look in the current directory, the home directory and /etc for the config file.
-	// In that order.
-	aliases = *viper.New()
-	aliases.SetConfigName("aliases")
-	aliases.SetConfigType("yaml")
-	aliases.AddConfigPath("$HOME/.ma")
-	aliases.AddConfigPath("/etc/ma")
-
 	// Allow to set config file via command line flag.
-	aliases.SetDefault("entities", []EntityAlias{})
-	aliases.SetDefault("nodes", []NodeAlias{})
-
-	err := aliases.ReadInConfig()
-	if err != nil {
-		log.Errorf("Error reading aliases config file: %s", err)
-	}
+	viper.SetDefault("entities", []EntityAlias{})
+	viper.SetDefault("nodes", []NodeAlias{})
 }
 
 func GetEntityAliases() []EntityAlias {
 
 	var entityAliases = []EntityAlias{}
 
-	aliases.ReadInConfig()
-
-	err := aliases.UnmarshalKey("entities", &entityAliases)
+	err := viper.UnmarshalKey("entities", &entityAliases)
 	if err != nil {
 		log.Errorf("Error unmarshalling entity aliases: %s", err)
 	}
@@ -57,9 +40,7 @@ func GetEntityAliases() []EntityAlias {
 func GetNodeAliases() []NodeAlias {
 	var nodeAliases = []NodeAlias{}
 
-	aliases.ReadInConfig()
-
-	err := aliases.UnmarshalKey("nodes", &nodeAliases)
+	err := viper.UnmarshalKey("nodes", &nodeAliases)
 	if err != nil {
 		log.Errorf("Error unmarshalling node aliases: %s", err)
 	}
@@ -135,17 +116,17 @@ func AddNodeAlias(id string, nick string) error {
 			// Otherwise, change the nick
 			log.Debugf("Changing alias %s to %s for entity %s", alias.Nick, nick, id)
 			nodeAliases[i].Nick = nick
-			aliases.Set("nodes", nodeAliases)
+			viper.Set("nodes", nodeAliases)
 
 			// Write the changes to the config file
-			return aliases.WriteConfig()
+			return viper.WriteConfig()
 		}
 	}
 
 	// If the nick does not exist, add it
 	nodeAliases = append(nodeAliases, NodeAlias{Nick: nick, Id: id})
-	aliases.Set("nodes", nodeAliases)
-	return aliases.WriteConfig()
+	viper.Set("nodes", nodeAliases)
+	return viper.WriteConfig()
 
 }
 
@@ -161,10 +142,10 @@ func RemoveNodeAlias(nick string) error {
 			// Remove the nick
 			log.Debugf("Removing alias %s for entity %s", nick, alias.Id)
 			nodeAliases = append(nodeAliases[:i], nodeAliases[i+1:]...)
-			aliases.Set("nodes", nodeAliases)
+			viper.Set("nodes", nodeAliases)
 
 			// Write the changes to the config file
-			return aliases.WriteConfig()
+			return viper.WriteConfig()
 		}
 	}
 
@@ -189,17 +170,17 @@ func AddEntityAlias(did string, nick string) error {
 			// Otherwise, change the nick
 			log.Debugf("Changing alias %s to %s for entity %s", alias.Nick, nick, did)
 			entityAliases[i].Nick = nick
-			aliases.Set("entities", entityAliases)
+			viper.Set("entities", entityAliases)
 
 			// Write the changes to the config file
-			return aliases.WriteConfig()
+			return viper.WriteConfig()
 		}
 	}
 
 	// If the nick does not exist, add it
 	entityAliases = append(entityAliases, EntityAlias{Nick: nick, Did: did})
-	aliases.Set("entities", entityAliases)
-	return aliases.WriteConfig()
+	viper.Set("entities", entityAliases)
+	return viper.WriteConfig()
 }
 
 func RemoveEntityAlias(nick string) error {
@@ -214,10 +195,10 @@ func RemoveEntityAlias(nick string) error {
 			// Remove the nick
 			log.Debugf("Removing alias %s for entity %s", nick, alias.Did)
 			entityAliases = append(entityAliases[:i], entityAliases[i+1:]...)
-			aliases.Set("entities", entityAliases)
+			viper.Set("entities", entityAliases)
 
 			// Write the changes to the config file
-			return aliases.WriteConfig()
+			return viper.WriteConfig()
 		}
 	}
 
@@ -251,9 +232,6 @@ func PrintNodeAliases() string {
 }
 
 func Nick(id string) string {
-
-	// Update the database from the config file
-	aliases.ReadInConfig()
 
 	var nick string
 

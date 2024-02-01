@@ -57,8 +57,6 @@ func New(d *did.DID, k *set.Keyset, nick string) (*Entity, error) {
 	// Look up nick if not set else set it.
 	if nick == "" {
 		nick = alias.Nick(d.String())
-	} else {
-		alias.AddEntityAlias(d.String(), nick)
 	}
 
 	e := &Entity{
