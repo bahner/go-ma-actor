@@ -44,6 +44,8 @@ func GetEntityAliases() []EntityAlias {
 
 	var entityAliases = []EntityAlias{}
 
+	aliases.ReadInConfig()
+
 	err := aliases.UnmarshalKey("entities", &entityAliases)
 	if err != nil {
 		log.Errorf("Error unmarshalling entity aliases: %s", err)
@@ -54,6 +56,8 @@ func GetEntityAliases() []EntityAlias {
 
 func GetNodeAliases() []NodeAlias {
 	var nodeAliases = []NodeAlias{}
+
+	aliases.ReadInConfig()
 
 	err := aliases.UnmarshalKey("nodes", &nodeAliases)
 	if err != nil {
@@ -247,6 +251,9 @@ func PrintNodeAliases() string {
 }
 
 func Nick(id string) string {
+
+	// Update the database from the config file
+	aliases.ReadInConfig()
 
 	var nick string
 

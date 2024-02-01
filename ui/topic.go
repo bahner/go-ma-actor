@@ -61,7 +61,7 @@ func (ui *ChatUI) changeEntity(did string) error {
 		return fmt.Errorf("error getting or creating entity: %w", err)
 	}
 
-	// Loog up the alias otherwise use the fragment
+	// Loog up the nick for the entity
 	e.Nick = alias.Nick(did)
 
 	// Now pivot to the new entity
