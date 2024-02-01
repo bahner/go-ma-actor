@@ -35,4 +35,15 @@ Pong should keep a list of respondents and ping them all. The list should
 be cached and ever so often the lastKnownLocation should be looked up and
 the non-present entries be deleted.
 
-It doesn't matter if we send a few lost messages, but we shouldnæt overdo it.
+It doesn't matter if we send a few lost messages, but we shouldn't overdo it.
+
+### Bootstrap peers
+
+Make a list of host, ie. Multiaddrs or nodeIds configurable, so that these
+are all that's required for a successful bootup.
+
+#### Connect
+
+Add a connect command to connect to a specific host directly, eg:
+
+/connect relay
