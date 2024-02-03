@@ -56,7 +56,7 @@ func New(d *did.DID, k *set.Keyset, nick string) (*Entity, error) {
 
 	// Look up nick if not set else set it.
 	if nick == "" {
-		nick = alias.Nick(d.String())
+		nick = alias.LookupEntityDID(d.String())
 	}
 
 	e := &Entity{
@@ -98,7 +98,7 @@ func GetOrCreate(id string) (*Entity, error) {
 
 	e := get(id)
 	if e != nil {
-		e.Nick = alias.Nick(id)
+		e.Nick = alias.LookupEntityDID(id)
 		return e, nil
 	}
 

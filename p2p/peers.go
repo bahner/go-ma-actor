@@ -71,3 +71,12 @@ func (p *P2P) GetConnectedProtectedPeersAddrInfo() map[string]*peer.AddrInfo {
 
 	return connectedPeersAddrInfo
 }
+
+func (p *P2P) GetConnectedProctectedPeersShortStrings() []string {
+	peers := p.GetConnectedProtectedPeersAddrInfo()
+	peersShortstrings := make([]string, 0, len(peers))
+	for _, p := range peers {
+		peersShortstrings = append(peersShortstrings, p.ID.ShortString())
+	}
+	return peersShortstrings
+}

@@ -2,7 +2,7 @@ package ui
 
 import (
 	"github.com/bahner/go-ma-actor/alias"
-	"github.com/bahner/go-ma-actor/peer"
+	log "github.com/sirupsen/logrus"
 )
 
 // handleAliasCommand handles the /alias command
@@ -11,11 +11,11 @@ func (ui *ChatUI) handleAliasCommand(args []string) {
 	if len(args) > 1 {
 		switch args[1] {
 		case "node":
-			ui.handleNodeAliasCommand(args)
+			ui.handleAliasNodeCommand(args)
 		case "entity":
-			ui.handleEntityAliasCommand(args)
+			ui.handleAliasEntityCommand(args)
 		case "list":
-			ui.handleAliasesCommand(args)
+			ui.handleAliasListCommand(args)
 		default:
 			ui.displaySystemMessage("Unknown alias type: " + args[1])
 		}
@@ -24,23 +24,25 @@ func (ui *ChatUI) handleAliasCommand(args []string) {
 	}
 }
 
-func (ui *ChatUI) handleAliasesCommand(args []string) {
+func (ui *ChatUI) handleAliasListCommand(args []string) {
 
-	ui.displaySystemMessage(alias.PrintEntityAliases())
-	ui.displaySystemMessage(alias.PrintNodeAliases())
+	ui.displaySystemMessage(alias.EntityAliases())
+	ui.displaySystemMessage(alias.NodeAliases())
 
 }
 
-func (ui *ChatUI) handleEntityAliasCommand(args []string) {
+func (ui *ChatUI) handleAliasEntityCommand(args []string) {
 
 	if len(args) > 2 {
 		switch args[2] {
-		case "add":
-			ui.handleEntityAliasAddCommand(args)
+		case "set":
+			ui.handleAliasEntitySetCommand(args)
+		case "show":
+			ui.handleAliasEntityShowCommand(args)
 		case "remove":
-			ui.handleEntityAliasRemoveCommand(args)
+			ui.handleAliasEntityRemoveCommand(args)
 		case "list":
-			ui.displaySystemMessage(alias.PrintEntityAliases())
+			ui.displaySystemMessage(alias.EntityAliases())
 		default:
 			ui.displaySystemMessage("Unknown alias entity command: " + args[2])
 		}
@@ -48,39 +50,43 @@ func (ui *ChatUI) handleEntityAliasCommand(args []string) {
 
 }
 
-func (ui *ChatUI) handleEntityAliasAddCommand(args []string) {
+func (ui *ChatUI) handleAliasEntitySetCommand(args []string) {
 
 	// Attempt to see if the first param is an existing nick
-	id := args[3]
-	_existing_did := alias.GetEntityDID(id)
-	if _existing_did != "" {
-		id = _existing_did
-	}
 
-	if len(args) > 3 {
-		alias.AddEntityAlias(id, args[4])
+	if len(args) == 5 {
+		id := alias.LookupEntityNick(args[3])
+		nick := args[4]
+		alias.SetEntityAlias(id, nick)
+		log.Debugf("Setting alias for %s to %s", id, nick)
+	} else {
+		ui.displaySystemMessage("Usage: /alias entity set <nick> <alias>")
 	}
 
 }
 
-func (ui *ChatUI) handleEntityAliasRemoveCommand(args []string) {
+func (ui *ChatUI) handleAliasEntityRemoveCommand(args []string) {
 
-	if len(args) > 3 {
+	if len(args) == 3 {
 		alias.RemoveEntityAlias(args[3])
+	} else {
+		ui.displaySystemMessage("Usage: /alias entity remove <alias>")
 	}
 
 }
 
-func (ui *ChatUI) handleNodeAliasCommand(args []string) {
+func (ui *ChatUI) handleAliasNodeCommand(args []string) {
 
 	if len(args) > 2 {
 		switch args[2] {
-		case "add":
-			ui.handleNodeAliasAddCommand(args)
+		case "set":
+			ui.handleAliasNodeSetCommand(args)
+		case "show":
+			ui.handleAliasNodeShowCommand(args)
 		case "remove":
-			ui.handleNodeAliasRemoveCommand(args)
+			ui.handleAliasNodeRemoveCommand(args)
 		case "list":
-			ui.displaySystemMessage(alias.PrintNodeAliases())
+			ui.displaySystemMessage(alias.NodeAliases())
 		default:
 			ui.displaySystemMessage("Unknown alias node command: " + args[2])
 		}
@@ -88,24 +94,47 @@ func (ui *ChatUI) handleNodeAliasCommand(args []string) {
 
 }
 
-func (ui *ChatUI) handleNodeAliasAddCommand(args []string) {
+func (ui *ChatUI) handleAliasNodeSetCommand(args []string) {
 
-	ap := peer.GetByAlias(args[3])
-	if ap == nil {
-		ui.displaySystemMessage("Unknown node with alias: " + args[3])
+	if len(args) == 5 {
+
+		// Fetch the did if's referenced as an alias
+		id := alias.LookupNodeNick(args[3])
+
+		alias.SetNodeAlias(id, args[4])
+
+	} else {
+
+		ui.displaySystemMessage("Usage: /alias node set <node_ID|node_ShortID> <alias>")
 		return
-	}
-	if len(args) > 3 {
-		alias.AddNodeAlias(ap.ID, args[4])
-		ap.Alias = args[4]
 	}
 
 }
 
-func (ui *ChatUI) handleNodeAliasRemoveCommand(args []string) {
+func (ui *ChatUI) handleAliasNodeRemoveCommand(args []string) {
 
 	if len(args) > 3 {
 		alias.RemoveNodeAlias(args[3])
+	}
+
+}
+
+func (ui *ChatUI) handleAliasEntityShowCommand(args []string) {
+
+	if len(args) == 4 {
+		ui.displaySystemMessage(alias.LookupEntityNick(args[3]))
+	} else {
+		ui.displaySystemMessage("Usage: /alias entity show <alias>")
+	}
+
+}
+
+func (ui *ChatUI) handleAliasNodeShowCommand(args []string) {
+
+	if len(args) == 4 {
+		ui.displaySystemMessage(alias.LookupNodeNick(args[3]))
+	} else {
+		ui.displaySystemMessage("Usage: /alias node show <alias>")
 	}
 
 }

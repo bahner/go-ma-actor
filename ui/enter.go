@@ -13,7 +13,7 @@ func (ui *ChatUI) handleEnterCommand(args []string) {
 		_did := args[1]
 		// If id is not a valid did, then try to find it in the aliases
 		if !did.IsValidDID(_did) {
-			_did = alias.GetEntityDID(_did)
+			_did = alias.LookupEntityDID(_did)
 		}
 
 		// If it is still not a valid did, then return

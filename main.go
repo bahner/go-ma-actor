@@ -2,11 +2,9 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"os"
 
-	"github.com/bahner/go-ma-actor/alias"
 	"github.com/bahner/go-ma-actor/config"
 	"github.com/bahner/go-ma-actor/entity"
 	"github.com/bahner/go-ma-actor/p2p"
@@ -49,12 +47,6 @@ func main() {
 		log.Errorf("failed to create actor: %v", err)
 		os.Exit(70)
 	}
-
-	eas := alias.GetEntityAliases()
-	for _, ea := range eas {
-		fmt.Printf("Entity alias: %s %s\n", ea.Nick, ea.Did)
-	}
-	// na := config.GetNodeAliases()
 
 	// Start a simple web server to handle incoming requests.
 	// This is defined in web.go. It makes it possible to add extra parameters to the handler.

@@ -62,7 +62,7 @@ func (ui *ChatUI) changeEntity(did string) error {
 	}
 
 	// Loog up the nick for the entity
-	e.Nick = alias.Nick(did)
+	e.Nick = alias.LookupEntityDID(did)
 
 	// Now pivot to the new entity
 	old_entity := ui.e

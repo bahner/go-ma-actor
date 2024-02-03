@@ -21,7 +21,7 @@ func (ui *ChatUI) handleMsgCommand(args []string) {
 
 		recipient := args[1]
 		if !did.IsValidDID(recipient) {
-			recipient = alias.GetEntityDID(recipient)
+			recipient = alias.LookupEntityNick(recipient)
 		}
 		if recipient == "" {
 			ui.displaySystemMessage(fmt.Sprintf("Invalid DID: %s", args[1]))
