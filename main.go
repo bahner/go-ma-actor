@@ -58,7 +58,10 @@ func main() {
 
 	// Start a simple web server to handle incoming requests.
 	// This is defined in web.go. It makes it possible to add extra parameters to the handler.
-	h := &WebHandlerData{p.Node, a}
+	h := &entity.WebHandlerData{
+		P2P:    p,
+		Entity: a,
+	}
 	http.HandleFunc("/", h.WebHandler)
 	log.Infof("Listening on %s", config.GetHttpSocket())
 	go http.ListenAndServe(config.GetHttpSocket(), nil)

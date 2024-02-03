@@ -50,24 +50,25 @@ func main() {
 	// We need to discover peers before we can do anything else.
 	p.DiscoverPeers()
 
-	n := p.Node
-
 	k := config.GetKeyset()
-	a, err := entity.NewFromKeyset(k, k.DID.Fragment)
+	e, err := entity.NewFromKeyset(k, k.DID.Fragment)
 	if err != nil {
 		log.Errorf("Error initializing actor: %v", err)
 		os.Exit(70) // EX_SOFTWARE
 	}
 
-	fmt.Printf("I am : %s\n", a.DID.String())
-	fmt.Printf("My public key is: %s\n", n.ID().String())
+	fmt.Printf("I am : %s\n", e.DID.String())
+	fmt.Printf("My public key is: %s\n", p.Node.ID().String())
 
 	// Now we can start continuous discovery in the background.
 	go p.DiscoveryLoop(ctx)
-	go handleEvents(ctx, a)
+	go handleEvents(ctx, e)
 
 	// This is defined in web.go. It makes it possible to add extra parameters to the handler.
-	h := &WebHandlerData{n, a}
+	h := &entity.WebHandlerData{
+		P2P:    p,
+		Entity: e,
+	}
 	http.HandleFunc("/", h.WebHandler)
 	log.Infof("Listening on %s", config.GetHttpSocket())
 	err = http.ListenAndServe(config.GetHttpSocket(), nil)
