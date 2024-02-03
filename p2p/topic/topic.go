@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/bahner/go-ma/msg"
 	pubsub "github.com/libp2p/go-libp2p-pubsub"
 )
 
@@ -13,18 +12,10 @@ var (
 	topics = map[string]*Topic{}
 )
 
-const (
-	MESSAGES_BUFFERSIZE  = 100
-	ENVELOPES_BUFFERSIZE = 100
-)
-
 type Topic struct {
-	ctx context.Context
+	Ctx context.Context
 
-	chDone chan struct{}
-
-	Messages  chan *msg.Message
-	Envelopes chan *msg.Envelope
+	Done chan struct{}
 
 	Topic        *pubsub.Topic
 	Subscription *pubsub.Subscription
@@ -38,9 +29,7 @@ func GetOrCreate(id string) (*Topic, error) {
 	}
 
 	t = &Topic{
-		chDone:    make(chan struct{}),
-		Messages:  make(chan *msg.Message, MESSAGES_BUFFERSIZE),
-		Envelopes: make(chan *msg.Envelope, ENVELOPES_BUFFERSIZE),
+		Done: make(chan struct{}),
 	}
 
 	// Topic
@@ -88,7 +77,7 @@ func (t *Topic) Close() error {
 // Unsubscribe is used to stop the goroutine that is listening for messages.
 func (t *Topic) Unsubscribe() error {
 
-	close(t.chDone)
+	close(t.Done)
 
 	return nil
 }

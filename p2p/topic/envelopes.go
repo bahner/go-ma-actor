@@ -2,91 +2,76 @@ package topic
 
 import (
 	"context"
-	"encoding/hex"
+	"fmt"
 
 	"github.com/bahner/go-ma/msg"
+	"github.com/fxamacker/cbor/v2"
 	log "github.com/sirupsen/logrus"
-	"lukechampine.com/blake3"
 )
 
-func (t *Topic) SubscribeEnvelopes(ctx context.Context) (envelopes <-chan *msg.Envelope) {
+// Subscribe to a topic and start the subscription loop.
+// NB! Not all entities can decrypt the envelopes, so this is not a method on the entity.
+// Envelopes can be sent to the entity, but the entity must handle the decryption.
+func (t *Topic) Subscribe(ctx context.Context, messages chan *msg.Message, envelopes chan *msg.Envelope) error {
 
-	t.ctx = ctx
+	if messages == nil {
+		return fmt.Errorf("messages channel must not be nil")
+	}
+
+	if envelopes == nil {
+		log.Warnf("envelopes channel for topic subscription %s is nil. Ignoring envelopes.", t.Topic.String())
+	}
+
+	t.Ctx = ctx
 	var err error
 
 	t.Subscription, err = t.Topic.Subscribe()
 	if err != nil {
-		log.Errorf("Failed to subscribe to topic: %v", err)
-		return
+		return fmt.Errorf("failed to subscribe to topic: %w", err)
 	}
 
-	t.Envelopes = make(chan *msg.Envelope, ENVELOPES_BUFFERSIZE)
+	go t.subscriptionLoop(messages, envelopes)
 
-	go t.envelopeSubscriptionLoop()
-
-	return t.Envelopes
+	return nil
 
 }
 
-func (t *Topic) NextEnvelope() (*msg.Envelope, error) {
-
-	message, err := t.Subscription.Next(t.ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	if log.GetLevel() >= log.DebugLevel {
-		// blake3 is very fast, so this is not a problem in debugging mode
-		// This is just so we can see that messages are actually received
-		bs := blake3.Sum256(message.Data)
-		checksum := hex.EncodeToString(bs[:])
-		log.Debugf("Received message with checksum: %s", checksum)
-	}
-
-	// Here we should distinguish between packed and unpacked envelopes
-	e, err := msg.UnmarshalEnvelopeFromCBOR(message.Data)
-	if err != nil {
-		log.Errorf("Failed to unmarshal envelope: %v", err)
-	}
-
-	log.Debugf("Received envelope: %v", e)
-	return e, err
-
-}
-
-// Publish a message to the topic.
-// NB! Check that it's the correct topic!
-func (t *Topic) SendMessage(m *msg.Message) error {
-
-	// Should this just be a goroutine. Message delivery is not guaranteed anyway.
-	return m.Send(t.ctx, t.Topic)
-
-}
-
-func (t *Topic) envelopeSubscriptionLoop() {
+func (t *Topic) subscriptionLoop(messages chan *msg.Message, envelopes chan *msg.Envelope) {
 	for {
 		select {
-		case <-t.ctx.Done():
+		case <-t.Ctx.Done():
 			log.Debugf("Context cancelled, stopping envelope subscription loop for topic %s.", t.Topic.String())
 			return
-		case <-t.chDone:
+		case <-t.Done:
 			log.Debugf("Channel done, stopping envelope subscription loop for topic %s.", t.Topic.String())
 			return
 		default:
-			letter, err := t.NextEnvelope()
+			input, err := t.Subscription.Next(t.Ctx)
 			if err != nil {
 				log.Errorf("Error in envelope subscription loop: %v", err)
 				continue
 			}
 
-			// If additional filtering or processing is required, do it here
-			// For example, uncomment the following if you want to filter out messages sent by self
-			// if letter.Sender == t.self {
-			//     continue
-			// }
+			// First try to see if this fits a message, as that takes less time.
+			var m *msg.Message
 
-			// Send valid messages onto the Envelopes channel
-			t.Envelopes <- letter
+			err = cbor.Unmarshal(input.Data, &m)
+			if err == nil {
+				messages <- m
+				continue
+			}
+
+			// If the envelopes channel is nil, we don't need to try to unmarshal envelopes.
+			if envelopes == nil {
+				var e *msg.Envelope
+				err = cbor.Unmarshal(input.Data, &e)
+				if err == nil {
+					envelopes <- e
+					continue
+				}
+			}
+
+			log.Errorf("Failed to unmarshal message or envelope: %v", err)
 		}
 	}
 }

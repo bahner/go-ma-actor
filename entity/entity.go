@@ -29,7 +29,7 @@ type Entity struct {
 	// Only keyset maybe nil
 	Keyset *set.Keyset
 
-	// Channel for incoming messages
+	// Channels
 	Messages  chan *msg.Message
 	Envelopes chan *msg.Envelope
 
@@ -69,9 +69,10 @@ func New(d *did.DID, k *set.Keyset, nick string) (*Entity, error) {
 		Doc:   _doc,
 		Topic: _topic,
 
-		Keyset: k,
+		Messages:  make(chan *msg.Message, MESSAGES_BUFFERSIZE),
+		Envelopes: make(chan *msg.Envelope, ENVELOPES_BUFFERSIZE),
 
-		Messages: make(chan *msg.Message, MESSAGES_BUFFERSIZE),
+		Keyset: k,
 	}
 
 	add(e)
@@ -127,7 +128,5 @@ func (e *Entity) Enter(actor *Entity) error {
 		return fmt.Errorf("entity/start: actor has no keyset")
 	}
 
-	go e.receiveMessages(actor)
-
-	return nil
+	return actor.Topic.Subscribe(actor.Ctx, e.Messages, e.Envelopes)
 }

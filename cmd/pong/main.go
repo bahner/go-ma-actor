@@ -62,7 +62,8 @@ func main() {
 
 	// Now we can start continuous discovery in the background.
 	go p.DiscoveryLoop(ctx)
-	go handleEvents(ctx, e)
+	go handleEnvelopeEvents(ctx, e)
+	go handleMessageEvents(ctx, e)
 
 	// This is defined in web.go. It makes it possible to add extra parameters to the handler.
 	h := &entity.WebHandlerData{

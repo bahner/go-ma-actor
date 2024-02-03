@@ -12,14 +12,12 @@ import (
 
 // Handle incoming messages. NB! This must be cancelled,
 // when topic (localtion/home) changes.
-func (ui *ChatUI) handleTopicEvents(ctx context.Context, t *topic.Topic) {
-
-	envelopes := t.SubscribeEnvelopes(ctx)
+func (ui *ChatUI) handleIncomingEnvelopes(ctx context.Context, t *topic.Topic) {
 
 	for {
 		log.Debugf("Waiting for messages from topic %s", t.Topic.String())
 		select {
-		case e, ok := <-envelopes:
+		case e, ok := <-ui.e.Envelopes:
 			if !ok {
 				log.Debug("Envelope channel closed, exiting...")
 				return
@@ -72,7 +70,7 @@ func (ui *ChatUI) changeEntity(did string) error {
 	log.Infof("Location changed to %s", ui.e.Topic.Topic.String())
 
 	// Start handling the new topic
-	go ui.handleTopicEvents(ui.currentCtx, ui.e.Topic)
+	go ui.handleIncomingEnvelopes(ui.currentCtx, ui.e.Topic)
 
 	return nil
 

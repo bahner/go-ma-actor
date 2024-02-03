@@ -8,10 +8,43 @@ import (
 	"github.com/bahner/go-ma-actor/p2p/topic"
 	"github.com/bahner/go-ma/msg"
 	"github.com/pkg/errors"
-	"github.com/spf13/viper"
-
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
+
+func handleMessageEvents(ctx context.Context, e *entity.Entity) {
+	err := e.Topic.Subscribe(ctx, e.Messages, e.Envelopes)
+	if err != nil {
+		log.Errorf("Failed to subscribe to topic: %v", err)
+	}
+	for {
+		fmt.Println("Waiting for messages...")
+		select {
+		case m, ok := <-e.Messages:
+			if !ok {
+				fmt.Printf("Envelope channel closed, exiting...")
+				return
+			}
+			fmt.Printf("Received envelope: %v", e)
+			fmt.Printf("Received message: %v\n", string(m.Content))
+
+			// Check if the message is from self to prevent pong loop
+			if m.From != e.DID.String() {
+				log.Debugf("Sending pong to %s over %s", m.From, e.DID.String())
+				err := reply(ctx, e, m)
+				if err != nil {
+					log.Errorf("Error sending pong: %v", err)
+				}
+			} else {
+				fmt.Println("Received message from self, ignoring...")
+			}
+
+		case <-ctx.Done():
+			fmt.Println("Context done, exiting...")
+			return
+		}
+	}
+}
 
 func reply(ctx context.Context, ent *entity.Entity, m *msg.Message) error {
 
@@ -26,7 +59,7 @@ func reply(ctx context.Context, ent *entity.Entity, m *msg.Message) error {
 		return fmt.Errorf("failed creating new message: %w", errors.Cause(err))
 	}
 
-	err = reply.Send(ctx, to.Topic)
+	err = reply.SendPublic(ctx, to.Topic)
 	if err != nil {
 		return fmt.Errorf("failed sending message: %w", errors.Cause(err))
 	}

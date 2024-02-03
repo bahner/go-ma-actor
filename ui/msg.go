@@ -46,7 +46,7 @@ func (ui *ChatUI) handleMsgCommand(args []string) {
 			ui.displaySystemMessage(fmt.Sprintf("message creation error: %s", err))
 		}
 
-		err = msg.Send(ui.e.Ctx, ui.e.Topic.Topic)
+		err = msg.SendPublic(ui.e.Ctx, ui.e.Topic.Topic)
 		if err != nil {
 			ui.displaySystemMessage(fmt.Sprintf("message publishing error: %s", err))
 		}
