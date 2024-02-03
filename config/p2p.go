@@ -148,20 +148,20 @@ func GetDiscoveryTimeoutString() string {
 	return GetDiscoveryTimeout().String()
 }
 
-func GetLowWaterMark() int {
+func GetLowWatermark() int {
 	return viper.GetInt("libp2p.connmgr.low_watermark")
 }
 
 func GetLowWatermarkString() string {
-	return fmt.Sprint(GetLowWaterMark())
+	return fmt.Sprint(GetLowWatermark())
 }
 
-func GetHighWaterMark() int {
+func GetHighWatermark() int {
 	return viper.GetInt("libp2p.connmgr.high_watermark")
 }
 
 func GetHighWatermarkString() string {
-	return fmt.Sprint(GetHighWaterMark())
+	return fmt.Sprint(GetHighWatermark())
 }
 
 func GetConnMgrGracePeriod() time.Duration {

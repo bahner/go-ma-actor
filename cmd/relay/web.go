@@ -8,38 +8,19 @@ import (
 	"github.com/bahner/go-ma-actor/config"
 	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/multiformats/go-multiaddr"
-	log "github.com/sirupsen/logrus"
 )
 
 // Assuming you have initialized variables like `h` and `rendezvous` somewhere in your main function or globally
 
 func webHandler(w http.ResponseWriter, r *http.Request) {
 
-	allConnected := p.GetAllConnectedPeers()
-	if allConnected == nil {
-		log.Error("Failed to get connected peers.")
-		allConnected = peer.IDSlice{}
-	}
-	peersWithRendezvous := p.GetConnectedProtectedPeers()
-	if peersWithRendezvous == nil {
-		log.Error("Failed to get connected peers with rendezvous.")
-		peersWithRendezvous = peer.IDSlice{}
-	}
-
 	doc := New()
 	doc.Title = fmt.Sprintf("Bootstrap peer for rendezvous %s. Version %s ", ma.RENDEZVOUS, VERSION)
 	doc.H1 = fmt.Sprintf("%s@%s v%s", ma.RENDEZVOUS, (p.Node.ID().String()), VERSION)
-	doc.H1 += fmt.Sprintf("<br>Found %d peers with rendezvous %s", len(peersWithRendezvous), ma.RENDEZVOUS)
+	doc.H1 += fmt.Sprintf("<br>Found %d peers with rendezvous %s", len(p.GetConnectedProtectedPeers()), ma.RENDEZVOUS)
 	doc.Addrs = p.Node.Addrs()
-	if allConnected == nil {
-		allConnected = peer.IDSlice{}
-	}
-	doc.AllConnectedPeers = allConnected
-	if peersWithRendezvous == nil {
-		peersWithRendezvous = peer.IDSlice{}
-	}
-	doc.MaPeers = peersWithRendezvous
-	doc.AllPeers = allConnected
+	doc.MaPeers = p.GetConnectedProtectedPeers()
+	doc.AllPeers = p.GetAllConnectedPeers()
 
 	fmt.Fprint(w, doc.String())
 }

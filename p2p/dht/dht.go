@@ -95,7 +95,9 @@ func (d *DHT) Bootstrap(ctx context.Context) error {
 func (d *DHT) DiscoverPeers(ctx context.Context, discoveryOpts ...discovery.Option) error {
 	log.Debugf("Starting DHT peer discovery searching for peers with rendezvous string: %s", ma.RENDEZVOUS)
 
+	log.Debugf("Number of open connections: %d", len(d.h.Network().Conns()))
 	//  Trim connections
+	log.Debugf("Trimming open connections to %d", config.GetLowWatermark())
 	d.h.ConnManager().TrimOpenConns(ctx)
 
 	log.Debugf("Peer discovery timeout: %v", config.GetDiscoveryTimeout())
