@@ -11,6 +11,7 @@ var connmgr *p2pConnmgr.BasicConnMgr
 func Init(opts ...p2pConnmgr.Option) (*p2pConnmgr.BasicConnMgr, error) {
 
 	if connmgr != nil {
+		log.Debugf("Connection manager already initialized")
 		return connmgr, nil
 	}
 

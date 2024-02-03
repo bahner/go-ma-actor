@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/bahner/go-ma-actor/config"
+	"github.com/bahner/go-ma-actor/p2p/connmgr"
 	"github.com/bahner/go-ma-actor/p2p/dht"
 	"github.com/bahner/go-ma-actor/p2p/node"
 	"github.com/bahner/go-ma-actor/p2p/pubsub"
@@ -29,11 +30,19 @@ type P2P struct {
 //
 // Also takes a variadic list of libp2p options.
 // Of it's nil, an empty list will be used.
-// You want to add your connectionmanager to
+//
+// The configurable connection manager will be added to the node.
 //
 // The function return the libp2p node and a PubSub Service
 
 func Init(d *dht.DHT, p2pOpts ...libp2p.Option) (*P2P, error) {
+
+	cm, err := connmgr.Init()
+	if err != nil {
+		return nil, fmt.Errorf("p2p.Init: failed to create connection manager: %w", err)
+	}
+
+	p2pOpts = append(p2pOpts, libp2p.ConnectionManager(cm))
 
 	// Create a new libp2p Host that listens on a random TCP port
 	n, err := node.New(config.GetNodeIdentity(), p2pOpts...)
