@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/bahner/go-ma"
+	"github.com/bahner/go-ma-actor/alias"
 	"github.com/bahner/go-ma-actor/config"
 	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/multiformats/go-multiaddr"
@@ -41,6 +42,8 @@ func New() *Document {
 func (d *Document) String() string {
 
 	retryInterval := config.GetDiscoveryRetryInterval()
+	d.AllConnectedPeers = p.GetAllConnectedPeers()
+	d.MaPeers = p.GetConnectedProtectedPeers()
 
 	html := "<!DOCTYPE html>\n<html>\n<head>\n"
 	if d.Title != "" {
@@ -67,7 +70,7 @@ func (d *Document) String() string {
 	if len(d.MaPeers) > 0 {
 		html += fmt.Sprintf("<h2>Discovered peers (%d):</h2>\n<ul>", len(d.MaPeers))
 		for _, peer := range d.MaPeers {
-			html += "<li>" + peer.String() + "</li>"
+			html += "<li>" + peer.String() + "(" + alias.Nick(peer.String()) + ")</li>"
 		}
 		html += "</ul>"
 	}

@@ -16,19 +16,11 @@ ifneq (,$(wildcard ./.env))
     export
 endif
 
-default: clean tidy $(NAME)
+default: clean $(NAME)
 
 all: default image push
 
-init: go.mod tidy
-
-go.mod:
-	$(GO) mod init $(MODULE_NAME)
-
-tidy: go.mod
-	$(GO) mod tidy
-
-$(NAME): tidy
+$(NAME):
 	$(GO) build -o $(NAME)
 
 clean:

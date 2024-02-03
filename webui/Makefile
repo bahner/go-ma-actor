@@ -5,7 +5,7 @@ WASM = static/main.wasm
 export GOOS=js
 export GOARCH=wasm
 
-default: clean tidy $(WASM) publish
+default: clean $(WASM) publish
 
 $(WASM):
 	go build -o $(WASM) main.go
@@ -20,8 +20,5 @@ open: $(CID)
 
 clean:
 	rm -f $(WASM) 
-
-tidy:
-	go mod tidy
 
 .PHONY: publish open clean tidy
