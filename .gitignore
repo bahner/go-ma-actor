@@ -25,3 +25,4 @@ go-space-thumb*
 # Log, config and binary
 go-ma-actor*
 *.log
+.publish.sh

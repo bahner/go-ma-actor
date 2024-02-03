@@ -32,7 +32,7 @@ func handleEvents(ctx context.Context, e *entity.Entity) {
 			// Check if the message is from self to prevent pong loop
 			if m.From != e.DID.String() {
 				log.Debugf("Sending pong to %s over %s", m.From, e.DID.String())
-				err := pong(ctx, e, m)
+				err := reply(ctx, e, m)
 				if err != nil {
 					log.Errorf("Error sending pong: %v", err)
 				}

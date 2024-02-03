@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/spf13/pflag"
+	"github.com/spf13/viper"
 
 	"github.com/bahner/go-ma-actor/config"
 	"github.com/bahner/go-ma-actor/entity"
@@ -14,6 +15,15 @@ import (
 
 	log "github.com/sirupsen/logrus"
 )
+
+const defaultMsg = "yo"
+
+func init() {
+	pflag.String("msg", defaultMsg, "Message to send as a pong. For fun and identification.")
+	viper.BindPFlag("pong.msg", pflag.Lookup("msg"))
+	viper.SetDefault("pong.msg", defaultMsg)
+
+}
 
 func main() {
 
@@ -45,7 +55,8 @@ func main() {
 	k := config.GetKeyset()
 	a, err := entity.NewFromKeyset(k, k.DID.Fragment)
 	if err != nil {
-		log.Warnf("Error initializing actor: %v", err)
+		log.Errorf("Error initializing actor: %v", err)
+		os.Exit(70) // EX_SOFTWARE
 	}
 
 	fmt.Printf("I am : %s\n", a.DID.String())

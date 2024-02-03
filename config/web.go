@@ -16,7 +16,6 @@ func init() {
 	pflag.String("http_socket", defaultHttpSocket, "Address for webserver to listen on")
 	viper.BindPFlag("http.socket", pflag.Lookup("socket"))
 
-	pflag.Parse()
 }
 
 func GetHttpSocket() string {

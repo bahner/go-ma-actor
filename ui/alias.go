@@ -50,8 +50,15 @@ func (ui *ChatUI) handleEntityAliasCommand(args []string) {
 
 func (ui *ChatUI) handleEntityAliasAddCommand(args []string) {
 
+	// Attempt to see if the first param is an existing nick
+	id := args[3]
+	_existing_did := alias.GetEntityDID(id)
+	if _existing_did != "" {
+		id = _existing_did
+	}
+
 	if len(args) > 3 {
-		alias.AddEntityAlias(args[3], args[4])
+		alias.AddEntityAlias(id, args[4])
 	}
 
 }

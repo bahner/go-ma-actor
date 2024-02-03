@@ -154,6 +154,9 @@ func RemoveNodeAlias(nick string) error {
 
 func AddEntityAlias(did string, nick string) error {
 
+	// Lookup up possible existing alias
+	GetEntityDID(nick)
+
 	entityAliases := GetEntityAliases()
 
 	for i, alias := range entityAliases {
