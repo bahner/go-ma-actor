@@ -2,7 +2,6 @@ package ui
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	"github.com/bahner/go-ma-actor/alias"
@@ -35,20 +34,20 @@ func (ui *ChatUI) handleChatMessage(input string) error {
 		return fmt.Errorf("message creation error: %w", err)
 	}
 
-	if log.GetLevel() == log.DebugLevel {
-		msgJson, _ := json.Marshal(msg)
-		log.Debugf("Signed message: %s", msgJson)
-		err = msg.Verify()
-		if err != nil {
-			log.Debugf("failed to verify my own message: %s", err)
-			return fmt.Errorf("message verification error: %w", err)
-		} else {
-			log.Debugf("Message signature verified")
-		}
+	// if log.GetLevel() == log.DebugLevel {
+	// 	msgJson, _ := json.Marshal(msg)
+	// 	log.Debugf("Signed message: %s", msgJson)
+	// 	err = msg.Verify()
+	// 	if err != nil {
+	// 		log.Debugf("failed to verify my own message: %s", err)
+	// 		return fmt.Errorf("message verification error: %w", err)
+	// 	} else {
+	// 		log.Debugf("Message signature verified")
+	// 	}
 
-		ui.displaySelfMessage(string(msgJson))
-	}
-	ui.displayChatMessage(msg)
+	// 	ui.displaySelfMessage(string(msgJson))
+	// }
+	// ui.displayChatMessage(msg)
 
 	err = msg.Broadcast(ctx, ui.e.Topic)
 	if err != nil {

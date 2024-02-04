@@ -1,17 +1,20 @@
 package ui
 
 import (
+	"github.com/bahner/go-ma-actor/entity"
 	log "github.com/sirupsen/logrus"
 )
 
 // Handle incoming messages to an entity. The topic is just to filter,
 // which recipients *not* to handle here.
-func (ui *ChatUI) handleIncomingMessages(t string) {
+func (ui *ChatUI) handleIncomingMessages(e *entity.Entity) {
+
+	t := e.Topic.String()
 
 	log.Debugf("Waiting for messages from topic %s", t)
 
 	for {
-		m, ok := <-ui.e.Messages
+		m, ok := <-e.Messages
 		if !ok {
 			log.Debug("Message channel closed, exiting...")
 			return
@@ -24,19 +27,13 @@ func (ui *ChatUI) handleIncomingMessages(t string) {
 			continue
 		}
 
-		if m.From == ui.a.DID.String() {
+		if m.From == t {
 			log.Debugf("Received message from self, ignoring...")
 			continue
 		}
 
-		// // Handle broadcast messages
-		// // Allow broadcast sent to the topic
-		// if m.MimeType == ma.BROADCAST_MIME_TYPE {
-		// 	log.Debugf("Received broadcast from %s to %s, ignoring...", m.From, t)
-		// 	continue
-		// }
+		log.Debugf("handleIncomingMessages: Accepted message of type %s from %s to %s", m.MimeType, m.From, m.To)
 
-		log.Debugf("Received message from %s", m.From)
 		ui.displayChatMessage(m)
 	}
 }
