@@ -134,7 +134,7 @@ func (ui *ChatUI) Run() error {
 	defer ui.end()
 
 	go ui.setEntity(ui.e.DID.String())
-	go ui.subscribeEntityMessages(ui.a)
+	go ui.handleIncomingEnvelopes() // This is only for the actor, basically.
 	go ui.handleEvents()
 
 	return ui.app.Run()

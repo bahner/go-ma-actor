@@ -39,11 +39,11 @@ func handleMessageEvents(a *entity.Entity) {
 			continue
 		}
 
-		// log.Debugf("Sending public announcement to %s over %s", m.From, a.DID.String())
-		// err = replyPublicly(ctx, a)
-		// if err != nil {
-		// 	log.Errorf("Error sending public announcement: %v", err)
-		// }
+		log.Debugf("Sending public announcement to %s over %s", m.From, a.DID.String())
+		err = broadcast(ctx, a)
+		if err != nil {
+			log.Errorf("Error sending public announcement: %v", err)
+		}
 
 		log.Debugf("Sending private reply to %s over %s", m.From, a.DID.String())
 		err = replyPrivately(ctx, a, m)
@@ -53,31 +53,31 @@ func handleMessageEvents(a *entity.Entity) {
 	}
 }
 
-// func replyPublicly(ctx context.Context, a *entity.Entity) error {
+func broadcast(ctx context.Context, a *entity.Entity) error {
 
-// 	// Public announcements all go to the same topic, which is the DID of the actor.
-// 	topic := a.DID.String()
+	// Public announcements all go to the same topic, which is the DID of the actor.
+	topic := a.DID.String()
 
-// 	// Broadcast are sent to the topic, and the topic is the DID of the recipient
-// 	r, err := msg.New(topic, topic, []byte("PA:"+viper.GetString("pong.msg")), "text/plain", a.Keyset.SigningKey.PrivKey)
-// 	if err != nil {
-// 		return fmt.Errorf("failed creating new message: %w", errors.Cause(err))
-// 	}
+	// Broadcast are sent to the topic, and the topic is the DID of the recipient
+	r, err := msg.NewBroadcast(topic, topic, []byte("PA:"+viper.GetString("pong.msg")), "text/plain", a.Keyset.SigningKey.PrivKey)
+	if err != nil {
+		return fmt.Errorf("failed creating new message: %w", errors.Cause(err))
+	}
 
-// 	err = r.Sign(a.Keyset.SigningKey.PrivKey)
-// 	if err != nil {
-// 		return fmt.Errorf("failed signing message: %w", errors.Cause(err))
-// 	}
+	err = r.Sign(a.Keyset.SigningKey.PrivKey)
+	if err != nil {
+		return fmt.Errorf("failed signing message: %w", errors.Cause(err))
+	}
 
-// 	err = r.SendPublic(ctx, a.Topic)
-// 	if err != nil {
-// 		return fmt.Errorf("failed sending message: %w", errors.Cause(err))
-// 	}
+	err = r.Broadcast(ctx, a.Topic)
+	if err != nil {
+		return fmt.Errorf("failed sending message: %w", errors.Cause(err))
+	}
 
-// 	log.Debugf("Sending signed broadcast over %s", topic)
+	log.Debugf("Sending signed broadcast over %s", topic)
 
-// 	return nil
-// }
+	return nil
+}
 
 func replyPrivately(ctx context.Context, a *entity.Entity, m *msg.Message) error {
 
@@ -96,7 +96,7 @@ func replyPrivately(ctx context.Context, a *entity.Entity, m *msg.Message) error
 		return fmt.Errorf("failed signing message: %w", errors.Cause(err))
 	}
 
-	err = r.SendPrivate(ctx, a.Topic)
+	err = r.Send(ctx, a.Topic)
 	if err != nil {
 		return fmt.Errorf("failed sending message: %w", errors.Cause(err))
 	}

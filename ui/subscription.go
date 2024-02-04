@@ -19,6 +19,8 @@ func (ui *ChatUI) subscribeEntityMessages(e *entity.Entity) {
 	}
 	defer sub.Cancel()
 
+	go ui.handleIncomingMessages(ui.a.DID.String())
+
 	for {
 		input, ok := <-sub.Messages
 		if !ok {

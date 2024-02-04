@@ -53,7 +53,7 @@ func (ui *ChatUI) handleMsgCommand(args []string) {
 			ui.displaySystemMessage(fmt.Sprintf("entity creation error: %s", err))
 		}
 
-		err = msg.SendPrivate(context.Background(), resp.Topic)
+		err = msg.Send(context.Background(), resp.Topic)
 		if err != nil {
 			ui.displaySystemMessage(fmt.Sprintf("message publishing error: %s", err))
 		}

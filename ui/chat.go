@@ -29,7 +29,7 @@ func (ui *ChatUI) handleChatMessage(input string) error {
 	msgBytes := []byte(input)
 	log.Debugf("ui.a.DID.Fragment: %s", ui.a.DID.Fragment)
 	log.Debugf("ui.e.ID: %s", ui.e.DID)
-	msg, err := msg.New(ui.a.DID.String(), ui.e.DID.String(), msgBytes, "text/plain", ui.a.Keyset.SigningKey.PrivKey)
+	msg, err := msg.NewBroadcast(ui.a.DID.String(), ui.e.DID.String(), msgBytes, "text/plain", ui.a.Keyset.SigningKey.PrivKey)
 	if err != nil {
 		log.Debugf("message creation error: %s", err)
 		return fmt.Errorf("message creation error: %w", err)
@@ -50,7 +50,7 @@ func (ui *ChatUI) handleChatMessage(input string) error {
 	}
 	ui.displayChatMessage(msg)
 
-	err = msg.SendPublic(ctx, ui.e.Topic)
+	err = msg.Broadcast(ctx, ui.e.Topic)
 	if err != nil {
 		log.Debugf("message publishing error: %s", err)
 		return fmt.Errorf("message publishing error: %w", err)

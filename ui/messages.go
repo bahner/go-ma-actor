@@ -1,13 +1,13 @@
 package ui
 
 import (
+	"github.com/bahner/go-ma"
 	log "github.com/sirupsen/logrus"
 )
 
-// Handle incoming messages to an entity
-func (ui *ChatUI) handleIncomingMessages() {
-
-	t := ui.e.Topic.String()
+// Handle incoming messages to an entity. The topic is just to filter,
+// which recipients *not* to handle here.
+func (ui *ChatUI) handleIncomingMessages(t string) {
 
 	log.Debugf("Waiting for messages from topic %s", t)
 
@@ -19,15 +19,21 @@ func (ui *ChatUI) handleIncomingMessages() {
 		}
 		log.Debugf("Received message from %s to %s", m.From, m.To)
 
-		// Ignore self
+		// Ignore messages to other topics than this goroutine's.
+		if m.To != t {
+			log.Debugf("Received message to %s. Expected %s. Ignoring...", m.To, t)
+			continue
+		}
+
 		if m.From == ui.a.DID.String() {
 			log.Debugf("Received message from self, ignoring...")
 			continue
 		}
 
-		// Broadcast only allowed from the entity, ie. The Room.
-		if m.From == m.To && m.From != t {
-			log.Debugf("Received broadcast from %s, ignoring...", m.From)
+		// Handle broadcast messages
+		// Allow broadcast sent to the topic
+		if m.MimeType == ma.BROADCAST_MIME_TYPE && m.To != t {
+			log.Debugf("Received broadcast from %s to %s, ignoring...", m.From, t)
 			continue
 		}
 

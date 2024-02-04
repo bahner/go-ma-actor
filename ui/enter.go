@@ -85,8 +85,6 @@ func (ui *ChatUI) setEntity(did string) error {
 
 	// Start handling the new topic
 	go ui.subscribeEntityMessages(e)
-	go ui.handleIncomingEnvelopes()
-	go ui.handleIncomingMessages()
 
 	return nil
 

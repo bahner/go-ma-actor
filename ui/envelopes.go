@@ -9,6 +9,8 @@ import (
 // Is only provided in order to decide whether to accept the message or not.
 func (ui *ChatUI) handleIncomingEnvelopes() {
 
+	go ui.subscribeEntityMessages(ui.a) // We should to subscribe to be able to receive private.
+
 	log.Debugf("Waiting for actor envelopes")
 	for {
 		e, ok := <-ui.a.Envelopes // Envelopes should always have been sent to the actor.
