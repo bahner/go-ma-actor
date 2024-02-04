@@ -10,8 +10,8 @@ func (ui *ChatUI) handleCommands(input string) {
 	args := strings.Split(input, " ")
 
 	// Update alias when a command is entered
-	ui.a.Nick = alias.Nick(ui.a.DID.String())
-	ui.e.Nick = alias.Nick(ui.e.DID.String())
+	ui.a.Nick = alias.LookupEntityDID(ui.a.DID.String())
+	ui.e.Nick = alias.LookupEntityDID(ui.e.DID.String())
 
 	switch args[0] {
 	case "/status":
@@ -25,13 +25,13 @@ func (ui *ChatUI) handleCommands(input string) {
 	case "/alias":
 		ui.handleAliasCommand(args)
 	case "/aliases":
-		ui.handleAliasesCommand(args)
+		ui.handleAliasListCommand(args)
 	case "/whereis":
 		ui.handleWhereisCommand(args)
 	case "discover":
 		ui.triggerDiscovery()
 	case "/refresh":
-		ui.app.Draw()
+		ui.refreshPeers()
 	default:
 		ui.displaySystemMessage("Unknown command: " + args[0])
 	}

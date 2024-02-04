@@ -2,36 +2,115 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
+	"github.com/bahner/go-ma"
 	"github.com/bahner/go-ma-actor/entity"
-	"github.com/bahner/go-ma-actor/p2p/topic"
 	"github.com/bahner/go-ma/msg"
 	"github.com/pkg/errors"
-	"github.com/spf13/viper"
-
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
-func reply(ctx context.Context, ent *entity.Entity, m *msg.Message) error {
+func handleMessageEvents(a *entity.Entity) {
 
-	// Answer in the same channel, ie. my address. It's kinda like a broadcast to a "room"
-	to, err := topic.GetOrCreate(ent.DID.String())
-	if err != nil {
-		return fmt.Errorf("failed subscribing to recipients topic: %w", errors.Cause(err))
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	for {
+		log.Info("Waiting for messages...")
+		m, ok := <-a.Messages
+		if !ok {
+			log.Debugf("Message channel closed, exiting...")
+			return
+		}
+		log.Debugf("Handling message: %v from %s to %s", string(m.Content), m.From, m.To)
+
+		msgJSON, err := json.Marshal(m)
+		if err != nil {
+			log.Errorf("Error marshalling message: %v", err)
+			continue
+		}
+		log.Debugf("Handling message: %v", string(msgJSON))
+		// Check if the message is from self to prevent pong loop
+		// NB! This is only for *incoming* messages, not broadcasts.
+		if m.From == a.DID.String() {
+			log.Debugf("Received message from self, ignoring...")
+			continue
+		}
+
+		if m.MimeType == ma.BROADCAST_MIME_TYPE {
+			log.Debugf("Received broadcast from %s to %s", m.From, m.To)
+			log.Debugf("Sending broadcast announcement to %s over %s", m.From, a.DID.String())
+			err = broadcast(ctx, a)
+			if err != nil {
+				log.Errorf("Error sending public announcement: %v", err)
+			}
+			continue
+		}
+
+		if m.MimeType == ma.MESSAGE_MIME_TYPE {
+			log.Debugf("Received private message from %s to %s", m.From, m.To)
+			log.Debugf("Sending private reply to %s over %s", m.From, a.DID.String())
+			err = reply(ctx, a, m)
+			if err != nil {
+				log.Errorf("Error sending public announcement: %v", err)
+			}
+			continue
+		}
 	}
+}
 
-	reply, err := msg.New(m.To, m.From, []byte(viper.GetString("pong.msg")), "text/plain", ent.Keyset.SigningKey.PrivKey)
+func broadcast(ctx context.Context, a *entity.Entity) error {
+
+	// Public announcements all go to the same topic, which is the DID of the actor.
+	topic := a.DID.String()
+
+	// Broadcast are sent to the topic, and the topic is the DID of the recipient
+	r, err := msg.NewBroadcast(topic, topic, []byte("PA:"+viper.GetString("pong.msg")), "text/plain", a.Keyset.SigningKey.PrivKey)
 	if err != nil {
 		return fmt.Errorf("failed creating new message: %w", errors.Cause(err))
 	}
 
-	err = reply.Send(ctx, to.Topic)
+	err = r.Sign(a.Keyset.SigningKey.PrivKey)
+	if err != nil {
+		return fmt.Errorf("failed signing message: %w", errors.Cause(err))
+	}
+
+	err = r.Broadcast(ctx, a.Topic)
 	if err != nil {
 		return fmt.Errorf("failed sending message: %w", errors.Cause(err))
 	}
 
-	log.Debugf("Sending reply to %s over %s", reply.To, to.Topic.String())
+	log.Debugf("Sending signed broadcast over %s", topic)
+
+	return nil
+}
+
+func reply(ctx context.Context, a *entity.Entity, m *msg.Message) error {
+
+	// We need to reverse the to and from here. The message is from the other actor, and we are sending to them.
+	to := m.From
+	from := m.To
+
+	// Broadcast are sent to the topic, and the topic is the DID of the recipient
+	r, err := msg.New(from, to, []byte("private:"+viper.GetString("pong.msg")), "text/plain", a.Keyset.SigningKey.PrivKey)
+	if err != nil {
+		return fmt.Errorf("failed creating new message: %w", errors.Cause(err))
+	}
+
+	err = r.Sign(a.Keyset.SigningKey.PrivKey)
+	if err != nil {
+		return fmt.Errorf("failed signing message: %w", errors.Cause(err))
+	}
+
+	err = r.Send(ctx, a.Topic)
+	if err != nil {
+		return fmt.Errorf("failed sending message: %w", errors.Cause(err))
+	}
+
+	log.Debugf("Sending private message to %s over %s", to, a.Topic.String())
 
 	return nil
 }

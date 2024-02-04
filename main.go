@@ -2,11 +2,9 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"os"
 
-	"github.com/bahner/go-ma-actor/alias"
 	"github.com/bahner/go-ma-actor/config"
 	"github.com/bahner/go-ma-actor/entity"
 	"github.com/bahner/go-ma-actor/p2p"
@@ -50,15 +48,12 @@ func main() {
 		os.Exit(70)
 	}
 
-	eas := alias.GetEntityAliases()
-	for _, ea := range eas {
-		fmt.Printf("Entity alias: %s %s\n", ea.Nick, ea.Did)
-	}
-	// na := config.GetNodeAliases()
-
 	// Start a simple web server to handle incoming requests.
 	// This is defined in web.go. It makes it possible to add extra parameters to the handler.
-	h := &WebHandlerData{p.Node, a}
+	h := &entity.WebHandlerData{
+		P2P:    p,
+		Entity: a,
+	}
 	http.HandleFunc("/", h.WebHandler)
 	log.Infof("Listening on %s", config.GetHttpSocket())
 	go http.ListenAndServe(config.GetHttpSocket(), nil)
@@ -74,6 +69,7 @@ func main() {
 		log.Errorf("home is not a valid entity: %v", err)
 		os.Exit(70)
 	}
+
 	// Draw the UI.
 	log.Debugf("Starting text UI")
 	ui, err := ui.NewChatUI(p, a, e)

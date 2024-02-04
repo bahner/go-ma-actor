@@ -13,7 +13,7 @@ func (ui *ChatUI) handleEnterCommand(args []string) {
 		_did := args[1]
 		// If id is not a valid did, then try to find it in the aliases
 		if !did.IsValidDID(_did) {
-			_did = alias.GetEntityDID(_did)
+			_did = alias.LookupEntityNick(_did)
 		}
 
 		// If it is still not a valid did, then return
@@ -38,7 +38,7 @@ func (ui *ChatUI) handleEnterCommand(args []string) {
 		}
 
 		// Update the UI
-		err := ui.changeEntity(_did)
+		err := ui.setEntity(_did)
 		if err != nil {
 			ui.displaySystemMessage("Error changing entity: " + err.Error())
 			return

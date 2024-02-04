@@ -1,10 +1,12 @@
 package ui
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
 	"github.com/bahner/go-ma-actor/alias"
+	"github.com/bahner/go-ma-actor/entity"
 	"github.com/bahner/go-ma/did"
 	"github.com/bahner/go-ma/msg"
 	log "github.com/sirupsen/logrus"
@@ -21,7 +23,7 @@ func (ui *ChatUI) handleMsgCommand(args []string) {
 
 		recipient := args[1]
 		if !did.IsValidDID(recipient) {
-			recipient = alias.GetEntityDID(recipient)
+			recipient = alias.LookupEntityNick(recipient)
 		}
 		if recipient == "" {
 			ui.displaySystemMessage(fmt.Sprintf("Invalid DID: %s", args[1]))
@@ -46,11 +48,16 @@ func (ui *ChatUI) handleMsgCommand(args []string) {
 			ui.displaySystemMessage(fmt.Sprintf("message creation error: %s", err))
 		}
 
-		err = msg.Send(ui.e.Ctx, ui.e.Topic.Topic)
+		resp, err := entity.GetOrCreate(recipient)
+		if err != nil {
+			ui.displaySystemMessage(fmt.Sprintf("entity creation error: %s", err))
+		}
+
+		err = msg.Send(context.Background(), resp.Topic)
 		if err != nil {
 			ui.displaySystemMessage(fmt.Sprintf("message publishing error: %s", err))
 		}
-		log.Debugf("Message published to topic: %s", ui.e.Topic.Topic.String())
+		log.Debugf("Message published to topic: %s", ui.e.Topic.String())
 	} else {
 		ui.displaySystemMessage("Usage: /msg <DID> <MESSAGE>")
 	}

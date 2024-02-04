@@ -101,12 +101,11 @@ func (e *Entity) PublishDocument() error {
 
 func (e *Entity) PublishDocumentGorutine(wg *sync.WaitGroup, cancel context.CancelFunc, opts *doc.PublishOptions) {
 	defer wg.Done()
-	defer cancel() // Ensure the context is canceled once this function returns
+	defer cancel()
 
-	// Launch the Publish operation in a separate goroutine
 	done := make(chan struct{})
 	go func() {
-		e.Doc.Publish(opts) // Assuming Publish handles the context internally
+		e.Doc.Publish(opts)
 		close(done)
 	}()
 

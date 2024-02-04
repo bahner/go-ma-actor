@@ -6,8 +6,8 @@ func init() {
 	entities = make(map[string]*Entity)
 }
 
-// add adds a entity to the map
-func add(e *Entity) {
+// cache adds a entity to the map
+func cache(e *Entity) {
 	entities[e.DID.String()] = e
 }
 

@@ -70,7 +70,7 @@ func (d *Document) String() string {
 	if len(d.MaPeers) > 0 {
 		html += fmt.Sprintf("<h2>Discovered peers (%d):</h2>\n<ul>", len(d.MaPeers))
 		for _, peer := range d.MaPeers {
-			html += "<li>" + peer.String() + "(" + alias.Nick(peer.String()) + ")</li>"
+			html += "<li>" + peer.String() + "(" + alias.LookupNodeID(peer.String()) + ")</li>"
 		}
 		html += "</ul>"
 	}

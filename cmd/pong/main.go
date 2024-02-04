@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"os"
@@ -12,11 +11,15 @@ import (
 	"github.com/bahner/go-ma-actor/config"
 	"github.com/bahner/go-ma-actor/entity"
 	"github.com/bahner/go-ma-actor/p2p"
+	"github.com/bahner/go-ma/msg"
 
 	log "github.com/sirupsen/logrus"
 )
 
-const defaultMsg = "yo"
+const (
+	defaultMsg       = "yo"
+	defaultBroadcast = "Hello, world!"
+)
 
 func init() {
 	pflag.String("msg", defaultMsg, "Message to send as a pong. For fun and identification.")
@@ -34,8 +37,6 @@ func main() {
 	config.InitP2P()
 	config.InitActor()
 
-	ctx := context.Background()
-
 	p, err := p2p.Init(nil)
 	if err != nil {
 		log.Errorf("Error initializing p2p node: %v", err)
@@ -50,24 +51,41 @@ func main() {
 	// We need to discover peers before we can do anything else.
 	p.DiscoverPeers()
 
-	n := p.Node
-
 	k := config.GetKeyset()
-	a, err := entity.NewFromKeyset(k, k.DID.Fragment)
+	e, err := entity.NewFromKeyset(k, k.DID.Fragment)
 	if err != nil {
 		log.Errorf("Error initializing actor: %v", err)
 		os.Exit(70) // EX_SOFTWARE
 	}
 
-	fmt.Printf("I am : %s\n", a.DID.String())
-	fmt.Printf("My public key is: %s\n", n.ID().String())
+	fmt.Printf("I am : %s\n", e.DID.String())
+	fmt.Printf("My public key is: %s\n", p.Node.ID().String())
 
 	// Now we can start continuous discovery in the background.
+	ctx, cancel := config.GetDiscoveryContext()
+	defer cancel()
+
 	go p.DiscoveryLoop(ctx)
-	go handleEvents(ctx, a)
+	go handleSubscriptionMessages(e)
+	go handleMessageEvents(e)
+
+	b, err := msg.NewBroadcast(e.DID.String(), e.DID.String(), []byte(defaultBroadcast), "text/plain", k.SigningKey.PrivKey)
+	if err != nil {
+		log.Errorf("Error creating broadcast: %v", err)
+		os.Exit(70) // EX_SOFTWARE
+	}
+
+	err = b.Broadcast(ctx, e.Topic)
+	if err != nil {
+		log.Errorf("Error sending broadcast: %v", err)
+		os.Exit(70) // EX_SOFTWARE
+	}
 
 	// This is defined in web.go. It makes it possible to add extra parameters to the handler.
-	h := &WebHandlerData{n, a}
+	h := &entity.WebHandlerData{
+		P2P:    p,
+		Entity: e,
+	}
 	http.HandleFunc("/", h.WebHandler)
 	log.Infof("Listening on %s", config.GetHttpSocket())
 	err = http.ListenAndServe(config.GetHttpSocket(), nil)

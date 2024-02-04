@@ -1,261 +1,385 @@
 package alias
 
 import (
+	"database/sql"
 	"fmt"
+	"sync"
 
+	"github.com/bahner/go-ma-actor/config"
 	"github.com/bahner/go-ma/did"
+	"github.com/libp2p/go-libp2p/core/peer"
+	_ "github.com/mattn/go-sqlite3"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
 
-type EntityAlias struct {
-	Nick string
-	Did  string
-}
+const (
+	defaultAliasFile   = "~/.ma/aliases.db"
+	defaultAliasLength = 8
 
-type NodeAlias struct {
-	Nick string
-	Id   string
-}
+	SELECT_ENTITY_NICK = "SELECT nick FROM entities WHERE did = ?"
+	SELECT_ENTITY_DID  = "SELECT did FROM entities WHERE nick = ?"
+	SELECT_NODE_NICK   = "SELECT nick FROM nodes WHERE id = ?"
+	SELECT_NODE_ID     = "SELECT id FROM nodes WHERE nick = ?"
+	UPSERT_ENTITY      = "INSERT INTO entities (did, nick) VALUES (?, ?) ON CONFLICT(did) DO UPDATE SET nick = ?"
+	UPSERT_NODE        = "INSERT INTO nodes (id, nick) VALUES (?, ?) ON CONFLICT(id) DO UPDATE SET nick = ?"
+	DELETE_ENTITY      = "DELETE FROM entities WHERE did = ?"
+	DELETE_NODE        = "DELETE FROM nodes WHERE id = ?"
+)
+
+var (
+	once sync.Once
+	db   *sql.DB
+)
 
 func init() {
 
-	// Allow to set config file via command line flag.
-	viper.SetDefault("entities", []EntityAlias{})
-	viper.SetDefault("nodes", []NodeAlias{})
+	pflag.String("aliases", defaultAliasFile, "File to *write* node aliases to. If the file does not exist, it will be created.")
+	viper.BindPFlag("aliases", pflag.Lookup("aliases"))
+	viper.SetDefault("aliases", defaultAliasFile)
 }
 
-func GetEntityAliases() []EntityAlias {
+// Initiates the database connection and creates the tables if they do not exist
+func GetDB() (*sql.DB, error) {
 
-	var entityAliases = []EntityAlias{}
+	var onceErr error
 
-	err := viper.UnmarshalKey("entities", &entityAliases)
+	once.Do(func() {
+		var err error
+		db, err = sql.Open("sqlite3", config.GetAliases())
+		if err != nil {
+			onceErr = fmt.Errorf("error opening database: %s", err)
+			return
+		}
+
+		_, err = db.Exec("CREATE TABLE IF NOT EXISTS entities (did TEXT PRIMARY KEY, nick TEXT)")
+		if err != nil {
+			onceErr = fmt.Errorf("error creating entities table: %s", err)
+			return
+		}
+
+		_, err = db.Exec("CREATE TABLE IF NOT EXISTS nodes (id TEXT PRIMARY KEY, nick TEXT)")
+		if err != nil {
+			onceErr = fmt.Errorf("error creating nodes table: %s", err)
+			return
+		}
+
+	})
+
+	if onceErr != nil {
+		return nil, onceErr
+	}
+
+	return db, nil
+}
+
+// Fetches an entity alias from the database
+// Returns an empty string an error if the alias does not exist
+func GetEntityAlias(id string) (string, error) {
+
+	if !did.IsValidDID(id) {
+		return "", fmt.Errorf("invalid DID: %s", id)
+	}
+
+	db, err := GetDB()
 	if err != nil {
-		log.Errorf("Error unmarshalling entity aliases: %s", err)
+		return "", err
 	}
 
-	return entityAliases
-}
+	var a string
 
-func GetNodeAliases() []NodeAlias {
-	var nodeAliases = []NodeAlias{}
-
-	err := viper.UnmarshalKey("nodes", &nodeAliases)
+	err = db.QueryRow(SELECT_ENTITY_NICK, id).Scan(&a)
 	if err != nil {
-		log.Errorf("Error unmarshalling node aliases: %s", err)
+		return "", err
 	}
 
-	return nodeAliases
+	return a, nil
 }
 
-func GetEntityAlias(did string) string {
+// Fetches a n entity DID from the database
+// Returns an empty string an error if the alias does not exist
+func GetEntityDID(nick string) (string, error) {
 
-	aliases := GetEntityAliases()
-
-	for _, alias := range aliases {
-		if alias.Did == did {
-			return alias.Nick
-		}
+	if nick == "" {
+		return "", fmt.Errorf("query is empty: %s", nick)
 	}
 
-	return ""
-}
-func GetEntityDID(nick string) string {
-
-	aliases := GetEntityAliases()
-
-	for _, alias := range aliases {
-		if alias.Nick == nick {
-			return alias.Did
-		}
+	db, err := GetDB()
+	if err != nil {
+		return "", err
 	}
 
-	return ""
-}
-func GetNodeDID(nick string) string {
+	var id string
 
-	aliases := GetNodeAliases()
-
-	for _, alias := range aliases {
-		if alias.Nick == nick {
-			return alias.Id
-		}
+	err = db.QueryRow(SELECT_ENTITY_DID, nick).Scan(&id)
+	if err != nil {
+		return "", err
 	}
 
-	return ""
+	return id, nil
 }
 
-func GetNodeAlias(id string) string {
+// Fetches a node alias from the database
+// Returns an empty string an error if the alias does not exist
+func GetNodeAlias(id string) (string, error) {
 
-	aliases := GetNodeAliases()
-
-	for _, alias := range aliases {
-		if alias.Id == id {
-			return alias.Nick
-		}
+	_, err := peer.Decode(id)
+	if err != nil {
+		return "", fmt.Errorf("invalid ID: %s", id)
 	}
 
-	return ""
-}
-
-func AddNodeAlias(id string, nick string) error {
-
-	nodeAliases := GetNodeAliases()
-
-	for i, alias := range nodeAliases {
-
-		// Check if nick already exists
-		if alias.Id == id {
-
-			// If the nick is already set, do nothing
-			if alias.Nick == nick {
-				log.Debugf("Alias %s already set for entity %s", nick, id)
-				return nil
-			}
-
-			// Otherwise, change the nick
-			log.Debugf("Changing alias %s to %s for entity %s", alias.Nick, nick, id)
-			nodeAliases[i].Nick = nick
-			viper.Set("nodes", nodeAliases)
-
-			// Write the changes to the config file
-			return viper.WriteConfig()
-		}
+	db, err := GetDB()
+	if err != nil {
+		return "", err
 	}
 
-	// If the nick does not exist, add it
-	nodeAliases = append(nodeAliases, NodeAlias{Nick: nick, Id: id})
-	viper.Set("nodes", nodeAliases)
-	return viper.WriteConfig()
+	var a string
 
+	err = db.QueryRow(SELECT_NODE_NICK, id).Scan(&a)
+	if err != nil {
+		return "", err
+	}
+
+	return a, nil
 }
 
-func RemoveNodeAlias(nick string) error {
+// Fetches the ID of a node from the database
+// Returns an empty string an error if the alias does not exist
+func GetNodeID(nick string) (string, error) {
 
-	nodeAliases := GetNodeAliases()
+	if nick == "" {
+		return "", fmt.Errorf("query is empty: %s", nick)
+	}
 
-	for i, alias := range nodeAliases {
+	db, err := GetDB()
+	if err != nil {
+		return "", err
+	}
 
-		// Check if nick already exists
-		if alias.Nick == nick {
+	var id string
 
-			// Remove the nick
-			log.Debugf("Removing alias %s for entity %s", nick, alias.Id)
-			nodeAliases = append(nodeAliases[:i], nodeAliases[i+1:]...)
-			viper.Set("nodes", nodeAliases)
+	err = db.QueryRow(SELECT_NODE_ID, nick).Scan(&id)
+	if err != nil {
+		return "", err
+	}
 
-			// Write the changes to the config file
-			return viper.WriteConfig()
-		}
+	return id, nil
+}
+
+// Sets an entity alias in the database
+// If the alias already exists, it will be updated.
+func SetEntityAlias(id string, nick string) error {
+
+	if !did.IsValidDID(id) {
+		return fmt.Errorf("invalid DID: %s", id)
+	}
+
+	db, err := GetDB()
+	if err != nil {
+		return err
+	}
+
+	_, err = db.Exec(UPSERT_ENTITY, id, nick, nick)
+	if err != nil {
+		return err
 	}
 
 	return nil
 }
 
-func AddEntityAlias(did string, nick string) error {
+// Sets a node alias in the database
+// If the alias already exists, it will be updated.
+func SetNodeAlias(id string, nick string) error {
 
-	// Lookup up possible existing alias
-	GetEntityDID(nick)
-
-	entityAliases := GetEntityAliases()
-
-	for i, alias := range entityAliases {
-
-		// Check if nick already exists
-		if alias.Did == did {
-
-			// If the nick is already set, do nothing
-			if alias.Nick == nick {
-				log.Debugf("Alias %s already set for entity %s", nick, did)
-				return nil
-			}
-
-			// Otherwise, change the nick
-			log.Debugf("Changing alias %s to %s for entity %s", alias.Nick, nick, did)
-			entityAliases[i].Nick = nick
-			viper.Set("entities", entityAliases)
-
-			// Write the changes to the config file
-			return viper.WriteConfig()
-		}
+	_, err := peer.Decode(id)
+	if err != nil {
+		return fmt.Errorf("invalid ID: %s", id)
 	}
 
-	// If the nick does not exist, add it
-	entityAliases = append(entityAliases, EntityAlias{Nick: nick, Did: did})
-	viper.Set("entities", entityAliases)
-	return viper.WriteConfig()
-}
+	db, err := GetDB()
+	if err != nil {
+		return err
+	}
 
-func RemoveEntityAlias(nick string) error {
-
-	entityAliases := GetEntityAliases()
-
-	for i, alias := range entityAliases {
-
-		// Check if nick already exists
-		if alias.Nick == nick {
-
-			// Remove the nick
-			log.Debugf("Removing alias %s for entity %s", nick, alias.Did)
-			entityAliases = append(entityAliases[:i], entityAliases[i+1:]...)
-			viper.Set("entities", entityAliases)
-
-			// Write the changes to the config file
-			return viper.WriteConfig()
-		}
+	_, err = db.Exec(UPSERT_NODE, id, nick, nick)
+	if err != nil {
+		return err
 	}
 
 	return nil
 }
 
-func PrintEntityAliases() string {
+// Removes an entity alias from the database if it exists
+func RemoveEntityAlias(id string) error {
 
-	aliases := GetEntityAliases()
-
-	aliases_string := "Entities:\n"
-
-	for _, alias := range aliases {
-		aliases_string += fmt.Sprintf("%s: %s\n", alias.Nick, alias.Did)
+	if !did.IsValidDID(id) {
+		return fmt.Errorf("invalid DID: %s", id)
 	}
 
-	return aliases_string
+	db, err := GetDB()
+	if err != nil {
+		return err
+	}
+
+	_, err = db.Exec(DELETE_ENTITY, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func PrintNodeAliases() string {
+// Removes a node alias from the database if it exists
+func RemoveNodeAlias(id string) error {
 
-	aliases := GetNodeAliases()
-
-	aliases_string := "Nodes:\n"
-
-	for _, alias := range aliases {
-		aliases_string += fmt.Sprintf("%s: %s\n", alias.Nick, alias.Id)
+	_, err := peer.Decode(id)
+	if err != nil {
+		return fmt.Errorf("invalid ID: %s", id)
 	}
 
-	return aliases_string
+	db, err := GetDB()
+	if err != nil {
+		return err
+	}
+
+	_, err = db.Exec("DELETE FROM nodes WHERE id = ?", id)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func Nick(id string) string {
+// Attempts to look up an entity alias in the database
+// If the alias does not exist, the function returns the input string
+func LookupEntityDID(id string) string {
 
-	var nick string
-
-	// First check if this is a valid did
-	// Lookup it up or return the fragment
-	_did, err := did.New(id)
-
-	// _did is a *did.DID and id is a valid DID
-	if err == nil {
-		nick = GetEntityAlias(id)
-		if nick != "" {
-			return nick
-		}
-		nick = GetNodeAlias(id)
-		if nick != "" {
-			return nick
-		}
-		return _did.Fragment
+	n, err := GetEntityAlias(id)
+	if err != nil {
+		log.Debugf("Error looking up entity DID for %s: %s", id, err)
+		return id
 	}
 
-	// This means that what we got is not a valid DID
-	// but just a nick itself, so it was already the best
-	return nick
+	return n
+}
+
+// Attempts to look up an entity DID in the database
+// If the DID does not exist, the function returns the input string
+func LookupEntityNick(nick string) string {
+
+	n, err := GetEntityDID(nick)
+	if err != nil {
+		log.Debugf("Error looking up DID for entity with nick %s: %s", nick, err)
+		return nick
+	}
+
+	return n
+}
+
+// Attempts to look up a node alias in the database
+// If the alias does not exist, the function returns the input string
+func LookupNodeID(id string) string {
+
+	// Don't valid ID here. It's not necessary.
+
+	n, err := GetNodeAlias(id)
+	if err != nil {
+		log.Debugf("Error looking up node alias for NodeID %s: %s", id, err)
+		return id
+	}
+
+	return n
+}
+
+// Attempts to look up a node ID in the database
+// If the ID does not exist, the function returns the input string
+func LookupNodeNick(nick string) string {
+
+	n, err := GetNodeID(nick)
+	if err != nil {
+		log.Debugf("Error looking up node ID for nick %s: %s", nick, err)
+		return nick
+	}
+
+	return n
+}
+
+// Returns a string containing all entity aliases
+func EntityAliases() string {
+
+	db, err := GetDB()
+	if err != nil {
+		return fmt.Sprintf("Error getting aliases: %s", err)
+	}
+
+	rows, err := db.Query("SELECT did, nick FROM entities")
+	if err != nil {
+		return fmt.Sprintf("Error getting aliases: %s", err)
+	}
+
+	defer rows.Close()
+
+	var s string
+	for rows.Next() {
+		var did, nick string
+		err = rows.Scan(&did, &nick)
+		if err != nil {
+			return fmt.Sprintf("Error getting aliases: %s", err)
+		}
+		s += fmt.Sprintf("%s: %s\n", did, nick)
+	}
+
+	return s
+}
+
+// Returns a string containing all node aliases
+func NodeAliases() string {
+
+	db, err := GetDB()
+	if err != nil {
+		return fmt.Sprintf("Error getting aliases: %s", err)
+	}
+
+	rows, err := db.Query("SELECT id, nick FROM nodes")
+	if err != nil {
+		return fmt.Sprintf("Error getting aliases: %s", err)
+	}
+
+	defer rows.Close()
+
+	var s string
+	for rows.Next() {
+		var id, nick string
+		err = rows.Scan(&id, &nick)
+		if err != nil {
+			return fmt.Sprintf("Error getting aliases: %s", err)
+		}
+		s += fmt.Sprintf("%s: %s\n", id, nick)
+	}
+
+	return s
+}
+
+// Creates a node alias from the last 8 characters of the ID
+// If the alias already exists, the existing alias is returned
+func GetOrCreateNodeAlias(id string) (string, error) {
+
+	_, err := peer.Decode(id)
+	if err != nil {
+		return "", fmt.Errorf("invalid ID: %s", id)
+	}
+
+	// If an alias exists, return it
+	n, err := GetNodeAlias(id)
+
+	// If not make one from the last 8 characters of the ID
+	// The ID must be more than defaultAliasLength characters long
+	if err != nil && len(id) > defaultAliasLength {
+		n = id[len(id)-defaultAliasLength:]
+		SetNodeAlias(id, n)
+		return n, nil
+	}
+
+	return n, nil
 }
