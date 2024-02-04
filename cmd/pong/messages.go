@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/bahner/go-ma"
 	"github.com/bahner/go-ma-actor/entity"
 	"github.com/bahner/go-ma/msg"
 	"github.com/pkg/errors"
@@ -39,16 +40,24 @@ func handleMessageEvents(a *entity.Entity) {
 			continue
 		}
 
-		log.Debugf("Sending public announcement to %s over %s", m.From, a.DID.String())
-		err = broadcast(ctx, a)
-		if err != nil {
-			log.Errorf("Error sending public announcement: %v", err)
+		if m.MimeType == ma.BROADCAST_MIME_TYPE {
+			log.Debugf("Received broadcast from %s to %s", m.From, m.To)
+			log.Debugf("Sending broadcast announcement to %s over %s", m.From, a.DID.String())
+			err = broadcast(ctx, a)
+			if err != nil {
+				log.Errorf("Error sending public announcement: %v", err)
+			}
+			continue
 		}
 
-		log.Debugf("Sending private reply to %s over %s", m.From, a.DID.String())
-		err = replyPrivately(ctx, a, m)
-		if err != nil {
-			log.Errorf("Error sending public announcement: %v", err)
+		if m.MimeType == ma.MESSAGE_MIME_TYPE {
+			log.Debugf("Received private message from %s to %s", m.From, m.To)
+			log.Debugf("Sending private reply to %s over %s", m.From, a.DID.String())
+			err = reply(ctx, a, m)
+			if err != nil {
+				log.Errorf("Error sending public announcement: %v", err)
+			}
+			continue
 		}
 	}
 }
@@ -79,7 +88,7 @@ func broadcast(ctx context.Context, a *entity.Entity) error {
 	return nil
 }
 
-func replyPrivately(ctx context.Context, a *entity.Entity, m *msg.Message) error {
+func reply(ctx context.Context, a *entity.Entity, m *msg.Message) error {
 
 	// We need to reverse the to and from here. The message is from the other actor, and we are sending to them.
 	to := m.From

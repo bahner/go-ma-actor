@@ -43,20 +43,23 @@ func (ui *ChatUI) subscribeEntityMessages(e *entity.Entity) {
 		log.Debugf("handleSubscriptionMessages: Received message: %v\n", m)
 
 		// Verify the message.
-		if err := m.Verify(); err == nil {
+		err = m.Verify()
+
+		if err == nil {
 			log.Debugf("handleSubscriptionMessages: Message verified: %v\n", m)
 			ui.e.Messages <- m
-			// Successfully verified message, so continue to the next iteration.
 			continue
 		} else {
-			// If verification fails, log the verification error.
 			log.Debugf("handleSubscriptionMessages: Message verification failed: %v\n", err)
-			// Optionally marshal the message to JSON for logging, if needed.
-			msgJson, jsonErr := json.Marshal(m)
-			if jsonErr != nil {
-				log.Debugf("handleSubscriptionMessages: Error marshalling message to JSON: %v\n", jsonErr)
-			} else {
-				log.Debugf("handleSubscriptionMessages: Message not verified: %s\n", string(msgJson))
+
+			// If verification fails, log the verification error.
+			if log.GetLevel() == log.DebugLevel {
+				msgJson, jsonErr := json.Marshal(m)
+				if jsonErr != nil {
+					log.Debugf("handleSubscriptionMessages: Error marshalling message to JSON: %v\n", jsonErr)
+				} else {
+					log.Debugf("handleSubscriptionMessages: Message not verified: %s\n", string(msgJson))
+				}
 			}
 		}
 
@@ -73,7 +76,7 @@ func (ui *ChatUI) subscribeEntityMessages(e *entity.Entity) {
 		}
 
 		// If unmarshalling succeeds, proceed to send the envelope to the actor.
-		log.Debugf("handleSubscriptionMessages: Sending envelope to actor %s", ui.a.DID.String())
+		log.Debugf("handleSubscriptionMessages: Sending unmarshalled envelope to actor %s", ui.a.DID.String())
 		ui.a.Envelopes <- env
 	}
 }

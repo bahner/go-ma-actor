@@ -1,7 +1,6 @@
 package ui
 
 import (
-	"github.com/bahner/go-ma"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -30,12 +29,12 @@ func (ui *ChatUI) handleIncomingMessages(t string) {
 			continue
 		}
 
-		// Handle broadcast messages
-		// Allow broadcast sent to the topic
-		if m.MimeType == ma.BROADCAST_MIME_TYPE && m.To != t {
-			log.Debugf("Received broadcast from %s to %s, ignoring...", m.From, t)
-			continue
-		}
+		// // Handle broadcast messages
+		// // Allow broadcast sent to the topic
+		// if m.MimeType == ma.BROADCAST_MIME_TYPE {
+		// 	log.Debugf("Received broadcast from %s to %s, ignoring...", m.From, t)
+		// 	continue
+		// }
 
 		log.Debugf("Received message from %s", m.From)
 		ui.displayChatMessage(m)

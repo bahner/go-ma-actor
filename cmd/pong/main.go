@@ -11,11 +11,15 @@ import (
 	"github.com/bahner/go-ma-actor/config"
 	"github.com/bahner/go-ma-actor/entity"
 	"github.com/bahner/go-ma-actor/p2p"
+	"github.com/bahner/go-ma/msg"
 
 	log "github.com/sirupsen/logrus"
 )
 
-const defaultMsg = "yo"
+const (
+	defaultMsg       = "yo"
+	defaultBroadcast = "Hello, world!"
+)
 
 func init() {
 	pflag.String("msg", defaultMsg, "Message to send as a pong. For fun and identification.")
@@ -64,6 +68,18 @@ func main() {
 	go p.DiscoveryLoop(ctx)
 	go handleSubscriptionMessages(e)
 	go handleMessageEvents(e)
+
+	b, err := msg.NewBroadcast(e.DID.String(), e.DID.String(), []byte(defaultBroadcast), "text/plain", k.SigningKey.PrivKey)
+	if err != nil {
+		log.Errorf("Error creating broadcast: %v", err)
+		os.Exit(70) // EX_SOFTWARE
+	}
+
+	err = b.Broadcast(ctx, e.Topic)
+	if err != nil {
+		log.Errorf("Error sending broadcast: %v", err)
+		os.Exit(70) // EX_SOFTWARE
+	}
 
 	// This is defined in web.go. It makes it possible to add extra parameters to the handler.
 	h := &entity.WebHandlerData{
