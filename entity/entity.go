@@ -5,11 +5,12 @@ import (
 	"fmt"
 
 	"github.com/bahner/go-ma-actor/alias"
-	"github.com/bahner/go-ma-actor/p2p/topic"
+	"github.com/bahner/go-ma-actor/p2p/pubsub"
 	"github.com/bahner/go-ma/did"
 	"github.com/bahner/go-ma/did/doc"
 	"github.com/bahner/go-ma/key/set"
 	"github.com/bahner/go-ma/msg"
+	p2ppubsub "github.com/libp2p/go-libp2p-pubsub"
 )
 
 const (
@@ -22,9 +23,10 @@ type Entity struct {
 	CancelFunc context.CancelFunc
 
 	// External structs
-	DID   *did.DID
-	Doc   *doc.Document
-	Topic *topic.Topic
+	DID *did.DID
+	Doc *doc.Document
+
+	Topic *p2ppubsub.Topic
 
 	// Only keyset maybe nil
 	Keyset *set.Keyset
@@ -44,9 +46,12 @@ func New(d *did.DID, k *set.Keyset, nick string) (*Entity, error) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	_topic, err := topic.GetOrCreate(d.String())
+	ps := pubsub.Get()
+
+	// Only 1 topic, but this is where it's at! One topic er entity.
+	_topic, err := ps.Join(d.String())
 	if err != nil {
-		return nil, fmt.Errorf("entity/new: failed to create new topic: %w", err)
+		return nil, fmt.Errorf("entity/new: failed to join topic: %w", err)
 	}
 
 	_doc, err := doc.Fetch(d.String(), true) // Accept cached version
@@ -75,7 +80,11 @@ func New(d *did.DID, k *set.Keyset, nick string) (*Entity, error) {
 		Keyset: k,
 	}
 
-	add(e)
+	// Cache the entity
+	cache(e)
+
+	// Start the message loop
+	e.Subscribe(e)
 
 	return e, nil
 }
@@ -117,16 +126,16 @@ func (e *Entity) Leave() {
 
 // Takes a message channel and and actor entity and recieves messages
 // The actor is required to decrypt the envelopes.
-func (e *Entity) Enter(actor *Entity) error {
+func (e *Entity) Enter(a *Entity) (chan *p2ppubsub.Message, error) {
 
-	err := actor.Verify()
+	err := a.Verify()
 	if err != nil {
-		return fmt.Errorf("entity/start: failed to verify actor: %w", err)
+		return nil, fmt.Errorf("entity/start: failed to verify actor: %w", err)
 	}
 
-	if actor.Keyset == nil {
-		return fmt.Errorf("entity/start: actor has no keyset")
+	if a.Keyset == nil {
+		return nil, fmt.Errorf("entity/start: actor has no keyset")
 	}
 
-	return actor.Topic.Subscribe(actor.Ctx, e.Messages, e.Envelopes)
+	return e.Subscribe(a)
 }

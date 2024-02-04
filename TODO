@@ -6,36 +6,9 @@ Just reminders here
 
 ## Bugs
 
-### Broadcast
+### Contexts
 
-There is no way to broadcast a message at this time. Either
-it should be able to differ between and encrypted and signed missages,
-or each actor should have a stream connection to the room.
-
-The latter is the better, because it doesn't leak and only uses established
-streams, so no sending to dead actors.
-
-Messages over streams are already encrypted, so no need to reencrypt.
-Just sign messages. A special recipient, eg. "broadcast" or a special
-MIME type message could be sent to everybody.
-
-Maybe secret messages should be sent as envelopes, but only broadcasts
-should be sent over streams? This way only the actual lines of text
-need be sent.
-
-### Decayer
-
-The routing table is not well handled and a little too flaky.
-I don't understand the decayer, but'll look at it later. For now protect
-recognized hosts
-
-### Pong broadcast
-
-Pong should keep a list of respondents and ping them all. The list should
-be cached and ever so often the lastKnownLocation should be looked up and
-the non-present entries be deleted.
-
-It doesn't matter if we send a few lost messages, but we shouldn't overdo it.
+Handle context for entities correctly, so the don't cancel.
 
 ### Bootstrap peers
 

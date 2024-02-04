@@ -141,9 +141,13 @@ func NewChatUI(p *p2p.P2P, a *entity.Entity, e *entity.Entity) (*ChatUI, error) 
 // the event loop for the text UI.
 func (ui *ChatUI) Run() error {
 
-	go ui.handleIncomingEnvelopes(ui.currentCtx, ui.e.Topic)
+	ui.e.Subscribe(ui.e)
+	go ui.handleIncomingEnvelopes(ui.e)
+	go ui.handleIncomingMessages(ui.e)
 
-	go ui.handleIncomingEnvelopes(context.Background(), ui.a.Topic)
+	ui.a.Subscribe(ui.a)
+	go ui.handleIncomingEnvelopes(ui.a)
+	go ui.handleIncomingMessages(ui.a)
 
 	go ui.handleEvents()
 	defer ui.end()

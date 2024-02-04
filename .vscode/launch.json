@@ -19,13 +19,14 @@
             }
         },
         {
-            "name": "Launch Package",
+            "name": "Launch Pong",
             "type": "go",
             "request": "launch",
             "mode": "auto",
             "program": "${fileDirname}",
             "args": [
-                "-g",
+                "-c",
+                "~/.ma/pong.yaml"
             ],
             "console": "integratedTerminal"
         }

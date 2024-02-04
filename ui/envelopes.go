@@ -1,21 +1,16 @@
 package ui
 
 import (
-	"context"
-	"fmt"
-
-	"github.com/bahner/go-ma-actor/alias"
 	"github.com/bahner/go-ma-actor/entity"
-	"github.com/bahner/go-ma-actor/p2p/topic"
 	log "github.com/sirupsen/logrus"
 )
 
 // Handle incoming messages. NB! This must be cancelled,
 // when topic (localtion/home) changes.
-func (ui *ChatUI) handleIncomingEnvelopes(ctx context.Context, t *topic.Topic) {
+func (ui *ChatUI) handleIncomingEnvelopes(a *entity.Entity) {
 
 	for {
-		log.Debugf("Waiting for messages from topic %s", t.Topic.String())
+		log.Debugf("Waiting for messages from topic %s", a.Topic.String())
 		select {
 		case e, ok := <-ui.e.Envelopes:
 			if !ok {
@@ -42,36 +37,7 @@ func (ui *ChatUI) handleIncomingEnvelopes(ctx context.Context, t *topic.Topic) {
 			}
 
 		case <-ui.currentCtx.Done():
-			log.Debug("Context done, closing envelope channel...")
-			return
+			log.Debug("ui/handleIncomingEnvelopes, ui context done. Closing envelope channel...")
 		}
 	}
-}
-
-func (ui *ChatUI) changeEntity(did string) error {
-
-	var err error
-
-	log.Debugf("Creating entity for topic %s", did)
-	// e, err = getOrCreateEntity(did)
-	e, err := entity.GetOrCreate(did)
-	if err != nil {
-		return fmt.Errorf("error getting or creating entity: %w", err)
-	}
-
-	// Loog up the nick for the entity
-	e.Nick = alias.LookupEntityDID(did)
-
-	// Now pivot to the new entity
-	old_entity := ui.e
-	ui.e = e
-	old_entity.Leave()
-
-	log.Infof("Location changed to %s", ui.e.Topic.Topic.String())
-
-	// Start handling the new topic
-	go ui.handleIncomingEnvelopes(ui.currentCtx, ui.e.Topic)
-
-	return nil
-
 }
