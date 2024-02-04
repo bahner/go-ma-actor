@@ -9,7 +9,7 @@ func (ui *ChatUI) handleStatusCommand(args []string) {
 		switch args[1] {
 		case "sub":
 			ui.displayStatusMessage(ui.getStatusSub())
-		case "topic":
+		case "topics":
 			ui.displayStatusMessage(ui.getStatusTopic())
 		case "host":
 			ui.displayStatusMessage(ui.getStatusHost())
@@ -28,8 +28,6 @@ func (ui *ChatUI) displayStatusMessage(msg string) {
 }
 
 func (ui *ChatUI) getStatusSub() string {
-	// status := fmt.Sprintf("keyAgreement: %s", ui.a.keyAgreement.String())
-	// status += fmt.Sprintf("assertionMethod: %s", ui.assertionMethod.String())
 	return "not implemented yet"
 }
 
@@ -37,7 +35,11 @@ func (ui *ChatUI) getStatusTopic() string {
 	// Return whatever status you'd like about the topic.
 	// Fetching peers as an example below:
 	// peers := ui.keyAgreement.ListPeers()
-	return "not implemented yet"
+	aConnected := ui.a.Topic.ListPeers()
+	eConnected := ui.e.Topic.ListPeers()
+	return fmt.Sprintf("\nEntity: %s\n%s\nActor: %s\n%s",
+		ui.e.Topic.String(), eConnected[:],
+		ui.a.Topic.String(), aConnected[:])
 }
 
 func (ui *ChatUI) getStatusHost() string {

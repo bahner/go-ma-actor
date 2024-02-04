@@ -1,15 +1,15 @@
 package entity
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/bahner/go-ma-actor/alias"
-	"github.com/bahner/go-ma-actor/p2p/topic"
+	"github.com/bahner/go-ma-actor/p2p/pubsub"
 	"github.com/bahner/go-ma/did"
 	"github.com/bahner/go-ma/did/doc"
 	"github.com/bahner/go-ma/key/set"
 	"github.com/bahner/go-ma/msg"
+	p2ppubsub "github.com/libp2p/go-libp2p-pubsub"
 )
 
 const (
@@ -18,18 +18,18 @@ const (
 )
 
 type Entity struct {
-	Ctx        context.Context
-	CancelFunc context.CancelFunc
 
 	// External structs
-	DID   *did.DID
-	Doc   *doc.Document
-	Topic *topic.Topic
+	DID *did.DID
+	Doc *doc.Document
+
+	Topic        *p2ppubsub.Topic
+	Subscription *Subscription
 
 	// Only keyset maybe nil
 	Keyset *set.Keyset
 
-	// Channel for incoming messages
+	// Channels
 	Messages  chan *msg.Message
 	Envelopes chan *msg.Envelope
 
@@ -41,12 +41,12 @@ type Entity struct {
 // Create a new entity from a DID and give it a nick.
 func New(d *did.DID, k *set.Keyset, nick string) (*Entity, error) {
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	ps := pubsub.Get()
 
-	_topic, err := topic.GetOrCreate(d.String())
+	// Only 1 topic, but this is where it's at! One topic er entity.
+	_topic, err := ps.Join(d.String())
 	if err != nil {
-		return nil, fmt.Errorf("entity/new: failed to create new topic: %w", err)
+		return nil, fmt.Errorf("entity/new: failed to join topic: %w", err)
 	}
 
 	_doc, err := doc.Fetch(d.String(), true) // Accept cached version
@@ -60,8 +60,6 @@ func New(d *did.DID, k *set.Keyset, nick string) (*Entity, error) {
 	}
 
 	e := &Entity{
-		Ctx:        ctx,
-		CancelFunc: cancel,
 
 		Nick: nick,
 
@@ -69,12 +67,18 @@ func New(d *did.DID, k *set.Keyset, nick string) (*Entity, error) {
 		Doc:   _doc,
 		Topic: _topic,
 
-		Keyset: k,
+		Messages:  make(chan *msg.Message, MESSAGES_BUFFERSIZE),
+		Envelopes: make(chan *msg.Envelope, ENVELOPES_BUFFERSIZE),
 
-		Messages: make(chan *msg.Message, MESSAGES_BUFFERSIZE),
+		Keyset: k,
 	}
 
-	add(e)
+	// Cache the entity
+	cache(e)
+	e.Subscription, err = e.Subscribe()
+	if err != nil {
+		return nil, fmt.Errorf("entity/new: failed to subscribe to topic: %w", err)
+	}
 
 	return e, nil
 }
@@ -108,26 +112,4 @@ func GetOrCreate(id string) (*Entity, error) {
 	}
 
 	return e, nil
-}
-
-func (e *Entity) Leave() {
-	e.CancelFunc()
-}
-
-// Takes a message channel and and actor entity and recieves messages
-// The actor is required to decrypt the envelopes.
-func (e *Entity) Enter(actor *Entity) error {
-
-	err := actor.Verify()
-	if err != nil {
-		return fmt.Errorf("entity/start: failed to verify actor: %w", err)
-	}
-
-	if actor.Keyset == nil {
-		return fmt.Errorf("entity/start: actor has no keyset")
-	}
-
-	go e.receiveMessages(actor)
-
-	return nil
 }

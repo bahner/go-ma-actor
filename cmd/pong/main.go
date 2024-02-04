@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"os"
@@ -34,8 +33,6 @@ func main() {
 	config.InitP2P()
 	config.InitActor()
 
-	ctx := context.Background()
-
 	p, err := p2p.Init(nil)
 	if err != nil {
 		log.Errorf("Error initializing p2p node: %v", err)
@@ -61,8 +58,12 @@ func main() {
 	fmt.Printf("My public key is: %s\n", p.Node.ID().String())
 
 	// Now we can start continuous discovery in the background.
+	ctx, cancel := config.GetDiscoveryContext()
+	defer cancel()
+
 	go p.DiscoveryLoop(ctx)
-	go handleEvents(ctx, e)
+	go handleSubscriptionMessages(e)
+	go handleMessageEvents(e)
 
 	// This is defined in web.go. It makes it possible to add extra parameters to the handler.
 	h := &entity.WebHandlerData{

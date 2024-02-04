@@ -50,12 +50,12 @@ func (ui *ChatUI) handleChatMessage(input string) error {
 	}
 	ui.displayChatMessage(msg)
 
-	err = msg.Send(ctx, ui.e.Topic.Topic)
+	err = msg.SendPublic(ctx, ui.e.Topic)
 	if err != nil {
 		log.Debugf("message publishing error: %s", err)
 		return fmt.Errorf("message publishing error: %w", err)
 	}
-	log.Debugf("Message published to topic: %s", ui.e.Topic.Topic.String())
+	log.Debugf("Message published to topic: %s", ui.e.Topic.String())
 
 	return nil
 }

@@ -257,7 +257,7 @@ func LookupEntityDID(id string) string {
 
 	n, err := GetEntityAlias(id)
 	if err != nil {
-		log.Debugf("Error looking up entity alias for %s: %s", id, err)
+		log.Debugf("Error looking up entity DID for %s: %s", id, err)
 		return id
 	}
 
