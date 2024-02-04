@@ -133,8 +133,15 @@ func (ui *ChatUI) Run() error {
 
 	defer ui.end()
 
-	go ui.setEntity(ui.e.DID.String())
-	go ui.subscribeEntityMessages(ui.a)
+	go ui.subscribeToEntityPubsubMessages(ui.e)
+	go ui.handleIncomingMessages(ui.e)
+
+	go ui.subscribeToEntityPubsubMessages(ui.a)
+	go ui.handleIncomingMessages(ui.a)
+
+	go ui.subscribeToEntityPubsubEnveopes(ui.a)
+	go ui.handleIncomingEnvelopes(ui.a)
+
 	go ui.handleEvents()
 
 	return ui.app.Run()

@@ -1,10 +1,7 @@
 package ui
 
 import (
-	"fmt"
-
 	"github.com/bahner/go-ma-actor/alias"
-	"github.com/bahner/go-ma-actor/entity"
 	"github.com/bahner/go-ma/did"
 	log "github.com/sirupsen/logrus"
 )
@@ -59,35 +56,4 @@ func (ui *ChatUI) handleEnterCommand(args []string) {
 	} else {
 		ui.displaySystemMessage("Usage: /enter <DID>")
 	}
-}
-
-func (ui *ChatUI) setEntity(did string) error {
-
-	var err error
-
-	log.Debugf("Creating entity for topic %s", did)
-	// e, err = getOrCreateEntity(did)
-	e, err := entity.GetOrCreate(did)
-	if err != nil {
-		return fmt.Errorf("error getting or creating entity: %w", err)
-	}
-
-	// Loog up the nick for the entity
-	e.Nick = alias.LookupEntityDID(did)
-
-	// Now pivot to the new entity
-	// and cancel the old.
-	old_nick := ui.e
-	ui.e = e
-	old_nick.Subscription.Cancel()
-
-	log.Infof("Location changed to %s", ui.e.Topic.String())
-
-	// Start handling the new topic
-	go ui.subscribeEntityMessages(e)
-	go ui.handleIncomingEnvelopes()
-	go ui.handleIncomingMessages()
-
-	return nil
-
 }

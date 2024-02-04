@@ -69,6 +69,7 @@ func main() {
 		log.Errorf("home is not a valid entity: %v", err)
 		os.Exit(70)
 	}
+
 	// Draw the UI.
 	log.Debugf("Starting text UI")
 	ui, err := ui.NewChatUI(p, a, e)
