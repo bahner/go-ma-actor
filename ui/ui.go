@@ -1,7 +1,6 @@
 package ui
 
 import (
-	"context"
 	"fmt"
 	"io"
 
@@ -23,10 +22,6 @@ type ChatUI struct {
 
 	// The actor is need to encrypt and sign messages in the event loop.
 	a *entity.Entity
-
-	// Context is used to cancel the event loop.
-	currentCtx    context.Context
-	currentCancel context.CancelFunc
 
 	// The Topic is used for publication of messages after encryption and signing.
 	// The names are obviously, from the corresponding DIDDocument.
@@ -119,21 +114,16 @@ func NewChatUI(p *p2p.P2P, a *entity.Entity, e *entity.Entity) (*ChatUI, error) 
 
 	app.SetRoot(flex, true)
 
-	// The context which allows us to stop the topichandler goroutine
-	ctx, cancel := context.WithCancel(context.Background())
-
 	return &ChatUI{
-		a:             a,
-		p:             p,
-		e:             e,
-		currentCtx:    ctx,
-		currentCancel: cancel,
-		app:           app,
-		peersList:     peersList,
-		msgW:          msgBox,
-		msgBox:        msgBox,
-		chInput:       chInput,
-		chDone:        make(chan struct{}, 1),
+		a:         a,
+		p:         p,
+		e:         e,
+		app:       app,
+		peersList: peersList,
+		msgW:      msgBox,
+		msgBox:    msgBox,
+		chInput:   chInput,
+		chDone:    make(chan struct{}, 1),
 	}, nil
 }
 
@@ -141,16 +131,11 @@ func NewChatUI(p *p2p.P2P, a *entity.Entity, e *entity.Entity) (*ChatUI, error) 
 // the event loop for the text UI.
 func (ui *ChatUI) Run() error {
 
-	ui.e.Subscribe(ui.e)
-	go ui.handleIncomingEnvelopes(ui.e)
-	go ui.handleIncomingMessages(ui.e)
-
-	ui.a.Subscribe(ui.a)
-	go ui.handleIncomingEnvelopes(ui.a)
-	go ui.handleIncomingMessages(ui.a)
-
-	go ui.handleEvents()
 	defer ui.end()
+
+	go ui.setEntity(ui.e.DID.String())
+	go ui.subscribeEntityMessages(ui.a)
+	go ui.handleEvents()
 
 	return ui.app.Run()
 }

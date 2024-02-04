@@ -20,3 +20,8 @@ are all that's required for a successful bootup.
 Add a connect command to connect to a specific host directly, eg:
 
 /connect relay
+
+
+### Broadcast
+
+Create a proper broadcast message type.

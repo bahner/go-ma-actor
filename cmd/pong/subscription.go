@@ -7,22 +7,21 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func handleSubscriptionMessages(e *entity.Entity) {
-	sub, err := e.Enter(e)
+// SUbscribe a to e's topic and handle messages
+func handleSubscriptionMessages(a *entity.Entity) {
+	sub, err := a.Subscribe()
 	if err != nil {
 		log.Errorf("Failed to subscribe to topic: %v", err)
 		return
 	}
+	defer sub.Cancel()
 
 	for {
 		select {
 		// Handle cancellation
-		case <-e.Ctx.Done():
-			log.Errorf("pong/handleSubscriptionMessages: Entity context done, exiting...")
-			return
-		case input, ok := <-sub:
+		case input, ok := <-sub.Messages:
 			if !ok {
-				log.Debugf("pong/handleSubscriptionMessages: Input channel closed, exiting...")
+				log.Debugf("handleSubscriptionMessages: Input channel closed, exiting...")
 				return
 			}
 
@@ -30,32 +29,32 @@ func handleSubscriptionMessages(e *entity.Entity) {
 			var m *msg.Message
 			err := cbor.Unmarshal(input.Data, &m)
 			if err == nil {
-				log.Debugf("pong/handleSubscriptionMessages:Received message: %v\n", m)
-				e.Messages <- m
+				log.Debugf("handleSubscriptionMessages: Received message: %v\n", m)
+				a.Messages <- m
 				continue
 			}
 
 			var env *msg.Envelope
 			err = cbor.Unmarshal(input.Data, &env)
 			if err == nil {
-				e.Envelopes <- env
+				a.Envelopes <- env
 				continue
 			}
-			log.Errorf("pong/handleSubscriptionMessages: Error unmarshalling envelope: %v\n", err)
-		case envelope, ok := <-e.Envelopes:
+			log.Errorf("handleSubscriptionMessages: Error unmarshalling envelope: %v\n", err)
+		case envelope, ok := <-a.Envelopes:
 			if !ok {
-				log.Errorf("pong/handleSubscriptionMessages: Envelope channel closed, exiting...")
+				log.Errorf("handleSubscriptionMessages: Envelope channel closed, exiting...")
 				continue
 			}
 
-			if e.Keyset.EncryptionKey == nil {
-				log.Errorf("pong/handleSubscriptionMessages: No encryption key found, cannot open envelope")
+			if a.Keyset.EncryptionKey == nil {
+				log.Errorf("handleSubscriptionMessages: No encryption key found, cannot open envelope")
 				continue
 			}
-			msg, err := envelope.Open(e.Keyset.EncryptionKey.PrivKey[:])
+			msg, err := envelope.Open(a.Keyset.EncryptionKey.PrivKey[:])
 			if err == nil {
-				log.Debugf("pong/handleSubscriptionMessages: Open envelope: %v\n", msg)
-				e.Messages <- msg
+				log.Debugf("handleSubscriptionMessages: Open envelope: %v\n", msg)
+				a.Messages <- msg
 			}
 		}
 	}

@@ -8,39 +8,43 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func (e *Entity) Subscribe(a *Entity) (chan *p2ppubsub.Message, error) {
+type Subscription struct {
+	Cancel   context.CancelFunc
+	Messages chan *p2ppubsub.Message
+}
 
-	// I believe only the entity context is need for cancellation.
-	// Everything else should be backgroud processes. If the pubsub
-	// is broken, the entity is broken.
-	ctx := context.Background()
+func (e *Entity) Subscribe() (*Subscription, error) {
+	ctx, cancel := context.WithCancel(context.Background())
 
 	sub, err := e.Topic.Subscribe()
 	if err != nil {
+		cancel() // Ensure resources are cleaned up in case of early return
 		return nil, fmt.Errorf("failed to subscribe to topic: %w", err)
 	}
 
-	messageChan := make(chan *p2ppubsub.Message)
+	s := &Subscription{
+		Cancel:   cancel,
+		Messages: make(chan *p2ppubsub.Message),
+	}
 
-	// Start a goroutine to receive messages from sub.Next and pass them to messageChan
 	go func() {
+		defer sub.Cancel()
+		defer close(s.Messages)
 		for {
 			select {
-			case <-e.Ctx.Done():
-				tn := sub.Topic()
-				log.Errorf("entity/subscribe: Entity context done. Closing the topic %s", tn)
-				sub.Cancel()
-				log.Infof("entity/subscribe: Closed topic subscrption %s", tn)
+			case <-ctx.Done():
+				log.Infof("entity/subscribe: Context done. Closing the topic subscription")
 				return
 			default:
 				message, err := sub.Next(ctx)
 				if err != nil {
+					log.Errorf("entity/subscribe: error getting next message: %v", err)
 					continue
 				}
-				messageChan <- message
+				s.Messages <- message
 			}
 		}
 	}()
 
-	return messageChan, nil
+	return s, nil
 }

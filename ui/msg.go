@@ -1,10 +1,12 @@
 package ui
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
 	"github.com/bahner/go-ma-actor/alias"
+	"github.com/bahner/go-ma-actor/entity"
 	"github.com/bahner/go-ma/did"
 	"github.com/bahner/go-ma/msg"
 	log "github.com/sirupsen/logrus"
@@ -46,7 +48,12 @@ func (ui *ChatUI) handleMsgCommand(args []string) {
 			ui.displaySystemMessage(fmt.Sprintf("message creation error: %s", err))
 		}
 
-		err = msg.SendPublic(ui.e.Ctx, ui.e.Topic)
+		resp, err := entity.GetOrCreate(recipient)
+		if err != nil {
+			ui.displaySystemMessage(fmt.Sprintf("entity creation error: %s", err))
+		}
+
+		err = msg.SendPrivate(context.Background(), resp.Topic)
 		if err != nil {
 			ui.displaySystemMessage(fmt.Sprintf("message publishing error: %s", err))
 		}

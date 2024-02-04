@@ -41,7 +41,7 @@ func (ui *ChatUI) handleEnterCommand(args []string) {
 		}
 
 		// Update the UI
-		err := ui.changeEntity(_did)
+		err := ui.setEntity(_did)
 		if err != nil {
 			ui.displaySystemMessage("Error changing entity: " + err.Error())
 			return
@@ -61,7 +61,7 @@ func (ui *ChatUI) handleEnterCommand(args []string) {
 	}
 }
 
-func (ui *ChatUI) changeEntity(did string) error {
+func (ui *ChatUI) setEntity(did string) error {
 
 	var err error
 
@@ -76,15 +76,17 @@ func (ui *ChatUI) changeEntity(did string) error {
 	e.Nick = alias.LookupEntityDID(did)
 
 	// Now pivot to the new entity
-	old_entity := ui.e
+	// and cancel the old.
+	old_nick := ui.e
 	ui.e = e
-	old_entity.Leave()
+	old_nick.Subscription.Cancel()
 
 	log.Infof("Location changed to %s", ui.e.Topic.String())
 
 	// Start handling the new topic
-	go ui.handleIncomingEnvelopes(e)
-	go ui.handleIncomingMessages(e)
+	go ui.subscribeEntityMessages(e)
+	go ui.handleIncomingEnvelopes()
+	go ui.handleIncomingMessages()
 
 	return nil
 

@@ -1,7 +1,6 @@
 package entity
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/bahner/go-ma-actor/alias"
@@ -19,14 +18,13 @@ const (
 )
 
 type Entity struct {
-	Ctx        context.Context
-	CancelFunc context.CancelFunc
 
 	// External structs
 	DID *did.DID
 	Doc *doc.Document
 
-	Topic *p2ppubsub.Topic
+	Topic        *p2ppubsub.Topic
+	Subscription *Subscription
 
 	// Only keyset maybe nil
 	Keyset *set.Keyset
@@ -42,9 +40,6 @@ type Entity struct {
 
 // Create a new entity from a DID and give it a nick.
 func New(d *did.DID, k *set.Keyset, nick string) (*Entity, error) {
-
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
 
 	ps := pubsub.Get()
 
@@ -65,8 +60,6 @@ func New(d *did.DID, k *set.Keyset, nick string) (*Entity, error) {
 	}
 
 	e := &Entity{
-		Ctx:        ctx,
-		CancelFunc: cancel,
 
 		Nick: nick,
 
@@ -82,9 +75,10 @@ func New(d *did.DID, k *set.Keyset, nick string) (*Entity, error) {
 
 	// Cache the entity
 	cache(e)
-
-	// Start the message loop
-	e.Subscribe(e)
+	e.Subscription, err = e.Subscribe()
+	if err != nil {
+		return nil, fmt.Errorf("entity/new: failed to subscribe to topic: %w", err)
+	}
 
 	return e, nil
 }
@@ -118,24 +112,4 @@ func GetOrCreate(id string) (*Entity, error) {
 	}
 
 	return e, nil
-}
-
-func (e *Entity) Leave() {
-	e.CancelFunc()
-}
-
-// Takes a message channel and and actor entity and recieves messages
-// The actor is required to decrypt the envelopes.
-func (e *Entity) Enter(a *Entity) (chan *p2ppubsub.Message, error) {
-
-	err := a.Verify()
-	if err != nil {
-		return nil, fmt.Errorf("entity/start: failed to verify actor: %w", err)
-	}
-
-	if a.Keyset == nil {
-		return nil, fmt.Errorf("entity/start: actor has no keyset")
-	}
-
-	return e.Subscribe(a)
 }

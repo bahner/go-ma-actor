@@ -60,6 +60,7 @@ func main() {
 	// Now we can start continuous discovery in the background.
 	ctx, cancel := config.GetDiscoveryContext()
 	defer cancel()
+
 	go p.DiscoveryLoop(ctx)
 	go handleSubscriptionMessages(e)
 	go handleMessageEvents(e)
