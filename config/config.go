@@ -36,14 +36,6 @@ func init() {
 	pflag.BoolP("version", "v", false, "Print version and exit.")
 	viper.BindPFlag("version", pflag.Lookup("version"))
 
-	pflag.String("loglevel", defaultLogLevel, "Loglevel to use for application.")
-	viper.SetDefault("log.level", defaultLogLevel)
-	viper.BindPFlag("log.level", pflag.Lookup("loglevel"))
-
-	pflag.String("logfile", defaultLogfile, "Logfile to use for application.")
-	viper.SetDefault("log.file", defaultLogfile)
-	viper.BindPFlag("log.file", pflag.Lookup("logfile"))
-
 }
 
 // This should be called after pflag.Parse() in main.

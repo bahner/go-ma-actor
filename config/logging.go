@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 
 	log "github.com/sirupsen/logrus"
@@ -11,8 +12,19 @@ import (
 
 const (
 	defaultLogLevel string = "info"
-	defaultLogfile  string = NAME + ".log"
+	defaultLogfile  string = "." + NAME + ".log"
 )
+
+func init() {
+
+	pflag.String("loglevel", defaultLogLevel, "Loglevel to use for application.")
+	viper.SetDefault("log.level", defaultLogLevel)
+	viper.BindPFlag("log.level", pflag.Lookup("loglevel"))
+
+	pflag.String("logfile", defaultLogfile, "Logfile to use for application. Accepts 'STDERR' and 'STDOUT' as such.")
+	viper.SetDefault("log.file", defaultLogfile)
+	viper.BindPFlag("log.file", pflag.Lookup("logfile"))
+}
 
 func InitLogging() {
 
@@ -23,12 +35,19 @@ func InitLogging() {
 		os.Exit(64) // EX_USAGE
 	}
 	log.SetLevel(ll)
-	file, err := os.OpenFile(viper.GetString("log.file"), os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(73) // EX_CANTCREAT
+	logfile := viper.GetString("log.file")
+	if logfile == "STDERR" {
+		log.SetOutput(os.Stderr)
+	} else if logfile == "STDOUT" {
+		log.SetOutput(os.Stdout)
+	} else {
+		file, err := os.OpenFile(logfile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(73) // EX_CANTCREAT
+		}
+		log.SetOutput(file)
 	}
-	log.SetOutput(file)
 
 	log.Info("Logger initialized with loglevel ", viper.GetString("log.level"), " and logfile ", viper.GetString("log.file"))
 
