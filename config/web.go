@@ -13,8 +13,8 @@ func init() {
 
 	// Flags - user configurations
 
-	pflag.String("http_socket", defaultHttpSocket, "Address for webserver to listen on")
-	viper.BindPFlag("http.socket", pflag.Lookup("socket"))
+	pflag.String("http-socket", defaultHttpSocket, "Address for webserver to listen on")
+	viper.BindPFlag("http.socket", pflag.Lookup("http-socket"))
 
 }
 

@@ -7,6 +7,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
+	"gopkg.in/yaml.v2"
 )
 
 const (
@@ -32,6 +33,10 @@ func init() {
 
 	// Allow to set config file via command line flag.
 	pflag.StringVarP(&configFile, "config", "c", "", "Config file to use.")
+	pflag.Bool("show-config", false, "Whether to print the config.")
+	viper.BindPFlag("show-config", pflag.Lookup("show-config"))
+	pflag.Bool("show-defaults", false, "Whether to print the config.")
+	viper.BindPFlag("show-defaults", pflag.Lookup("show-defaults"))
 
 	pflag.BoolP("version", "v", false, "Print version and exit.")
 	viper.BindPFlag("version", pflag.Lookup("version"))
@@ -62,7 +67,27 @@ func Init(configName string) error {
 	// This will exit when done. It will also publish if applicable.
 	if viper.GetBool("generate") {
 		log.Info("Generating new keyset and node identity")
-		handleGenerateOrExit()
+		actor, node := handleGenerateOrExit()
+		generateConfigFile(actor, node)
+		os.Exit(0)
+	}
+
+	if viper.GetBool("show-config") {
+		configMap := viper.AllSettings()
+		configYAML, err := yaml.Marshal(configMap)
+		if err != nil {
+			log.Fatalf("error: %v", err)
+		}
+
+		// Print the YAML to stdout or write it to a template file
+		fmt.Println(string(configYAML))
+		os.Exit(0)
+	}
+
+	if viper.GetBool("show-defaults") {
+
+		// Print the YAML to stdout or write it to a template file
+		generateConfigFile("zNO_DEFAULT_ACTOR_IDENITY", "zNO_DEFAULT_NODE_IDENITY")
 		os.Exit(0)
 	}
 

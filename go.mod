@@ -3,7 +3,7 @@ module github.com/bahner/go-ma-actor
 go 1.21
 
 require (
-	github.com/bahner/go-ma v0.4.0
+	github.com/bahner/go-ma v0.4.1-0.20240206135113-165e47a9b140
 	github.com/fxamacker/cbor/v2 v2.5.0
 	github.com/gdamore/tcell/v2 v2.7.0
 	github.com/libp2p/go-libp2p v0.32.2
@@ -18,6 +18,7 @@ require (
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.18.2
+	gopkg.in/yaml.v2 v2.4.0
 )
 
 require (

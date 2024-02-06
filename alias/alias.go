@@ -10,35 +10,25 @@ import (
 	"github.com/libp2p/go-libp2p/core/peer"
 	_ "github.com/mattn/go-sqlite3"
 	log "github.com/sirupsen/logrus"
-	"github.com/spf13/pflag"
-	"github.com/spf13/viper"
 )
 
 const (
-	defaultAliasFile   = "~/.ma/aliases.db"
 	defaultAliasLength = 8
 
-	SELECT_ENTITY_NICK = "SELECT nick FROM entities WHERE did = ?"
-	SELECT_ENTITY_DID  = "SELECT did FROM entities WHERE nick = ?"
-	SELECT_NODE_NICK   = "SELECT nick FROM nodes WHERE id = ?"
-	SELECT_NODE_ID     = "SELECT id FROM nodes WHERE nick = ?"
-	UPSERT_ENTITY      = "INSERT INTO entities (did, nick) VALUES (?, ?) ON CONFLICT(did) DO UPDATE SET nick = ?"
-	UPSERT_NODE        = "INSERT INTO nodes (id, nick) VALUES (?, ?) ON CONFLICT(id) DO UPDATE SET nick = ?"
-	DELETE_ENTITY      = "DELETE FROM entities WHERE did = ?"
-	DELETE_NODE        = "DELETE FROM nodes WHERE id = ?"
+	_SELECT_ENTITY_NICK = "SELECT nick FROM entities WHERE did = ?"
+	_SELECT_ENTITY_DID  = "SELECT did FROM entities WHERE nick = ?"
+	_SELECT_NODE_NICK   = "SELECT nick FROM nodes WHERE id = ?"
+	_SELECT_NODE_ID     = "SELECT id FROM nodes WHERE nick = ?"
+	_UPSERT_ENTITY      = "INSERT INTO entities (did, nick) VALUES (?, ?) ON CONFLICT(did) DO UPDATE SET nick = ?"
+	_UPSERT_NODE        = "INSERT INTO nodes (id, nick) VALUES (?, ?) ON CONFLICT(id) DO UPDATE SET nick = ?"
+	_DELETE_ENTITY      = "DELETE FROM entities WHERE did = ?"
+	_DELETE_NODE        = "DELETE FROM nodes WHERE id = ?"
 )
 
 var (
 	once sync.Once
 	db   *sql.DB
 )
-
-func init() {
-
-	pflag.String("aliases", defaultAliasFile, "File to *write* node aliases to. If the file does not exist, it will be created.")
-	viper.BindPFlag("aliases", pflag.Lookup("aliases"))
-	viper.SetDefault("aliases", defaultAliasFile)
-}
 
 // Initiates the database connection and creates the tables if they do not exist
 func GetDB() (*sql.DB, error) {
@@ -89,7 +79,7 @@ func GetEntityAlias(id string) (string, error) {
 
 	var a string
 
-	err = db.QueryRow(SELECT_ENTITY_NICK, id).Scan(&a)
+	err = db.QueryRow(_SELECT_ENTITY_NICK, id).Scan(&a)
 	if err != nil {
 		return "", err
 	}
@@ -112,7 +102,7 @@ func GetEntityDID(nick string) (string, error) {
 
 	var id string
 
-	err = db.QueryRow(SELECT_ENTITY_DID, nick).Scan(&id)
+	err = db.QueryRow(_SELECT_ENTITY_DID, nick).Scan(&id)
 	if err != nil {
 		return "", err
 	}
@@ -136,7 +126,7 @@ func GetNodeAlias(id string) (string, error) {
 
 	var a string
 
-	err = db.QueryRow(SELECT_NODE_NICK, id).Scan(&a)
+	err = db.QueryRow(_SELECT_NODE_NICK, id).Scan(&a)
 	if err != nil {
 		return "", err
 	}
@@ -159,7 +149,7 @@ func GetNodeID(nick string) (string, error) {
 
 	var id string
 
-	err = db.QueryRow(SELECT_NODE_ID, nick).Scan(&id)
+	err = db.QueryRow(_SELECT_NODE_ID, nick).Scan(&id)
 	if err != nil {
 		return "", err
 	}
@@ -180,7 +170,7 @@ func SetEntityAlias(id string, nick string) error {
 		return err
 	}
 
-	_, err = db.Exec(UPSERT_ENTITY, id, nick, nick)
+	_, err = db.Exec(_UPSERT_ENTITY, id, nick, nick)
 	if err != nil {
 		return err
 	}
@@ -202,7 +192,7 @@ func SetNodeAlias(id string, nick string) error {
 		return err
 	}
 
-	_, err = db.Exec(UPSERT_NODE, id, nick, nick)
+	_, err = db.Exec(_UPSERT_NODE, id, nick, nick)
 	if err != nil {
 		return err
 	}
@@ -222,7 +212,7 @@ func RemoveEntityAlias(id string) error {
 		return err
 	}
 
-	_, err = db.Exec(DELETE_ENTITY, id)
+	_, err = db.Exec(_DELETE_ENTITY, id)
 	if err != nil {
 		return err
 	}

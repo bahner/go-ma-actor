@@ -66,12 +66,22 @@ func InitActor() {
 
 }
 
-func handleGenerateOrExit() {
-	// Generate a new keysets if requested
+// Genreates a libp2p and actor identity and returns the keyset and the actor identity
+// These are imperative, so failure to generate them is a fatal error.
+func handleGenerateOrExit() (string, string) {
 
-	keyset_string, err := generateAndPrintActorIdentity()
+	// Generate a new keysets if requested
+	nick := viper.GetString("actor.nick")
+
+	keyset_string, err := generateKeysetString(nick)
 	if err != nil {
 		log.Errorf("config.initIdentity: Failed to generate keyset: %v", err)
+		os.Exit(70) // EX_SOFTWARE
+	}
+
+	ni, err := generateNodeIdentity()
+	if err != nil {
+		log.Errorf("config.initIdentity: Failed to generate node identity: %v", err)
 		os.Exit(70) // EX_SOFTWARE
 	}
 
@@ -83,26 +93,7 @@ func handleGenerateOrExit() {
 		}
 	}
 
-	err = generateAndPrintNodeIdentity()
-	if err != nil {
-		log.Errorf("config.initIdentity: Failed to generate node identity: %v", err)
-		os.Exit(70) // EX_SOFTWARE
-	}
-
-}
-
-func generateAndPrintActorIdentity() (string, error) {
-
-	nick := viper.GetString("actor.nick")
-
-	keyset_string, err := generateKeyset(nick)
-	if err != nil {
-		return "", fmt.Errorf("config.initIdentity: Failed to generate keyset: %v", err)
-	}
-
-	fmt.Println(ENV_PREFIX + "_ACTOR_IDENTITY=" + keyset_string)
-
-	return keyset_string, nil
+	return keyset_string, ni
 }
 
 func publishActorIdentityFromString(keyset_string string) error {
@@ -120,7 +111,8 @@ func publishActorIdentityFromString(keyset_string string) error {
 	return nil
 }
 
-func generateKeyset(nick string) (string, error) {
+// Generates a new keyset and returns the keyset as a string
+func generateKeysetString(nick string) (string, error) {
 
 	ks, err := set.GetOrCreate(nick)
 	if err != nil {

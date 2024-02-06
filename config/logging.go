@@ -17,13 +17,13 @@ const (
 
 func init() {
 
-	pflag.String("loglevel", defaultLogLevel, "Loglevel to use for application.")
+	pflag.String("log-level", defaultLogLevel, "Loglevel to use for application.")
 	viper.SetDefault("log.level", defaultLogLevel)
-	viper.BindPFlag("log.level", pflag.Lookup("loglevel"))
+	viper.BindPFlag("log.level", pflag.Lookup("log-level"))
 
-	pflag.String("logfile", defaultLogfile, "Logfile to use for application. Accepts 'STDERR' and 'STDOUT' as such.")
+	pflag.String("log-file", defaultLogfile, "Logfile to use for application. Accepts 'STDERR' and 'STDOUT' as such.")
 	viper.SetDefault("log.file", defaultLogfile)
-	viper.BindPFlag("log.file", pflag.Lookup("logfile"))
+	viper.BindPFlag("log.file", pflag.Lookup("log-file"))
 }
 
 func InitLogging() {
