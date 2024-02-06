@@ -13,6 +13,9 @@ type Subscription struct {
 	Messages chan *p2ppubsub.Message
 }
 
+// Subscribe to the entity's topic
+// Returns a subscription which contains the cancel function and a channel for messages
+// The entity's own Subscription field is set to the returned subscription
 func (e *Entity) Subscribe() (*Subscription, error) {
 	ctx, cancel := context.WithCancel(context.Background())
 
@@ -22,14 +25,14 @@ func (e *Entity) Subscribe() (*Subscription, error) {
 		return nil, fmt.Errorf("failed to subscribe to topic: %w", err)
 	}
 
-	s := &Subscription{
+	e.Subscription = &Subscription{
 		Cancel:   cancel,
 		Messages: make(chan *p2ppubsub.Message),
 	}
 
 	go func() {
 		defer sub.Cancel()
-		defer close(s.Messages)
+		defer close(e.Subscription.Messages)
 		for {
 			select {
 			case <-ctx.Done():
@@ -41,10 +44,10 @@ func (e *Entity) Subscribe() (*Subscription, error) {
 					log.Errorf("entity/subscribe: error getting next message: %v", err)
 					continue
 				}
-				s.Messages <- message
+				e.Subscription.Messages <- message
 			}
 		}
 	}()
 
-	return s, nil
+	return e.Subscription, nil
 }

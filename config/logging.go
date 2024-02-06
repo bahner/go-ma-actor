@@ -47,6 +47,7 @@ func InitLogging() {
 			os.Exit(73) // EX_CANTCREAT
 		}
 		log.SetOutput(file)
+
 	}
 
 	log.Info("Logger initialized with loglevel ", viper.GetString("log.level"), " and logfile ", viper.GetString("log.file"))
