@@ -14,13 +14,13 @@ import (
 )
 
 const (
-	defaultLowWaterMark  int = 3
-	defaultHighWaterMark int = 10
+	defaultLowWaterMark  int = 10
+	defaultHighWaterMark int = 30
 	defaultListenPort    int = 0
 
-	defaultDiscoveryTimeout       time.Duration = time.Second * 30
+	defaultDiscoveryTimeout       time.Duration = time.Second * 20
 	defaultConnMgrGrace           time.Duration = time.Minute * 1
-	defaultDiscoveryRetryInterval time.Duration = time.Second * 60
+	defaultDiscoveryRetryInterval time.Duration = time.Second * 300
 )
 
 func init() {
