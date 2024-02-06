@@ -34,6 +34,6 @@ func (ui *ChatUI) handleIncomingMessages(e *entity.Entity) {
 
 		log.Debugf("handleIncomingMessages: Accepted message of type %s from %s to %s", m.MimeType, m.From, m.To)
 
-		ui.displayChatMessage(m)
+		ui.chMessage <- m
 	}
 }

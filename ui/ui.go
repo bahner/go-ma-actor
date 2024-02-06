@@ -1,7 +1,7 @@
 package ui
 
 import (
-	"fmt"
+	"context"
 	"io"
 
 	"github.com/bahner/go-ma-actor/entity"
@@ -9,6 +9,14 @@ import (
 	"github.com/bahner/go-ma/msg"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
+	"github.com/spf13/viper"
+
+	log "github.com/sirupsen/logrus"
+)
+
+const (
+	CHANNEL_MESSAGES_BUFFERSIZE = 100
+	defaultLimbo                = "closet"
 )
 
 // ChatUI is a Text User Interface (TUI) for a Room.
@@ -22,6 +30,10 @@ type ChatUI struct {
 
 	// The actor is need to encrypt and sign messages in the event loop.
 	a *entity.Entity
+
+	// Conext for the current entity - NOT the actor!
+	currentEntityCtx    context.Context
+	currentEntityCancel context.CancelFunc
 
 	// The Topic is used for publication of messages after encryption and signing.
 	// The names are obviously, from the corresponding DIDDocument.
@@ -39,12 +51,12 @@ type ChatUI struct {
 // NewChatUI returns a new ChatUI struct that controls the text UI.
 // It won't actually do anything until you call Run().
 // The enity is the "room" we are convering with.
-func NewChatUI(p *p2p.P2P, a *entity.Entity, e *entity.Entity) (*ChatUI, error) {
+func NewChatUI(p *p2p.P2P, a *entity.Entity) (*ChatUI, error) {
 
-	err := e.Verify()
-	if err != nil {
-		return nil, fmt.Errorf("entity verification error: %w", err)
-	}
+	// err := e.Verify()
+	// if err != nil {
+	// 	return nil, fmt.Errorf("entity verification error: %w", err)
+	// }
 
 	app := tview.NewApplication()
 
@@ -53,7 +65,7 @@ func NewChatUI(p *p2p.P2P, a *entity.Entity, e *entity.Entity) (*ChatUI, error) 
 	msgBox.SetDynamicColors(true)
 	msgBox.SetBorder(true)
 	msgBox.SetScrollable(true)
-	msgBox.SetTitle(fmt.Sprintf("Entity: %s", e.Nick))
+	msgBox.SetTitle(defaultLimbo)
 
 	// text views are io.Writers, but they don't automatically refresh.
 	// this sets a change handler to force the app to redraw when we get
@@ -66,7 +78,7 @@ func NewChatUI(p *p2p.P2P, a *entity.Entity, e *entity.Entity) (*ChatUI, error) 
 	// an input field for typing messages into
 	chInput := make(chan string, 32)
 	input := tview.NewInputField().
-		SetLabel(e.Nick + " > ").
+		SetLabel(defaultLimbo + " > ").
 		SetFieldWidth(0).
 		SetFieldBackgroundColor(tcell.ColorBlack)
 
@@ -117,12 +129,12 @@ func NewChatUI(p *p2p.P2P, a *entity.Entity, e *entity.Entity) (*ChatUI, error) 
 	return &ChatUI{
 		a:         a,
 		p:         p,
-		e:         e,
 		app:       app,
 		peersList: peersList,
 		msgW:      msgBox,
 		msgBox:    msgBox,
 		chInput:   chInput,
+		chMessage: make(chan *msg.Message, CHANNEL_MESSAGES_BUFFERSIZE),
 		chDone:    make(chan struct{}, 1),
 	}, nil
 }
@@ -133,13 +145,30 @@ func (ui *ChatUI) Run() error {
 
 	defer ui.end()
 
-	go ui.subscribeToEntityPubsubMessages(ui.e)
-	go ui.handleIncomingMessages(ui.e)
+	home := viper.GetString("actor.home")
 
+	// Enter the entity.
+	// This is something that'll change along the runtime
+	homeEntity, err := entity.NewFromDID(home, home)
+	if err != nil {
+		log.Errorf("failed to create home entity: %v", err)
+	}
+
+	go ui.enterEntity(homeEntity)
+
+	// The actor should just run in the background for ever.
+	// It will handle incoming messages and envelopes.
+	// It shouldn't change - ever.
+
+	// There is no need to subscribe to messages for the actor.
+	// Envelopes are handled by the actor.
 	go ui.subscribeToEntityPubsubMessages(ui.a)
-	go ui.handleIncomingMessages(ui.a)
+	go ui.subscribeToEntityPubsubEnvelopes(ui.a)
 
-	go ui.subscribeToEntityPubsubEnveopes(ui.a)
+	// We *don't* want to subscribe to messages for the actor. We dont want to handle
+	// messages for the actor. We want to handle envelopes for the actor.
+	// Anyone can encrypt messages for the actor, so .. do that already!
+	go ui.handleIncomingMessages(ui.a)
 	go ui.handleIncomingEnvelopes(ui.a)
 
 	go ui.handleEvents()

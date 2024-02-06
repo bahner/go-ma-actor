@@ -9,7 +9,6 @@ import (
 	"github.com/bahner/go-ma-actor/entity"
 	"github.com/bahner/go-ma-actor/p2p"
 	"github.com/bahner/go-ma-actor/ui"
-	"github.com/bahner/go-ma/did"
 	"github.com/spf13/pflag"
 
 	log "github.com/sirupsen/logrus"
@@ -58,21 +57,22 @@ func main() {
 	log.Infof("Listening on %s", config.GetHttpSocket())
 	go http.ListenAndServe(config.GetHttpSocket(), nil)
 
-	home, err := did.New(config.GetHome())
-	if err != nil {
-		log.Errorf("home is not a valid DID: %v", err)
-		os.Exit(70)
-	}
+	// home, err := did.New(config.GetHome())
+	// if err != nil {
+	// 	log.Errorf("home is not a valid DID: %v", err)
+	// 	os.Exit(70)
+	// }
 
-	e, err := entity.New(home, nil, home.Fragment)
-	if err != nil {
-		log.Errorf("home is not a valid entity: %v", err)
-		os.Exit(70)
-	}
+	// e, err := entity.New(home, nil, home.Fragment)
+	// if err != nil {
+	// 	log.Errorf("home is not a valid entity: %v", err)
+	// 	os.Exit(70)
+	// }
 
 	// Draw the UI.
 	log.Debugf("Starting text UI")
-	ui, err := ui.NewChatUI(p, a, e)
+	// NB! The entity is set later.
+	ui, err := ui.NewChatUI(p, a)
 	if err != nil {
 		log.Errorf("error creating text UI: %s", err)
 		os.Exit(75)

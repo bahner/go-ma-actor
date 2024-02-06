@@ -14,17 +14,17 @@ func (ui *ChatUI) subscribeToEntityPubsubMessages(e *entity.Entity) {
 
 	t := e.DID.String()
 
-	log.Debugf("Subscribing to entity %s", e.DID.String())
-	sub, err := e.Subscribe()
-	if err != nil {
-		log.Errorf("Failed to subscribe to topic: %v", err)
-		return
-	}
-	defer sub.Cancel()
+	// log.Debugf("Subscribing to entity %s", e.DID.String())
+	// sub, err := e.Subscribe()
+	// if err != nil {
+	// 	log.Errorf("Failed to subscribe to topic: %v", err)
+	// 	return
+	// }
+	// defer sub.Cancel()
 
 	for {
 		log.Debugf("Waiting for pubsub messages to entity %s", t)
-		input, ok := <-sub.Messages
+		input, ok := <-e.Subscription.Messages
 		if !ok {
 			log.Debugf("handleSubscriptionMessages: Input channel closed, exiting...")
 			return

@@ -29,7 +29,7 @@ func (ui *ChatUI) handleIncomingEnvelopes(a *entity.Entity) {
 
 		log.Debugf("Opened envelope and found message: %v\n", string(m.Content))
 
-		// Send the message to the entity which the message was for.
+		// Send the message to the actor for processing. It can decide to ignore it.
 		a.Messages <- m
 	}
 }
@@ -37,16 +37,16 @@ func (ui *ChatUI) handleIncomingEnvelopes(a *entity.Entity) {
 // Subscribe a to e's topic and handle messages
 // The envelopes are decrypted by ui.a - the actor. Not the entity.
 // This must be called after the new entity is set.
-func (ui *ChatUI) subscribeToEntityPubsubEnveopes(a *entity.Entity) {
+func (ui *ChatUI) subscribeToEntityPubsubEnvelopes(a *entity.Entity) {
 
 	t := a.DID.String()
 
-	log.Debugf("Subscribing to envelopes for actor %s", t)
 	sub, err := a.Subscribe()
 	if err != nil {
 		log.Errorf("Failed to subscribe to topic: %v", err)
 		return
 	}
+
 	defer sub.Cancel()
 
 	for {
@@ -59,7 +59,7 @@ func (ui *ChatUI) subscribeToEntityPubsubEnveopes(a *entity.Entity) {
 
 		// Attempt to unmarshal the data into a msg.Envelope struct.
 		var env *msg.Envelope
-		err = cbor.Unmarshal(input.Data, &env)
+		err := cbor.Unmarshal(input.Data, &env)
 		if err != nil {
 			// If unmarshalling fails, log the error.
 			log.Errorf("handleSubscriptionMessages: Error unmarshalling envelope: %v\n", err)
