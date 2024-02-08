@@ -36,13 +36,18 @@ func (ui *ChatUI) handleIncomingEnvelopes(a *entity.Entity) {
 	}
 }
 
-func (ui *ChatUI) subscribeToActorPubsubEnvelopes(e *entity.Entity) {
+// Subscribe to envelopes from an entity. But this time we are the entity
+// to receive the envelopes. The actor is responsible for decrypting the envelope.
+func (ui *ChatUI) subscribeToPubsubEnvelopes(e *entity.Entity, a *entity.Entity) {
 
 	t := e.DID.String()
 
 	ctx := context.Background()
 
-	log.Debugf("Subscribing to entity %s", e.DID.String())
+	actor := a.DID.String()
+	entity := e.DID.String()
+
+	log.Debugf("Subscribing to envelopes to %s delivered to entity %s", actor, entity)
 	sub, err := e.Topic.Subscribe()
 	if err != nil {
 		log.Errorf("Failed to subscribe to topic: %v", err)
@@ -88,13 +93,12 @@ func (ui *ChatUI) subscribeToActorPubsubEnvelopes(e *entity.Entity) {
 
 			// If the message is not verified it might be an envelope.
 			env, err := msg.UnmarshalAndVerifyEnvelopeFromCBOR(message.Data)
-			if err == nil {
-				log.Debugf("handleSubscriptionMessages: Envelope verified: %v. Passing it on to %s", env, t)
-				e.Envelopes <- env
+			if err != nil {
+				log.Errorf("handleSubscriptionMessages: Failed to unmarshal and verify envelope: %v", err)
 				continue
 			}
-
-			log.Errorf("handleSubscriptionMessages: Failed to verify message or envelope: %v", err)
+			log.Debugf("handleSubscriptionMessages: Envelope verified: %v. Passing it on to actor %s", env, t)
+			a.Envelopes <- env
 		}
 	}
 }

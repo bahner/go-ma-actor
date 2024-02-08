@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	"github.com/bahner/go-ma"
@@ -13,49 +12,51 @@ import (
 	"github.com/spf13/viper"
 )
 
-func handleMessageEvents(a *entity.Entity) {
+func handleMessageEvents(ctx context.Context, a *entity.Entity) {
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	log.Debugf("Starting handleMessageEvents for %s", a.DID.String())
 
 	for {
 		log.Info("Waiting for messages...")
 		m, ok := <-a.Messages
 		if !ok {
-			log.Debugf("Message channel closed, exiting...")
+			log.Debugf("messageEvents: channel closed, exiting...")
 			return
 		}
-		log.Debugf("Handling message: %v from %s to %s", string(m.Content), m.From, m.To)
 
-		msgJSON, err := json.Marshal(m)
-		if err != nil {
-			log.Errorf("Error marshalling message: %v", err)
+		if m == nil {
+			log.Debugf("messageEvents: received nil message, ignoring...")
 			continue
 		}
-		log.Debugf("Handling message: %v", string(msgJSON))
-		// Check if the message is from self to prevent pong loop
-		// NB! This is only for *incoming* messages, not broadcasts.
+
+		if m.Verify() != nil {
+			log.Debugf("messageEvents: failed to verify message: %v", m)
+			continue
+		}
+
+		log.Debugf("Handling message: %v from %s to %s", string(m.Content), m.From, m.To)
+
 		if m.From == a.DID.String() {
 			log.Debugf("Received message from self, ignoring...")
 			continue
 		}
 
-		if m.MimeType == ma.BROADCAST_MIME_TYPE {
+		// Only broadcast to broadcasts. Reply to messages.
+		if m.To == a.DID.String() && m.MimeType == ma.BROADCAST_MIME_TYPE {
 			log.Debugf("Received broadcast from %s to %s", m.From, m.To)
 			log.Debugf("Sending broadcast announcement to %s over %s", m.From, a.DID.String())
-			err = broadcast(ctx, a)
+			err := broadcast(ctx, a)
 			if err != nil {
 				log.Errorf("Error sending public announcement: %v", err)
 			}
 			continue
 		}
-
-		if m.MimeType == ma.MESSAGE_MIME_TYPE {
-			log.Debugf("Received private message from %s to %s", m.From, m.To)
-			log.Debugf("Sending private reply to %s over %s", m.From, a.DID.String())
-			err = reply(ctx, a, m)
+		if m.To == a.DID.String() && m.MimeType == ma.MESSAGE_MIME_TYPE {
+			log.Debugf("Received message from %s to %s", m.From, m.To)
+			log.Debugf("Sending reply to %s over %s", m.From, a.DID.String())
+			err := reply(ctx, a, m)
 			if err != nil {
-				log.Errorf("Error sending public announcement: %v", err)
+				log.Errorf("Error sending message: %v", err)
 			}
 			continue
 		}
@@ -71,11 +72,6 @@ func broadcast(ctx context.Context, a *entity.Entity) error {
 	r, err := msg.NewBroadcast(topic, topic, []byte("PA:"+viper.GetString("pong.msg")), "text/plain", a.Keyset.SigningKey.PrivKey)
 	if err != nil {
 		return fmt.Errorf("failed creating new message: %w", errors.Cause(err))
-	}
-
-	err = r.Sign(a.Keyset.SigningKey.PrivKey)
-	if err != nil {
-		return fmt.Errorf("failed signing message: %w", errors.Cause(err))
 	}
 
 	err = r.Broadcast(ctx, a.Topic)
@@ -98,11 +94,6 @@ func reply(ctx context.Context, a *entity.Entity, m *msg.Message) error {
 	r, err := msg.New(from, to, []byte("private:"+viper.GetString("pong.msg")), "text/plain", a.Keyset.SigningKey.PrivKey)
 	if err != nil {
 		return fmt.Errorf("failed creating new message: %w", errors.Cause(err))
-	}
-
-	err = r.Sign(a.Keyset.SigningKey.PrivKey)
-	if err != nil {
-		return fmt.Errorf("failed signing message: %w", errors.Cause(err))
 	}
 
 	err = r.Send(ctx, a.Topic)

@@ -67,12 +67,16 @@ func (ui *ChatUI) handleAliasEntitySetCommand(args []string) {
 
 func (ui *ChatUI) handleAliasEntityRemoveCommand(args []string) {
 
-	if len(args) == 3 {
+	if len(args) == 4 {
 		alias.RemoveEntityAlias(args[3])
 	} else {
-		ui.displaySystemMessage("Usage: /alias entity remove <alias>")
+		ui.handleHelpAliasRemoveCommand()
 	}
 
+}
+
+func (ui *ChatUI) handleHelpAliasRemoveCommand() {
+	ui.displaySystemMessage("/alias entity|node remove <alias>")
 }
 
 func (ui *ChatUI) handleAliasNodeCommand(args []string) {

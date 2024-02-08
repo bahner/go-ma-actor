@@ -7,6 +7,7 @@ func (ui *ChatUI) handleHelpCommands(args []string) {
 		ui.displaySystemMessage("Available commands:")
 		ui.displaySystemMessage("/help status")
 		ui.displaySystemMessage("/help msg")
+		ui.displaySystemMessage("/help broadcast")
 		ui.displaySystemMessage("/help discover")
 		ui.displaySystemMessage("/help enter")
 		ui.displaySystemMessage("/help alias")
@@ -23,6 +24,8 @@ func (ui *ChatUI) handleHelpCommands(args []string) {
 			ui.handleHelpStatusCommands(args)
 		case "msg":
 			ui.handleHelpMsgCommand(args)
+		case "broadcast":
+			ui.handleHelpBroadcastCommand(args)
 		case "discover":
 			ui.handleHelpDiscoverCommand(args)
 		case "enter":

@@ -3,8 +3,7 @@ module github.com/bahner/go-ma-actor
 go 1.21
 
 require (
-	github.com/bahner/go-ma v0.4.1
-	github.com/fxamacker/cbor/v2 v2.5.0
+	github.com/bahner/go-ma v0.4.2
 	github.com/gdamore/tcell/v2 v2.7.0
 	github.com/libp2p/go-libp2p v0.32.2
 	github.com/libp2p/go-libp2p-kad-dht v0.25.2
@@ -38,6 +37,7 @@ require (
 	github.com/flynn/noise v1.0.0 // indirect
 	github.com/francoispqt/gojay v1.2.13 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
+	github.com/fxamacker/cbor/v2 v2.5.0 // indirect
 	github.com/gdamore/encoding v1.0.0 // indirect
 	github.com/go-logr/logr v1.3.0 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect

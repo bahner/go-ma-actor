@@ -63,7 +63,7 @@ func (ui *ChatUI) handleMsgCommand(args []string) {
 	}
 }
 
-func (ui *ChatUI) handleHelpMsgCommand(args []string) {
-	ui.displaySystemMessage("Usage: /msg <DID|NICK> <message>")
-	ui.displaySystemMessage("Sends a message to the specified DID")
+func (ui *ChatUI) handleHelpBroadcastCommand(args []string) {
+	ui.displaySystemMessage("Usage: /broadcast <DID|NICK> <message>")
+	ui.displaySystemMessage("Sends a public announcement to the specified DID")
 }

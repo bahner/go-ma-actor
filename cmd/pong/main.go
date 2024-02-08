@@ -17,8 +17,9 @@ import (
 )
 
 const (
-	defaultMsg       = "yo"
-	defaultBroadcast = "Hello, world!"
+	defaultMsg               = "yo"
+	defaultBroadcast         = "Hello, world!"
+	pubsubMessagesBuffersize = 32
 )
 
 func init() {
@@ -66,19 +67,16 @@ func main() {
 	defer cancel()
 
 	go p.DiscoveryLoop(ctx)
-	go handleSubscriptionMessages(e)
-	go handleMessageEvents(e)
+	go subscriptionLoop(e)
 
 	b, err := msg.NewBroadcast(e.DID.String(), e.DID.String(), []byte(defaultBroadcast), "text/plain", k.SigningKey.PrivKey)
 	if err != nil {
-		log.Errorf("Error creating broadcast: %v", err)
-		os.Exit(70) // EX_SOFTWARE
+		log.Fatalf("Error creating broadcast: %v", err)
 	}
 
 	err = b.Broadcast(ctx, e.Topic)
 	if err != nil {
-		log.Errorf("Error sending broadcast: %v", err)
-		os.Exit(70) // EX_SOFTWARE
+		log.Fatalf("Error sending broadcast: %v", err)
 	}
 
 	// This is defined in web.go. It makes it possible to add extra parameters to the handler.

@@ -3,6 +3,7 @@ package ui
 import (
 	"context"
 
+	"github.com/bahner/go-ma"
 	"github.com/bahner/go-ma-actor/entity"
 	"github.com/bahner/go-ma/msg"
 	p2ppubsub "github.com/libp2p/go-libp2p-pubsub"
@@ -18,12 +19,20 @@ func (ui *ChatUI) handleIncomingMessages(e *entity.Entity) {
 	log.Debugf("Waiting for messages from topic %s", t)
 
 	for {
+
+		// NB! Messages are already verified
 		m, ok := <-e.Messages
 		if !ok {
 			log.Debug("Message channel closed, exiting...")
 			return
 		}
 		log.Debugf("Received message from %s to %s", m.From, m.To)
+
+		if m.MimeType == ma.BROADCAST_MIME_TYPE {
+			log.Debugf("Received broadcast from %s to %s", m.From, m.To)
+			ui.chMessage <- m
+			continue
+		}
 
 		// Ignore messages to other topics than this goroutine's.
 		if m.To != t {
@@ -42,71 +51,9 @@ func (ui *ChatUI) handleIncomingMessages(e *entity.Entity) {
 	}
 }
 
-func (ui *ChatUI) subscribeToEntityPubsubMessages(e *entity.Entity) {
+func (ui *ChatUI) subscribeToEntityPubsubMessages(ctx context.Context, e *entity.Entity) {
 
 	t := e.DID.String()
-
-	log.Debugf("Subscribing to entity %s", e.DID.String())
-	sub, err := e.Topic.Subscribe()
-	if err != nil {
-		log.Errorf("Failed to subscribe to topic: %v", err)
-		return
-	}
-	defer sub.Cancel()
-
-	// Create a channel for messages.
-	messages := make(chan *p2ppubsub.Message, PUBSUB_MESSAGES_BUFFERSIZE)
-
-	// Start an anonymous goroutine to bridge sub.Next() to the messages channel.
-	go func() {
-		for {
-			// Assuming sub.Next() blocks until the next message is available,
-			// and returns a message or an error.
-			message, err := sub.Next(ui.currentEntityCtx)
-			if err != nil {
-				// Handle error (e.g., log, break, or continue based on the error type).
-				log.Errorf("Error getting next message: %v", err)
-				return // or continue based on your error handling policy
-			}
-			log.Debugf("handleSubscriptionMessages: Received message: %s", message.Data)
-
-			// Assuming message is of the type you need; otherwise, adapt as necessary.
-			select {
-			case messages <- message:
-			case <-ui.currentEntityCtx.Done():
-				return
-			}
-		}
-	}()
-
-	for {
-		select {
-		case <-ui.currentEntityCtx.Done():
-			log.Debugf("Entity %s is cancelled, exiting subscription loop...", t)
-			return
-		case message, ok := <-messages:
-			if !ok {
-				log.Debugf("Message channel %s closed, exiting...", t)
-				return
-			}
-
-			m, err := msg.UnmarshalAndVerifyMessageFromCBOR(message.Data)
-			if err == nil {
-				e.Messages <- m
-				log.Debugf("handleSubscriptionMessages: Message verified: %v. Passing it on to %s", m, t)
-				continue
-			}
-
-			log.Errorf("handleSubscriptionMessages: Failed to verify message or envelope: %v", err)
-		}
-	}
-}
-
-func (ui *ChatUI) subscribeToActorPubsubMessages(e *entity.Entity) {
-
-	t := e.DID.String()
-
-	ctx := context.Background()
 
 	log.Debugf("Subscribing to entity %s", e.DID.String())
 	sub, err := e.Topic.Subscribe()
@@ -153,13 +100,24 @@ func (ui *ChatUI) subscribeToActorPubsubMessages(e *entity.Entity) {
 			}
 
 			m, err := msg.UnmarshalAndVerifyMessageFromCBOR(message.Data)
-			if err == nil {
-				e.Messages <- m
-				log.Debugf("handleSubscriptionMessages: Message verified: %v. Passing it on to %s", m, t)
+			if err != nil {
+				log.Errorf("handleSubscriptionMessages: Failed to unmarshal and verify message: %v", err)
 				continue
 			}
 
-			log.Errorf("handleSubscriptionMessages: Failed to verify message or envelope: %v", err)
+			if m.MimeType == ma.MESSAGE_MIME_TYPE && m.To == t {
+				log.Debugf("handleSubscriptionMessages: delivering normal message to entity %s", t)
+				e.Messages <- m
+				continue
+			}
+
+			if m.MimeType == ma.BROADCAST_MIME_TYPE && err == nil {
+				log.Debugf("handleSubscriptionMessages: delivering broadcast to UI %s", t)
+				ui.chMessage <- m
+				continue
+			}
+
+			log.Errorf("handleSubscriptionMessages: Failed to handle subscription message: %v", m)
 		}
 	}
 }

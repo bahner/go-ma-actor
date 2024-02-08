@@ -20,6 +20,8 @@ func (ui *ChatUI) handleCommands(input string) {
 		ui.handleStatusCommand(args)
 	case "/msg":
 		ui.handleMsgCommand(args)
+	case "/broadcast":
+		ui.handleBroadcastCommand(args)
 	case "/discover":
 		ui.triggerDiscovery()
 	case "/enter":
