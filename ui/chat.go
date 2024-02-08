@@ -13,7 +13,7 @@ import (
 // with the sender's nick highlighted in green.
 // func (ui *ChatUI) displayChatMessage(cm *msg.Message) {
 func (ui *ChatUI) displayChatMessage(cm *msg.Message) {
-	from := alias.LookupEntityDID(cm.From)
+	from := alias.GetOrCreateEntityAlias(cm.From)
 	prompt := withColor("green", fmt.Sprintf("<%s>:", from))
 	fmt.Fprintf(ui.msgW, "%s %s\n", prompt, string(cm.Content))
 }

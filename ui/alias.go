@@ -99,7 +99,7 @@ func (ui *ChatUI) handleAliasNodeSetCommand(args []string) {
 	if len(args) == 5 {
 
 		// Fetch the did if's referenced as an alias
-		id := alias.LookupNodeNick(args[3])
+		id := alias.LookupNodeAlias(args[3])
 
 		alias.SetNodeAlias(id, args[4])
 
@@ -122,7 +122,7 @@ func (ui *ChatUI) handleAliasNodeRemoveCommand(args []string) {
 func (ui *ChatUI) handleAliasEntityShowCommand(args []string) {
 
 	if len(args) == 4 {
-		ui.displaySystemMessage(alias.LookupEntityNick(args[3]))
+		ui.displaySystemMessage(alias.GetOrCreateEntityAlias(args[3]))
 	} else {
 		ui.displaySystemMessage("Usage: /alias entity show <alias>")
 	}
@@ -132,7 +132,7 @@ func (ui *ChatUI) handleAliasEntityShowCommand(args []string) {
 func (ui *ChatUI) handleAliasNodeShowCommand(args []string) {
 
 	if len(args) == 4 {
-		ui.displaySystemMessage(alias.LookupNodeNick(args[3]))
+		ui.displaySystemMessage(alias.GetOrCreateNodeAlias(args[3]))
 	} else {
 		ui.displaySystemMessage("Usage: /alias node show <alias>")
 	}

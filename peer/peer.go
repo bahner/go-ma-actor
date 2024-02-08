@@ -1,8 +1,6 @@
 package peer
 
 import (
-	"fmt"
-
 	"github.com/bahner/go-ma-actor/alias"
 	p2peer "github.com/libp2p/go-libp2p/core/peer"
 )
@@ -31,10 +29,7 @@ func GetOrCreate(addrInfo *p2peer.AddrInfo) (*Peer, error) {
 
 	id := addrInfo.ID.String()
 
-	na, err := alias.GetOrCreateNodeAlias(id)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get or create node alias: %w", err)
-	}
+	na := alias.GetOrCreateNodeAlias(id)
 
 	p := get(id)
 	if p == nil {

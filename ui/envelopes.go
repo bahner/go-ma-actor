@@ -1,9 +1,11 @@
 package ui
 
 import (
+	"context"
+
 	"github.com/bahner/go-ma-actor/entity"
 	"github.com/bahner/go-ma/msg"
-	"github.com/fxamacker/cbor/v2"
+	p2ppubsub "github.com/libp2p/go-libp2p-pubsub"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -34,42 +36,65 @@ func (ui *ChatUI) handleIncomingEnvelopes(a *entity.Entity) {
 	}
 }
 
-// Subscribe a to e's topic and handle messages
-// The envelopes are decrypted by ui.a - the actor. Not the entity.
-// This must be called after the new entity is set.
-func (ui *ChatUI) subscribeToEntityPubsubEnvelopes(a *entity.Entity) {
+func (ui *ChatUI) subscribeToActorPubsubEnvelopes(e *entity.Entity) {
 
-	t := a.DID.String()
+	t := e.DID.String()
 
-	sub, err := a.Subscribe()
+	ctx := context.Background()
+
+	log.Debugf("Subscribing to entity %s", e.DID.String())
+	sub, err := e.Topic.Subscribe()
 	if err != nil {
 		log.Errorf("Failed to subscribe to topic: %v", err)
 		return
 	}
-
 	defer sub.Cancel()
 
+	// Create a channel for messages.
+	messages := make(chan *p2ppubsub.Message, PUBSUB_MESSAGES_BUFFERSIZE)
+
+	// Start an anonymous goroutine to bridge sub.Next() to the messages channel.
+	go func() {
+		for {
+			// Assuming sub.Next() blocks until the next message is available,
+			// and returns a message or an error.
+			message, err := sub.Next(ctx)
+			if err != nil {
+				// Handle error (e.g., log, break, or continue based on the error type).
+				log.Errorf("Error getting next message: %v", err)
+				return // or continue based on your error handling policy
+			}
+			log.Debugf("handleSubscriptionMessages: Received message: %s", message.Data)
+
+			// Assuming message is of the type you need; otherwise, adapt as necessary.
+			select {
+			case messages <- message:
+			case <-ctx.Done():
+				return
+			}
+		}
+	}()
+
 	for {
-		log.Debugf("Waiting for pubsub messages for %s", t)
-		input, ok := <-sub.Messages
-		if !ok {
-			log.Debugf("handleSubscriptionMessages: Input channel closed, exiting...")
+		select {
+		case <-ctx.Done():
+			log.Debugf("Entity %s is cancelled, exiting subscription loop...", t)
 			return
-		}
+		case message, ok := <-messages:
+			if !ok {
+				log.Errorf("Actor message channel %s closed, exiting.... That's bad!", t)
+				return
+			}
 
-		// Attempt to unmarshal the data into a msg.Envelope struct.
-		var env *msg.Envelope
-		err := cbor.Unmarshal(input.Data, &env)
-		if err != nil {
-			// If unmarshalling fails, log the error.
-			log.Errorf("handleSubscriptionMessages: Error unmarshalling envelope: %v\n", err)
-			// Here, you might want to return or continue based on your application's logic.
-			// If this is not a critical error, you might choose to continue to try other data formats or handling.
-			continue
-		}
+			// If the message is not verified it might be an envelope.
+			env, err := msg.UnmarshalAndVerifyEnvelopeFromCBOR(message.Data)
+			if err == nil {
+				log.Debugf("handleSubscriptionMessages: Envelope verified: %v. Passing it on to %s", env, t)
+				e.Envelopes <- env
+				continue
+			}
 
-		// If unmarshalling succeeds, proceed to send the envelope to the actor.
-		log.Debugf("handleSubscriptionMessages: Sending unmarshalled envelope to actor %s", a.DID.String())
-		a.Envelopes <- env
+			log.Errorf("handleSubscriptionMessages: Failed to verify message or envelope: %v", err)
+		}
 	}
 }

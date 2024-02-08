@@ -56,7 +56,7 @@ func New(d *did.DID, k *set.Keyset, nick string) (*Entity, error) {
 
 	// Look up nick if not set else set it.
 	if nick == "" {
-		nick = alias.LookupEntityDID(d.String())
+		nick = alias.GetOrCreateEntityAlias(d.String())
 	}
 
 	e := &Entity{
@@ -96,19 +96,34 @@ func NewFromDID(id string, nick string) (*Entity, error) {
 
 // Get an entity from the global map.
 // The input is a full did string. If one is created it will have no Nick.
+// The function should do the required lookups to get the nick.
+// And verify the entity.
 func GetOrCreate(id string) (*Entity, error) {
+
+	if id == "" {
+		return nil, fmt.Errorf("entity/getorcreate: empty id")
+	}
+
+	if !did.IsValidDID(id) {
+		return nil, fmt.Errorf("entity/getorcreate: invalid id")
+	}
 
 	var err error
 
 	e := get(id)
 	if e != nil {
-		e.Nick = alias.LookupEntityDID(id)
+		e.Nick = alias.GetOrCreateEntityAlias(id)
 		return e, nil
 	}
 
 	e, err = NewFromDID(id, "")
 	if err != nil {
 		return nil, fmt.Errorf("entity/getorcreate: failed to create entity: %w", err)
+	}
+
+	err = e.Verify()
+	if err != nil {
+		return nil, fmt.Errorf("entity/getorcreate: failed to verify created entity: %w", err)
 	}
 
 	return e, nil

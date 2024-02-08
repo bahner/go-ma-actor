@@ -10,8 +10,8 @@ func (ui *ChatUI) handleCommands(input string) {
 	args := strings.Split(input, " ")
 
 	// Update alias when a command is entered
-	ui.a.Nick = alias.LookupEntityDID(ui.a.DID.String())
-	ui.e.Nick = alias.LookupEntityDID(ui.e.DID.String())
+	ui.a.Nick = alias.GetOrCreateEntityAlias(ui.a.DID.String())
+	ui.e.Nick = alias.GetOrCreateEntityAlias(ui.e.DID.String())
 
 	switch args[0] {
 	case "/status":

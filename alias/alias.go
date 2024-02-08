@@ -284,7 +284,7 @@ func LookupNodeID(id string) string {
 
 // Attempts to look up a node ID in the database
 // If the ID does not exist, the function returns the input string
-func LookupNodeNick(nick string) string {
+func LookupNodeAlias(nick string) string {
 
 	n, err := GetNodeID(nick)
 	if err != nil {
@@ -353,11 +353,12 @@ func NodeAliases() string {
 
 // Creates a node alias from the last 8 characters of the ID
 // If the alias already exists, the existing alias is returned
-func GetOrCreateNodeAlias(id string) (string, error) {
+// Case of error the input is returned
+func GetOrCreateNodeAlias(id string) string {
 
 	_, err := peer.Decode(id)
 	if err != nil {
-		return "", fmt.Errorf("invalid ID: %s", id)
+		return id
 	}
 
 	// If an alias exists, return it
@@ -368,8 +369,34 @@ func GetOrCreateNodeAlias(id string) (string, error) {
 	if err != nil && len(id) > defaultAliasLength {
 		n = id[len(id)-defaultAliasLength:]
 		SetNodeAlias(id, n)
-		return n, nil
+		return n
 	}
 
-	return n, nil
+	return n
+}
+
+// Creates a node alias from the last 8 characters of the ID
+// If the alias already exists, the existing alias is returned
+// If the id is an existing alias, the alias is returned
+func GetOrCreateEntityAlias(id string) string {
+
+	// If the DID is valid, use it for a lookup or alias creation
+	d, err := did.New(id)
+	if err == nil {
+		// Lookup any existing alias
+		n, err := GetEntityAlias(d.String())
+		if err == nil && n != "" {
+			return n
+		}
+
+		// Use the fragment as the alias
+		err = SetEntityAlias(id, d.Fragment)
+		if err == nil {
+			return d.Fragment
+		}
+
+	}
+
+	// Return the input, if all else fails
+	return id
 }

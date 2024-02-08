@@ -2,17 +2,17 @@ package ui
 
 import (
 	"context"
+	"fmt"
 
 	"errors"
 
 	"github.com/bahner/go-ma-actor/alias"
 	"github.com/bahner/go-ma-actor/entity"
-	log "github.com/sirupsen/logrus"
 )
 
 var (
-	errSelfEntryError   = errors.New("you can't enter yourself")
-	errAlreadyHereError = errors.New("you are already here")
+	errSelfEntryError = errors.New("you can't enter yourself")
+	// errAlreadyHereError = errors.New("you are already here")
 )
 
 func (ui *ChatUI) handleEnterCommand(args []string) {
@@ -21,15 +21,8 @@ func (ui *ChatUI) handleEnterCommand(args []string) {
 
 		_did := args[1]
 
-		// Update the UI
-		e, err := entity.GetOrCreate(_did)
-		if err != nil {
-			ui.displaySystemMessage("Error getting entity: " + err.Error())
-			return
-		}
-
 		// This function handles the verification of the entity
-		err = ui.enterEntity(e)
+		err := ui.enterEntity(_did)
 		if err != nil {
 			ui.displaySystemMessage("Error entering entity: " + err.Error())
 			return
@@ -41,24 +34,31 @@ func (ui *ChatUI) handleEnterCommand(args []string) {
 }
 
 // This is *the* function that changes the entity. Do Everything™ here.
-func (ui *ChatUI) enterEntity(e *entity.Entity) error {
+// Do *not* use this to change the actor.
+// INput is the nick or DID of the entity.
+func (ui *ChatUI) enterEntity(d string) error {
 
 	// First lookup any possible alias for the entity
-	d := alias.LookupEntityNick(e.DID.String())
-	log.Debugf("Alias for %s: %s", e.DID.String(), d)
+	d = alias.LookupEntityNick(d)
+
+	e, err := entity.GetOrCreate(d)
+	// Without a valid entity, we can't do anything.
+	if err != nil || e == nil || e.Verify() != nil {
+		return fmt.Errorf("enterEntity: failed to get or create entity: %v", err)
+	}
 
 	if d == ui.a.DID.String() {
 		ui.displaySystemMessage(errSelfEntryError.Error())
 		return errSelfEntryError
 	}
 
-	// FIXEME: hm. Why not?
-	// If this is not the same as the last known location, then
-	// update the last known location
-	if d == e.DID.String() {
-		ui.displaySystemMessage(errAlreadyHereError.Error())
-		return errAlreadyHereError
-	}
+	// // FIXEME: hm. Why not?
+	// // If this is not the same as the last known location, then
+	// // update the last known location
+	// if d == e.DID.String() {
+	// 	ui.displaySystemMessage(errAlreadyHereError.Error())
+	// 	return errAlreadyHereError
+	// }
 
 	// Here we go. This is the real deal.
 	// Cancel the old entity.
@@ -74,20 +74,16 @@ func (ui *ChatUI) enterEntity(e *entity.Entity) error {
 	ui.currentEntityCtx, ui.currentEntityCancel = context.WithCancel(context.Background())
 
 	// Look up the nick for the entity. Just a nicety, really.
-	ui.e.Nick = alias.LookupEntityNick(ui.e.DID.String())
+	ui.e.Nick = alias.GetOrCreateEntityAlias(ui.e.DID.String())
+
+	ui.msgBox.Clear()
+	ui.msgBox.SetTitle(ui.e.Nick)
 
 	// Start handling the new topic
 	// This *must* be called *after* the entity is set!
 	// NB! This is just for the entity. No envelopes are being handled here.
 	go ui.subscribeToEntityPubsubMessages(e)
 	go ui.handleIncomingMessages(e)
-
-	// Update the UI
-	err := ui.enterEntity(e)
-	if err != nil {
-		ui.displaySystemMessage("Error changing entity: " + err.Error())
-		return err
-	}
 
 	// Update the location
 	// If this fails - 🤷🏽

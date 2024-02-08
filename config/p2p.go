@@ -18,9 +18,9 @@ const (
 	defaultConnmgrHighWatermark int = 30
 	defaultListenPort           int = 0
 
-	defaultDiscoveryTimeout       time.Duration = time.Second * 20
+	defaultDiscoveryTimeout       time.Duration = time.Second * 30
 	defaultConnmgrGracePeriod     time.Duration = time.Minute * 1
-	defaultDiscoveryRetryInterval time.Duration = time.Second * 300
+	defaultDiscoveryRetryInterval time.Duration = time.Second * 10
 )
 
 func init() {

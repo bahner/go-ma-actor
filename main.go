@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"net/http"
-	"os"
 
 	"github.com/bahner/go-ma-actor/config"
 	"github.com/bahner/go-ma-actor/entity"
@@ -25,26 +24,25 @@ func main() {
 
 	p, err := p2p.Init(nil)
 	if err != nil {
-		log.Errorf("failed to initialize p2p: %v", err)
-		os.Exit(75)
+		log.Fatalf("failed to initialize p2p: %v", err)
 	}
 
 	// We need to discover peers before we can do anything else.
 	// So this is a blocking call.
 	p.DiscoverPeers()
-
 	if err != nil {
-		log.Errorf("failed to initialize p2p: %v", err)
-		os.Exit(75)
+		log.Fatalf("failed to initialize p2p: %v", err)
 	}
 
 	// Now we can start continuous discovery in the background.
 	go p.DiscoveryLoop(context.Background())
 
+	// The actor is needed for the WebHandler.
 	a, err := entity.NewFromKeyset(config.GetKeyset(), config.GetKeyset().DID.Fragment)
-	if err != nil || a == nil {
-		log.Errorf("failed to create actor: %v", err)
-		os.Exit(70)
+	// Better safe than sorry.
+	// Without a valid actor, we can't do anything.
+	if err != nil || a == nil || a.Verify() != nil {
+		log.Fatalf("%s is not a valid actor: %v", a.DID.String(), err)
 	}
 
 	// Start a simple web server to handle incoming requests.
@@ -57,26 +55,13 @@ func main() {
 	log.Infof("Listening on %s", config.GetHttpSocket())
 	go http.ListenAndServe(config.GetHttpSocket(), nil)
 
-	// home, err := did.New(config.GetHome())
-	// if err != nil {
-	// 	log.Errorf("home is not a valid DID: %v", err)
-	// 	os.Exit(70)
-	// }
-
-	// e, err := entity.New(home, nil, home.Fragment)
-	// if err != nil {
-	// 	log.Errorf("home is not a valid entity: %v", err)
-	// 	os.Exit(70)
-	// }
-
 	// Draw the UI.
 	log.Debugf("Starting text UI")
-	// NB! The entity is set later.
 	ui, err := ui.NewChatUI(p, a)
 	if err != nil {
-		log.Errorf("error creating text UI: %s", err)
-		os.Exit(75)
+		log.Fatalf("error creating text UI: %s", err)
 	}
+
 	if err := ui.Run(); err != nil {
 		log.Errorf("error running text UI: %s", err)
 	}
