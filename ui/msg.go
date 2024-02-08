@@ -59,6 +59,11 @@ func (ui *ChatUI) handleMsgCommand(args []string) {
 		}
 		log.Debugf("Message published to topic: %s", ui.e.Topic.String())
 	} else {
-		ui.displaySystemMessage("Usage: /msg <DID> <MESSAGE>")
+		ui.handleHelpMsgCommand(args)
 	}
+}
+
+func (ui *ChatUI) handleHelpMsgCommand(args []string) {
+	ui.displaySystemMessage("Usage: /msg <DID|NICK> <message>")
+	ui.displaySystemMessage("Sends a message to the specified DID")
 }

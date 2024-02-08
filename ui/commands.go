@@ -14,6 +14,8 @@ func (ui *ChatUI) handleCommands(input string) {
 	ui.e.Nick = alias.GetOrCreateEntityAlias(ui.e.DID.String())
 
 	switch args[0] {
+	case "/help":
+		ui.handleHelpCommands(args)
 	case "/status":
 		ui.handleStatusCommand(args)
 	case "/msg":
@@ -28,6 +30,8 @@ func (ui *ChatUI) handleCommands(input string) {
 		ui.handleAliasListCommand(args)
 	case "/whereis":
 		ui.handleWhereisCommand(args)
+	case "/me":
+		ui.handleMeCommands(args)
 	case "discover":
 		ui.triggerDiscovery()
 	case "/refresh":

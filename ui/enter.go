@@ -91,3 +91,8 @@ func (ui *ChatUI) enterEntity(d string) error {
 
 	return nil
 }
+
+func (ui *ChatUI) handleHelpEnterCommand(args []string) {
+	ui.displaySystemMessage("Usage: /enter <DID>")
+	ui.displaySystemMessage("Enters a chat room with the specified DID")
+}

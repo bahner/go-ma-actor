@@ -37,3 +37,8 @@ func (ui *ChatUI) refreshPeers() {
 
 	ui.app.Draw()
 }
+
+func (ui *ChatUI) handleHelpRefreshCommand(args []string) {
+	ui.displaySystemMessage("Usage: /refresh")
+	ui.displaySystemMessage("Refreshes the list of peers")
+}

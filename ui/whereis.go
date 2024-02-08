@@ -35,3 +35,8 @@ func (ui *ChatUI) handleWhereisCommand(args []string) {
 	}
 
 }
+
+func (ui *ChatUI) handleHelpWhereisCommand(args []string) {
+	ui.displaySystemMessage("Usage: /whereis <DID>")
+	ui.displaySystemMessage("Shows the last known location of a DID")
+}

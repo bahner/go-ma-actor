@@ -17,7 +17,7 @@ func (ui *ChatUI) handleStatusCommand(args []string) {
 			ui.displaySystemMessage("Unknown status type: " + args[1])
 		}
 	} else {
-		ui.displaySystemMessage("Usage: /status [sub|topic|host]")
+		ui.handleHelpStatusCommands(args)
 	}
 }
 
@@ -52,4 +52,9 @@ func (ui *ChatUI) getStatusHost() string {
 		result += p.String() + "\n"
 	}
 	return result
+}
+
+func (ui *ChatUI) handleHelpStatusCommands(args []string) {
+	ui.displaySystemMessage("Usage: /status")
+	ui.displaySystemMessage("Displays the current status of the chat client")
 }
