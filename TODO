@@ -4,24 +4,19 @@ Just reminders here
 
 ## Features
 
+Add acl. So that if an ACL exists, then broadcast aren't used
+only acl members can send messages in and outgoing messages
+will be encrypted to all members. So - private actor, basically
+
 ## Bugs
-
-### Contexts
-
-Handle context for entities correctly, so the don't cancel.
 
 ### Bootstrap peers
 
 Make a list of host, ie. Multiaddrs or nodeIds configurable, so that these
 are all that's required for a successful bootup.
 
-#### Connect
+### Connect
 
 Add a connect command to connect to a specific host directly, eg:
 
 /connect relay
-
-
-### Broadcast
-
-Create a proper broadcast message type.
