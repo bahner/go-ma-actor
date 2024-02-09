@@ -4,9 +4,21 @@ Just reminders here
 
 ## Features
 
+### ACL
+
 Add acl. So that if an ACL exists, then broadcast aren't used
 only acl members can send messages in and outgoing messages
 will be encrypted to all members. So - private actor, basically
+
+### merge aliases
+
+In terms of actors, the alias should be merged. Maybe to a did@node
+There should be some correlation. did@node is farily correct.
+Maybe publish node to DIDDocument? Eg, "lastKnownNode"
+
+This should be set manually. We can't really know this. Maybe we can
+trace the node, though ... all interestin. Trace where messages where
+sent from.
 
 ## Bugs
 
