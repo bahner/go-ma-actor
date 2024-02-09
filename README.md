@@ -18,7 +18,8 @@ It provides The ability to browse IPFS properly, and to pin files and directorie
 ```bash
 
 # Generate persistent config file with *SECRETS*
-# It needs to be published to the IPFS network to be useful
+# The public parts needs published to the IPFS network to be useful, hence
+# this takes a while. Sometimes 10 seconds, but also 3 minutes.
 ./go-ma-actor --generate --nick "asj" --publish > actor.yaml
 ./go-ma-actor # Share and enjoy!
 ```
