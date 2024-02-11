@@ -16,17 +16,21 @@ import (
 // is the controller alone.
 func (e *Entity) CreateDocument(controller string) error {
 
+	id := e.DID.String()
+
+	if controller == "" {
+		controller = id
+	}
+
 	if e.Keyset == nil {
 		return fmt.Errorf("entity: no keyset for entity %s", e.DID.String())
 	}
 
-	// This is just to have a nice easy to read variable
-	id := e.DID.String()
-
 	// Initialize a new DID Document
-	myDoc, err := doc.GetOrCreate(id, controller)
+
+	myDoc, err := doc.New(e.DID.String(), controller)
 	if err != nil {
-		return fmt.Errorf("entity: failed to create document: %s", err)
+		return fmt.Errorf("doc/GetOrCreate: failed to create new document: %w", err)
 	}
 
 	// Add the encryption key to the document,
