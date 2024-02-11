@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 	"time"
+
+	"github.com/bahner/go-ma"
 )
 
 // // displaySelfMessage writes a message from ourself to the message window,
@@ -40,6 +42,11 @@ func (ui *ChatUI) handleEvents() {
 			}
 
 		case m := <-ui.chMessage:
+			if m.MimeType == ma.BROADCAST_MIME_TYPE {
+				ui.displayBroadcastMessage(m)
+				continue
+			}
+
 			ui.displayChatMessage(m)
 
 		case <-peerRefreshTicker.C:

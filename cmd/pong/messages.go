@@ -69,7 +69,7 @@ func broadcast(ctx context.Context, a *entity.Entity) error {
 	topic := a.DID.String()
 
 	// Broadcast are sent to the topic, and the topic is the DID of the recipient
-	r, err := msg.NewBroadcast(topic, topic, []byte("PA:"+viper.GetString("pong.msg")), "text/plain", a.Keyset.SigningKey.PrivKey)
+	r, err := msg.NewBroadcast(topic, topic, []byte("Public Announcment: "+viper.GetString("pong.msg")), "text/plain", a.Keyset.SigningKey.PrivKey)
 	if err != nil {
 		return fmt.Errorf("failed creating new message: %w", errors.Cause(err))
 	}
@@ -91,7 +91,7 @@ func reply(ctx context.Context, a *entity.Entity, m *msg.Message) error {
 	from := m.To
 
 	// Broadcast are sent to the topic, and the topic is the DID of the recipient
-	r, err := msg.New(from, to, []byte("private:"+viper.GetString("pong.msg")), "text/plain", a.Keyset.SigningKey.PrivKey)
+	r, err := msg.New(from, to, []byte("Private reply: "+viper.GetString("pong.msg")), "text/plain", a.Keyset.SigningKey.PrivKey)
 	if err != nil {
 		return fmt.Errorf("failed creating new message: %w", errors.Cause(err))
 	}

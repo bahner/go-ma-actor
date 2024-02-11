@@ -32,7 +32,9 @@ func (ui *ChatUI) handleIncomingEnvelopes(a *entity.Entity) {
 		log.Debugf("Opened envelope and found message: %v\n", string(m.Content))
 
 		// Send the message to the actor for processing. It can decide to ignore it.
-		a.Messages <- m
+
+		ui.displayPrivateMessage(m)
+
 	}
 }
 
