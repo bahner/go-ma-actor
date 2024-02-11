@@ -22,6 +22,8 @@ func (ui *ChatUI) handleCommands(input string) {
 		ui.handleMsgCommand(args)
 	case "/broadcast":
 		ui.handleBroadcastCommand(args)
+	case "/resolve":
+		go ui.handleResolveCommand(args) // This make take some time. No need to block the UI
 	case "/discover":
 		ui.triggerDiscovery()
 	case "/enter":

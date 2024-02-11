@@ -144,7 +144,7 @@ func (ui *ChatUI) handleAliasNodeShowCommand(args []string) {
 }
 
 func (ui *ChatUI) handleHelpAliasCommands(args []string) {
-	ui.displaySystemMessage("Usage: /alias entity|node|list|remove|show|set")
+	ui.displaySystemMessage("Usage: /alias entity|node list|remove|show|set <DID|NICK> <alias>")
 	ui.displaySystemMessage("Manages aliases for entities and nodes")
 }
 

@@ -5,18 +5,19 @@ func (ui *ChatUI) handleHelpCommands(args []string) {
 	if len(args) == 1 {
 		ui.displaySystemMessage("Usage: /help [command]")
 		ui.displaySystemMessage("Available commands:")
-		ui.displaySystemMessage("/help status")
-		ui.displaySystemMessage("/help msg")
+		ui.displaySystemMessage("/help")
+		ui.displaySystemMessage("/help alias")
+		ui.displaySystemMessage("/help aliases")
 		ui.displaySystemMessage("/help broadcast")
 		ui.displaySystemMessage("/help discover")
 		ui.displaySystemMessage("/help enter")
-		ui.displaySystemMessage("/help alias")
-		ui.displaySystemMessage("/help aliases")
-		ui.displaySystemMessage("/help whereis")
 		ui.displaySystemMessage("/help me # Pun intended")
-		ui.displaySystemMessage("/help refresh")
-		ui.displaySystemMessage("/help")
+		ui.displaySystemMessage("/help msg")
 		ui.displaySystemMessage("/help quit")
+		ui.displaySystemMessage("/help refresh")
+		ui.displaySystemMessage("/help resolve")
+		ui.displaySystemMessage("/help status")
+		ui.displaySystemMessage("/help whereis")
 		ui.displaySystemMessage("Type /help [command] for more information")
 	} else {
 		switch args[1] {
@@ -30,6 +31,8 @@ func (ui *ChatUI) handleHelpCommands(args []string) {
 			ui.handleHelpDiscoverCommand(args)
 		case "enter":
 			ui.handleHelpEnterCommand(args)
+		case "resolve":
+			ui.handleHelpResolveCommand(args)
 		case "alias":
 			ui.handleHelpAliasCommands(args)
 		case "aliases":
