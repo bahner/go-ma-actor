@@ -3,6 +3,7 @@ package ui
 import (
 	"github.com/bahner/go-ma-actor/alias"
 	"github.com/bahner/go-ma-actor/entity"
+	"github.com/bahner/go-ma/api"
 	"github.com/bahner/go-ma/did/doc"
 )
 
@@ -12,7 +13,7 @@ func (ui *ChatUI) handleResolveCommand(args []string) {
 
 		id := alias.LookupEntityNick(args[1])
 
-		e, err := entity.GetOrCreate(id, false)
+		e, err := entity.GetOrCreate(id)
 		if err != nil {
 			ui.displaySystemMessage("Error fetching entity: " + err.Error())
 			return
@@ -24,8 +25,13 @@ func (ui *ChatUI) handleResolveCommand(args []string) {
 			ui.displaySystemMessage("Error fetching DID Document: " + err.Error())
 			return
 		}
+		c, err := api.RootCID(e.DID.Identifier, true)
+		if err != nil {
+			ui.displaySystemMessage("Error fetching Root CID: " + err.Error())
+			return
+		}
 
-		ui.displaySystemMessage("Resolved DID Document for " + e.DID.String())
+		ui.displaySystemMessage("Resolved DID Document for " + e.DID.String() + " (CID: " + c.String() + ")")
 		e.Doc = d
 
 	} else {

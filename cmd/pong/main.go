@@ -54,7 +54,7 @@ func main() {
 	p.DiscoverPeers()
 
 	k := config.GetKeyset()
-	e, err := entity.NewFromKeyset(k, k.DID.Fragment, true) // Allow the cached version of the DID document.
+	e, err := entity.NewFromKeyset(k, k.DID.Fragment)
 	if err != nil {
 		log.Errorf("Error initializing actor: %v", err)
 		os.Exit(70) // EX_SOFTWARE

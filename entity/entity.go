@@ -41,17 +41,12 @@ type Entity struct {
 }
 
 // Create a new entity from a DID and give it a nick.
-func New(d *did.DID, k *set.Keyset, nick string, cached bool) (*Entity, error) {
+func New(d *did.DID, k *set.Keyset, nick string) (*Entity, error) {
 
 	// Only 1 topic, but this is where it's at! One topic er entity.
 	_topic, err := getOrCreateTopic(d.String())
 	if err != nil {
 		return nil, fmt.Errorf("entity/new: failed to join topic: %w", err)
-	}
-
-	_doc, err := doc.Fetch(d.String(), cached)
-	if err != nil {
-		return nil, fmt.Errorf("entity/new: failed to create new document: %w", err)
 	}
 
 	// Look up nick if not set else set it.
@@ -70,7 +65,6 @@ func New(d *did.DID, k *set.Keyset, nick string, cached bool) (*Entity, error) {
 		Nick: nick,
 
 		DID:   d,
-		Doc:   _doc,
 		Topic: _topic,
 
 		Messages:  make(chan *msg.Message, MESSAGES_BUFFERSIZE),
@@ -86,21 +80,21 @@ func New(d *did.DID, k *set.Keyset, nick string, cached bool) (*Entity, error) {
 }
 
 // Create a new entity from a DID and use fragment as nick.
-func NewFromDID(id string, nick string, cached bool) (*Entity, error) {
+func NewFromDID(id string, nick string) (*Entity, error) {
 
 	d, err := did.New(id)
 	if err != nil {
 		return nil, fmt.Errorf("entity/newfromdid: failed to create did from ipnsKey: %w", err)
 	}
 
-	return New(d, nil, nick, cached)
+	return New(d, nil, nick)
 }
 
 // Get an entity from the global map.
 // The input is a full did string. If one is created it will have no Nick.
 // The function should do the required lookups to get the nick.
 // And verify the entity.
-func GetOrCreate(id string, cached bool) (*Entity, error) {
+func GetOrCreate(id string) (*Entity, error) {
 
 	if id == "" {
 		return nil, fmt.Errorf("entity/getorcreate: empty id")
@@ -118,7 +112,7 @@ func GetOrCreate(id string, cached bool) (*Entity, error) {
 		return e, nil
 	}
 
-	e, err = NewFromDID(id, "", cached)
+	e, err = NewFromDID(id, "")
 	if err != nil {
 		return nil, fmt.Errorf("entity/getorcreate: failed to create entity: %w", err)
 	}

@@ -9,9 +9,9 @@ import (
 // Takes a keyset and an alias (name) and creates a new entity.
 // The keyset is used to create the encryption and signing keys.
 // The alias can be "" and will be set to the fragment of the DID.
-func NewFromKeyset(k *set.Keyset, nick string, cached bool) (*Entity, error) {
+func NewFromKeyset(k *set.Keyset, nick string) (*Entity, error) {
 
-	return New(k.DID, k, nick, cached)
+	return New(k.DID, k, nick)
 }
 
 func (e *Entity) IsValid() bool {
@@ -27,6 +27,6 @@ func NewFromPackedKeyset(data string, cached bool) (*Entity, error) {
 		return nil, fmt.Errorf("entity: failed to unpack keyset: %s", err)
 	}
 
-	return NewFromKeyset(keyset, keyset.DID.Fragment, cached)
+	return NewFromKeyset(keyset, keyset.DID.Fragment)
 
 }
