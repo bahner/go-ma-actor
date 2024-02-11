@@ -14,11 +14,6 @@ func (ui *ChatUI) handleBroadcastCommand(args []string) {
 
 	if len(args) > 1 {
 
-		if len(args) < 2 {
-			ui.displaySystemMessage("Public announcement can't be empty")
-			return
-		}
-
 		recipient := ui.e.DID.String()
 
 		var message string
