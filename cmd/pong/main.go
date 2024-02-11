@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"os"
@@ -68,10 +69,11 @@ func main() {
 
 	go p.DiscoveryLoop(ctx)
 
+	ctxBackground := context.Background()
 	// Just me the entity here
-	go e.Subscribe(e.Ctx, e)
-	go handleEnvelopeEvents(e.Ctx, e)
-	go handleMessageEvents(e.Ctx, e)
+	go e.Subscribe(ctxBackground, e)
+	go handleEnvelopeEvents(ctxBackground, e)
+	go handleMessageEvents(ctxBackground, e)
 
 	b, err := msg.NewBroadcast(e.DID.String(), e.DID.String(), []byte(defaultBroadcast), "text/plain", k.SigningKey.PrivKey)
 	if err != nil {
