@@ -38,7 +38,7 @@ func main() {
 	go p.DiscoveryLoop(context.Background())
 
 	// The actor is needed for the WebHandler.
-	a, err := entity.NewFromKeyset(config.GetKeyset(), config.GetKeyset().DID.Fragment)
+	a, err := entity.NewFromKeyset(config.GetKeyset(), config.GetKeyset().DID.Fragment, true) // Cached version of the DID document.
 	// Better safe than sorry.
 	// Without a valid actor, we can't do anything.
 	if err != nil || a == nil || a.Verify() != nil {

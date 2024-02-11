@@ -41,7 +41,7 @@ func (ui *ChatUI) enterEntity(d string) error {
 	// First lookup any possible alias for the entity
 	d = alias.LookupEntityNick(d)
 
-	e, err := entity.GetOrCreate(d)
+	e, err := entity.GetOrCreate(d, false)
 	// Without a valid entity, we can't do anything.
 	if err != nil || e == nil || e.Verify() != nil {
 		return fmt.Errorf("enterEntity: failed to get or create entity: %v", err)

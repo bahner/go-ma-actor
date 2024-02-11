@@ -44,7 +44,7 @@ func (ui *ChatUI) handleMsgCommand(args []string) {
 			ui.displaySystemMessage(fmt.Sprintf("message creation error: %s", err))
 		}
 
-		resp, err := entity.GetOrCreate(recipient)
+		resp, err := entity.GetOrCreate(recipient, true) // Use /resolve to update
 		if err != nil {
 			ui.displaySystemMessage(fmt.Sprintf("entity creation error: %s", err))
 		}

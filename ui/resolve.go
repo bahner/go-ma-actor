@@ -12,7 +12,7 @@ func (ui *ChatUI) handleResolveCommand(args []string) {
 
 		id := alias.LookupEntityNick(args[1])
 
-		e, err := entity.GetOrCreate(id)
+		e, err := entity.GetOrCreate(id, false)
 		if err != nil {
 			ui.displaySystemMessage("Error fetching entity: " + err.Error())
 			return

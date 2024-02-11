@@ -34,7 +34,7 @@ func (ui *ChatUI) handleBroadcastCommand(args []string) {
 			ui.displaySystemMessage(fmt.Sprintf("Broadcast creation error: %s", err))
 		}
 
-		resp, err := entity.GetOrCreate(recipient)
+		resp, err := entity.GetOrCreate(recipient, false) // Get the latest version of the entity.
 		if err != nil {
 			ui.displaySystemMessage(fmt.Sprintf("Entity creation error: %s", err))
 		}

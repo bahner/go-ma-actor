@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/bahner/go-ma-actor/alias"
-	"github.com/bahner/go-ma-actor/p2p/pubsub"
 	"github.com/bahner/go-ma/did"
 	"github.com/bahner/go-ma/did/doc"
 	"github.com/bahner/go-ma/key/set"
@@ -42,17 +41,15 @@ type Entity struct {
 }
 
 // Create a new entity from a DID and give it a nick.
-func New(d *did.DID, k *set.Keyset, nick string) (*Entity, error) {
-
-	ps := pubsub.Get()
+func New(d *did.DID, k *set.Keyset, nick string, cached bool) (*Entity, error) {
 
 	// Only 1 topic, but this is where it's at! One topic er entity.
-	_topic, err := ps.Join(d.String())
+	_topic, err := getOrCreateTopic(d.String())
 	if err != nil {
 		return nil, fmt.Errorf("entity/new: failed to join topic: %w", err)
 	}
 
-	_doc, err := doc.Fetch(d.String(), true) // Accept cached version
+	_doc, err := doc.Fetch(d.String(), cached)
 	if err != nil {
 		return nil, fmt.Errorf("entity/new: failed to create new document: %w", err)
 	}
@@ -89,21 +86,21 @@ func New(d *did.DID, k *set.Keyset, nick string) (*Entity, error) {
 }
 
 // Create a new entity from a DID and use fragment as nick.
-func NewFromDID(id string, nick string) (*Entity, error) {
+func NewFromDID(id string, nick string, cached bool) (*Entity, error) {
 
 	d, err := did.New(id)
 	if err != nil {
 		return nil, fmt.Errorf("entity/newfromdid: failed to create did from ipnsKey: %w", err)
 	}
 
-	return New(d, nil, nick)
+	return New(d, nil, nick, cached)
 }
 
 // Get an entity from the global map.
 // The input is a full did string. If one is created it will have no Nick.
 // The function should do the required lookups to get the nick.
 // And verify the entity.
-func GetOrCreate(id string) (*Entity, error) {
+func GetOrCreate(id string, cached bool) (*Entity, error) {
 
 	if id == "" {
 		return nil, fmt.Errorf("entity/getorcreate: empty id")
@@ -121,7 +118,7 @@ func GetOrCreate(id string) (*Entity, error) {
 		return e, nil
 	}
 
-	e, err = NewFromDID(id, "")
+	e, err = NewFromDID(id, "", cached)
 	if err != nil {
 		return nil, fmt.Errorf("entity/getorcreate: failed to create entity: %w", err)
 	}
