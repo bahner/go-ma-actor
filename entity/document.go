@@ -87,7 +87,15 @@ func (e *Entity) CreateDocument(controller string) error {
 	log.Debugf("entity/document: Set assertionMethod to %v for %s", myDoc.AssertionMethod, mySignVM.ID)
 
 	// Finally sign the document with the signing key.
-	return myDoc.Sign(e.Keyset.SigningKey, mySignVM)
+	err = myDoc.Sign(e.Keyset.SigningKey, mySignVM)
+	if err != nil {
+		return fmt.Errorf("entity: failed to sign document: %s", err)
+	}
+
+	e.Doc = myDoc
+
+	return nil
+
 }
 
 // Publish entity document. This needs to be done, when the keyset is new.
