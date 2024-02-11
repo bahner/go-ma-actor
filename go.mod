@@ -1,6 +1,6 @@
 module github.com/bahner/go-ma-actor
 
-go 1.21
+go 1.22
 
 require (
 	github.com/bahner/go-ma v0.4.2

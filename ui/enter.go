@@ -81,11 +81,12 @@ func (ui *ChatUI) enterEntity(d string) error {
 
 	// Start handling the new topic
 	// This *must* be called *after* the entity is set!
-	// NB! This is just for the entity. No envelopes are being handled here.
-	go ui.subscribeToEntityPubsubMessages(ui.currentEntityCtx, e)
-	// Subscribe to the entity's envelopes, but send them to the actor.
-	go ui.subscribeToPubsubEnvelopes(e, ui.a)
-	go ui.handleIncomingMessages(e)
+	go ui.e.Subscribe(ui.currentEntityCtx, ui.e)
+	go ui.handleIncomingMessages(ui.currentEntityCtx, ui.e)
+	go ui.handleIncomingEnvelopes(ui.currentEntityCtx, ui.e)
+
+	go ui.e.Subscribe(ui.currentEntityCtx, ui.a)
+	go ui.handleIncomingEnvelopes(ui.currentEntityCtx, ui.a)
 
 	// Update the location
 	// If this fails - 🤷🏽

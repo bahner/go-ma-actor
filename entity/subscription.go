@@ -1,36 +1,36 @@
-package main
+package entity
 
 import (
 	"context"
 
-	"github.com/bahner/go-ma-actor/entity"
 	"github.com/bahner/go-ma/msg"
 	p2ppubsub "github.com/libp2p/go-libp2p-pubsub"
 	log "github.com/sirupsen/logrus"
 )
 
-// SUbscribe a to e's topic and handle messages
-func subscriptionLoop(a *entity.Entity) {
+const PUBSUB_MESSAGES_BUFFERSIZE = 32
 
-	t := a.DID.String()
+// Subscribe to the entity's topic and handle incoming messages.
+// the actor is the entity that will receive the messages.
+// It may well be the entity itself.
+// The context sho
+func (entity *Entity) Subscribe(ctx context.Context, actor *Entity) {
 
-	log.Info("Starting to handle incoming subscription messages on topic: ", t)
+	t := entity.DID.String()
 
-	ctx, cancel := context.WithCancel(context.Background())
+	log.Infof("Subscribing to %s as %s: ", t, actor.DID.String())
+
+	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	// STart the 2 underlying handlers which may contain some logic.
-	go handleMessageEvents(ctx, a)
-	go handleEnvelopeEvents(ctx, a)
-
-	sub, err := a.Topic.Subscribe()
+	sub, err := entity.Topic.Subscribe()
 	if err != nil {
 		log.Errorf("Failed to subscribe to topic: %v", err)
 		return
 	}
 
 	// Create a channel for messages.
-	messages := make(chan *p2ppubsub.Message, pubsubMessagesBuffersize)
+	messages := make(chan *p2ppubsub.Message, PUBSUB_MESSAGES_BUFFERSIZE)
 
 	// Start an anonymous goroutine to bridge sub.Next() to the messages channel.
 	go func() {
@@ -69,14 +69,15 @@ func subscriptionLoop(a *entity.Entity) {
 			m, err := msg.UnmarshalAndVerifyMessageFromCBOR(message.Data)
 			if err == nil {
 				log.Debugf("handleSubscriptionMessages: Received message: %v\n", m)
-				a.Messages <- m
+				actor.Messages <- m
 				continue
 			}
 
+			// If it's not a public message, it might be an envelope.
 			env, err := msg.UnmarshalAndVerifyEnvelopeFromCBOR(message.Data)
 			if err == nil {
 				log.Debugf("handleSubscriptionMessages: Received envelope: %v\n", env)
-				a.Envelopes <- env
+				actor.Envelopes <- env
 				continue
 			}
 		}

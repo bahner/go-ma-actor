@@ -8,28 +8,34 @@ import (
 )
 
 func handleEnvelopeEvents(ctx context.Context, a *entity.Entity) {
-
 	log.Debugf("Starting handleEnvelopeEvents for %s", a.DID.String())
 
 	for {
-		log.Info("Waiting for messages...")
-		env, ok := <-a.Envelopes
-		if !ok {
-			log.Debugf("Message channel closed, exiting...")
+		select {
+		case <-ctx.Done(): // Check for cancellation signal
+			log.Info("handleEnvelopeEvents: context cancelled, exiting...")
 			return
-		}
+		case env, ok := <-a.Envelopes: // Attempt to receive an envelope
+			if !ok {
+				log.Debugf("Envelope channel closed, exiting...")
+				return
+			}
 
-		m, err := env.Open(a.Keyset.EncryptionKey.PrivKey[:])
-		if err != nil {
-			log.Errorf("Error opening envelope: %v", err)
-			if m.Verify() != nil {
-				log.Debugf("Failed to open envelope and verify message: %v", m)
+			m, err := env.Open(a.Keyset.EncryptionKey.PrivKey[:])
+			if err != nil {
+				log.Errorf("Error opening envelope: %v", err)
+				// Ensure m is not nil before calling Verify to avoid a panic
+				if m != nil && m.Verify() != nil {
+					log.Debugf("Failed to open envelope and verify message: %v", m)
+				}
 				continue
 			}
+
+			log.Debugf("Replying privately to message %v from %s", string(m.Content), m.From)
+			err = reply(ctx, a, m)
+			if err != nil {
+				log.Errorf("Error replying to message: %v", err)
+			}
 		}
-
-		log.Debugf("Replying privately to message %v from %s", m.Content, m.From)
-		reply(ctx, a, m)
-
 	}
 }

@@ -1,6 +1,7 @@
 package entity
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/bahner/go-ma-actor/alias"
@@ -18,6 +19,9 @@ const (
 )
 
 type Entity struct {
+	// Context to be able to clean up entity.
+	Ctx    context.Context
+	Cancel context.CancelFunc
 
 	// External structs
 	DID *did.DID
@@ -58,7 +62,13 @@ func New(d *did.DID, k *set.Keyset, nick string) (*Entity, error) {
 		nick = alias.GetOrCreateEntityAlias(d.String())
 	}
 
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	e := &Entity{
+
+		Ctx:    ctx,
+		Cancel: cancel,
 
 		Nick: nick,
 

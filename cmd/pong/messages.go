@@ -13,52 +13,61 @@ import (
 )
 
 func handleMessageEvents(ctx context.Context, a *entity.Entity) {
-
 	log.Debugf("Starting handleMessageEvents for %s", a.DID.String())
 
 	for {
-		log.Info("Waiting for messages...")
-		m, ok := <-a.Messages
-		if !ok {
-			log.Debugf("messageEvents: channel closed, exiting...")
+		select {
+		case <-ctx.Done(): // Check for cancellation signal
+			log.Info("handleMessageEvents: context cancelled, exiting...")
 			return
-		}
 
-		if m == nil {
-			log.Debugf("messageEvents: received nil message, ignoring...")
-			continue
-		}
+		// Lemme think about this.
+		// case <-a.Ctx.Done(): // Check for cancellation signal from the actor as well
+		// 	log.Info("handleMessageEvents: actor context cancelled, exiting...")
+		// 	return
 
-		if m.Verify() != nil {
-			log.Debugf("messageEvents: failed to verify message: %v", m)
-			continue
-		}
-
-		log.Debugf("Handling message: %v from %s to %s", string(m.Content), m.From, m.To)
-
-		if m.From == a.DID.String() {
-			log.Debugf("Received message from self, ignoring...")
-			continue
-		}
-
-		// Only broadcast to broadcasts. Reply to messages.
-		if m.To == a.DID.String() && m.MimeType == ma.BROADCAST_MIME_TYPE {
-			log.Debugf("Received broadcast from %s to %s", m.From, m.To)
-			log.Debugf("Sending broadcast announcement to %s over %s", m.From, a.DID.String())
-			err := broadcast(ctx, a)
-			if err != nil {
-				log.Errorf("Error sending public announcement: %v", err)
+		case m, ok := <-a.Messages: // Attempt to receive a message
+			if !ok {
+				log.Debugf("messageEvents: channel closed, exiting...")
+				return
 			}
-			continue
-		}
-		if m.To == a.DID.String() && m.MimeType == ma.MESSAGE_MIME_TYPE {
-			log.Debugf("Received message from %s to %s", m.From, m.To)
-			log.Debugf("Sending reply to %s over %s", m.From, a.DID.String())
-			err := reply(ctx, a, m)
-			if err != nil {
-				log.Errorf("Error sending message: %v", err)
+
+			if m == nil {
+				log.Debugf("messageEvents: received nil message, ignoring...")
+				continue
 			}
-			continue
+
+			if m.Verify() != nil {
+				log.Debugf("messageEvents: failed to verify message: %v", m)
+				continue
+			}
+
+			log.Debugf("Handling message: %v from %s to %s", string(m.Content), m.From, m.To)
+
+			if m.From == a.DID.String() {
+				log.Debugf("Received message from self, ignoring...")
+				continue
+			}
+
+			// Only broadcast to broadcasts. Reply to messages.
+			if m.To == a.DID.String() && m.MimeType == ma.BROADCAST_MIME_TYPE {
+				log.Debugf("Received broadcast from %s to %s", m.From, m.To)
+				log.Debugf("Sending broadcast announcement to %s over %s", m.From, a.DID.String())
+				err := broadcast(ctx, a)
+				if err != nil {
+					log.Errorf("Error sending public announcement: %v", err)
+				}
+				continue
+			}
+			if m.To == a.DID.String() && m.MimeType == ma.MESSAGE_MIME_TYPE {
+				log.Debugf("Received message from %s to %s", m.From, m.To)
+				log.Debugf("Sending reply to %s over %s", m.From, a.DID.String())
+				err := reply(ctx, a, m)
+				if err != nil {
+					log.Errorf("Error sending message: %v", err)
+				}
+				continue
+			}
 		}
 	}
 }

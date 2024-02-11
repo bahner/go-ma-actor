@@ -67,7 +67,11 @@ func main() {
 	defer cancel()
 
 	go p.DiscoveryLoop(ctx)
-	go subscriptionLoop(e)
+
+	// Just me the entity here
+	go e.Subscribe(e.Ctx, e)
+	go handleEnvelopeEvents(e.Ctx, e)
+	go handleMessageEvents(e.Ctx, e)
 
 	b, err := msg.NewBroadcast(e.DID.String(), e.DID.String(), []byte(defaultBroadcast), "text/plain", k.SigningKey.PrivKey)
 	if err != nil {
