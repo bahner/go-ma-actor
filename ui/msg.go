@@ -14,17 +14,13 @@ import (
 
 func (ui *ChatUI) handleMsgCommand(args []string) {
 
-	if len(args) > 1 {
-
-		if len(args) < 3 {
-			ui.displaySystemMessage("Message can't be empty")
-			return
-		}
+	if len(args) >= 3 {
 
 		recipient := args[1]
 		if !did.IsValidDID(recipient) {
 			recipient = alias.LookupEntityNick(recipient)
 		}
+
 		if recipient == "" {
 			ui.displaySystemMessage(fmt.Sprintf("Invalid DID: %s", args[1]))
 			return
@@ -53,6 +49,11 @@ func (ui *ChatUI) handleMsgCommand(args []string) {
 			ui.displaySystemMessage(fmt.Sprintf("entity creation error: %s", err))
 		}
 
+		if resp == nil {
+			ui.displaySystemMessage(fmt.Sprintf("entity not found: %s", recipient))
+			return
+		}
+
 		err = msg.Send(context.Background(), resp.Topic)
 		if err != nil {
 			ui.displaySystemMessage(fmt.Sprintf("message publishing error: %s", err))
@@ -64,6 +65,6 @@ func (ui *ChatUI) handleMsgCommand(args []string) {
 }
 
 func (ui *ChatUI) handleHelpMsgCommand(args []string) {
-	ui.displaySystemMessage("Usage: /broadcast <DID|NICK> <message>")
-	ui.displaySystemMessage("Sends a public announcement to the specified DID")
+	ui.displaySystemMessage("Usage: /msg <DID|NICK> <message>")
+	ui.displaySystemMessage("Sends a private message to the specified DID")
 }
