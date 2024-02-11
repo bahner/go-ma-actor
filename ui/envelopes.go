@@ -7,6 +7,7 @@ import (
 	"github.com/bahner/go-ma/msg"
 	p2ppubsub "github.com/libp2p/go-libp2p-pubsub"
 	log "github.com/sirupsen/logrus"
+	"golang.org/x/crypto/curve25519"
 )
 
 // Handle incoming envelopes to an entity. The actor
@@ -21,6 +22,17 @@ func (ui *ChatUI) handleIncomingEnvelopes(a *entity.Entity) {
 			return
 		}
 		log.Debugf("Received actor envelope: %v", envelope)
+
+		if a.Keyset == nil {
+			log.Errorf("Actor %s has no keyset, cannot open envelope", a.DID)
+			continue
+		}
+
+		// Check if privkey is a non-zero byte array.
+		if a.Keyset.EncryptionKey.PrivKey != [curve25519.ScalarSize]byte{} {
+			log.Errorf("Actor %s has zero-byte privkey. Unable to decrypt envelope.", a.DID)
+			continue
+		}
 
 		// Process the envelope and send a pong response
 		m, err := envelope.Open(a.Keyset.EncryptionKey.PrivKey[:])

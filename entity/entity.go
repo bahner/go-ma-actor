@@ -23,8 +23,7 @@ type Entity struct {
 	DID *did.DID
 	Doc *doc.Document
 
-	Topic        *p2ppubsub.Topic
-	Subscription *Subscription
+	Topic *p2ppubsub.Topic
 
 	// Only keyset maybe nil
 	Keyset *set.Keyset
@@ -75,10 +74,6 @@ func New(d *did.DID, k *set.Keyset, nick string) (*Entity, error) {
 
 	// Cache the entity
 	cache(e)
-	e.Subscription, err = e.Subscribe()
-	if err != nil {
-		return nil, fmt.Errorf("entity/new: failed to subscribe to topic: %w", err)
-	}
 
 	return e, nil
 }
