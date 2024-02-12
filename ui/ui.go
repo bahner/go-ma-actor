@@ -6,9 +6,11 @@ import (
 
 	"github.com/bahner/go-ma-actor/config"
 	"github.com/bahner/go-ma-actor/entity"
+	"github.com/bahner/go-ma-actor/entity/actor"
 	"github.com/bahner/go-ma-actor/p2p"
 	"github.com/bahner/go-ma/msg"
 	"github.com/gdamore/tcell/v2"
+	p2ppubsub "github.com/libp2p/go-libp2p-pubsub"
 	"github.com/rivo/tview"
 )
 
@@ -26,14 +28,19 @@ const (
 type ChatUI struct {
 	p *p2p.P2P
 
-	e *entity.Entity
-
 	// The actor is need to encrypt and sign messages in the event loop.
-	a *entity.Entity
+	a *actor.Actor
 
-	// Conext for the current entity - NOT the actor!
+	// The current entity is the "room" we are convering with.
+	e *entity.Entity
+	// Context for the current entity - NOT the actor!
 	currentEntityCtx    context.Context
 	currentEntityCancel context.CancelFunc
+
+	// Broadcasts
+	b               *p2ppubsub.Topic
+	broadcastCtx    context.Context
+	broadcastCancel context.CancelFunc
 
 	// The Topic is used for publication of messages after encryption and signing.
 	// The names are obviously, from the corresponding DIDDocument.
@@ -51,7 +58,7 @@ type ChatUI struct {
 // NewChatUI returns a new ChatUI struct that controls the text UI.
 // It won't actually do anything until you call Run().
 // The enity is the "room" we are convering with.
-func NewChatUI(p *p2p.P2P, a *entity.Entity) (*ChatUI, error) {
+func NewChatUI(p *p2p.P2P, a *actor.Actor) (*ChatUI, error) {
 
 	app := tview.NewApplication()
 
@@ -144,6 +151,7 @@ func (ui *ChatUI) Run() error {
 	// It will handle incoming messages and envelopes.
 	// It shouldn't change - ever.
 	go ui.startActor()
+	go ui.initBroadcast()
 
 	// We must wait for this to finish.
 	ui.enterEntity(config.GetHome())

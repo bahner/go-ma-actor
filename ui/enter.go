@@ -2,17 +2,16 @@ package ui
 
 import (
 	"context"
-	"fmt"
-
 	"errors"
+	"fmt"
 
 	"github.com/bahner/go-ma-actor/alias"
 	"github.com/bahner/go-ma-actor/entity"
 )
 
 var (
-	errSelfEntryError = errors.New("you can't enter yourself")
-	// errAlreadyHereError = errors.New("you are already here")
+	errSelfEntryWarning   = errors.New("entering yourself")
+	errAlreadyHereWarning = errors.New("entering the same entity")
 )
 
 func (ui *ChatUI) handleEnterCommand(args []string) {
@@ -40,6 +39,7 @@ func (ui *ChatUI) enterEntity(d string) error {
 
 	// First lookup any possible alias for the entity
 	d = alias.LookupEntityNick(d)
+	me := ui.a.Entity.DID.String()
 
 	e, err := entity.GetOrCreate(d)
 	// Without a valid entity, we can't do anything.
@@ -47,18 +47,16 @@ func (ui *ChatUI) enterEntity(d string) error {
 		return fmt.Errorf("enterEntity: failed to get or create entity: %v", err)
 	}
 
-	if d == ui.a.DID.String() {
-		ui.displaySystemMessage(errSelfEntryError.Error())
-		return errSelfEntryError
+	if d == me {
+		ui.displaySystemMessage(errSelfEntryWarning.Error())
 	}
 
-	// // FIXEME: hm. Why not?
-	// // If this is not the same as the last known location, then
-	// // update the last known location
-	// if d == e.DID.String() {
-	// 	ui.displaySystemMessage(errAlreadyHereError.Error())
-	// 	return errAlreadyHereError
-	// }
+	// FIXEME: hm. Why not?
+	// If this is not the same as the last known location, then
+	// update the last known location
+	if d == e.DID.String() {
+		ui.displaySystemMessage(errAlreadyHereWarning.Error())
+	}
 
 	// Here we go. This is the real deal.
 	// Cancel the old entity.
@@ -73,19 +71,19 @@ func (ui *ChatUI) enterEntity(d string) error {
 	// Set the new entity context.
 	ui.currentEntityCtx, ui.currentEntityCancel = context.WithCancel(context.Background())
 
-	// Look up the nick for the entity. Just a nicety, really.
-	ui.e.Nick = alias.GetOrCreateEntityAlias(ui.e.DID.String())
-
+	entityNick := alias.LookupEntityNick(e.DID.String())
 	ui.msgBox.Clear()
-	ui.msgBox.SetTitle(ui.e.Nick)
+	ui.msgBox.SetTitle(entityNick)
 
 	// Start handling the new topic
 	// This *must* be called *after* the entity is set!
-	go ui.e.Subscribe(ui.currentEntityCtx, ui.e)
+	// Let the actor subscribe to the new entity, so
+	// that envelopes are passed on correctly.
+	go ui.a.Subscribe(ui.currentEntityCtx, ui.e)
+	// Handle incoming messages to the entity
 	go ui.handleIncomingMessages(ui.currentEntityCtx, ui.e)
-	go ui.handleIncomingEnvelopes(ui.currentEntityCtx, ui.e)
-
-	go ui.e.Subscribe(ui.currentEntityCtx, ui.a)
+	// Handle incoming envelopes to the entity as the actor.
+	// Only an actor can decrypt and handle envelopes.
 	go ui.handleIncomingEnvelopes(ui.currentEntityCtx, ui.a)
 
 	// Update the location

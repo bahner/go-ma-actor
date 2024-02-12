@@ -35,11 +35,11 @@ func (ui *ChatUI) getStatusTopic() string {
 	// Return whatever status you'd like about the topic.
 	// Fetching peers as an example below:
 	// peers := ui.keyAgreement.ListPeers()
-	aConnected := ui.a.Topic.ListPeers()
+	aConnected := ui.a.Entity.Topic.ListPeers()
 	eConnected := ui.e.Topic.ListPeers()
 	return fmt.Sprintf("\nEntity: %s\n%s\nActor: %s\n%s",
 		ui.e.Topic.String(), eConnected[:],
-		ui.a.Topic.String(), aConnected[:])
+		ui.a.Entity.Topic.String(), aConnected[:])
 }
 
 func (ui *ChatUI) getStatusHost() string {

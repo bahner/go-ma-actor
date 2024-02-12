@@ -3,12 +3,14 @@ package main
 import (
 	"context"
 
-	"github.com/bahner/go-ma-actor/entity"
+	"github.com/bahner/go-ma-actor/entity/actor"
 	log "github.com/sirupsen/logrus"
 )
 
-func handleEnvelopeEvents(ctx context.Context, a *entity.Entity) {
-	log.Debugf("Starting handleEnvelopeEvents for %s", a.DID.String())
+func handleEnvelopeEvents(ctx context.Context, a *actor.Actor) {
+	me := a.Entity.DID.String()
+
+	log.Debugf("Starting handleEnvelopeEvents for %s", me)
 
 	for {
 		select {

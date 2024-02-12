@@ -39,7 +39,7 @@ func (ui *ChatUI) handleMsgCommand(args []string) {
 			ui.displaySystemMessage(fmt.Sprintf("Sending message to %s", recipient))
 		}
 
-		msg, err := msg.New(ui.a.DID.String(), recipient, msgBytes, "text/plain", ui.a.Keyset.SigningKey.PrivKey)
+		msg, err := msg.New(ui.a.Entity.DID.String(), recipient, msgBytes, "text/plain", ui.a.Keyset.SigningKey.PrivKey)
 		if err != nil {
 			ui.displaySystemMessage(fmt.Sprintf("message creation error: %s", err))
 		}

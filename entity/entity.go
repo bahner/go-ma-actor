@@ -4,17 +4,14 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/bahner/go-ma-actor/alias"
 	"github.com/bahner/go-ma/did"
 	"github.com/bahner/go-ma/did/doc"
-	"github.com/bahner/go-ma/key/set"
 	"github.com/bahner/go-ma/msg"
 	p2ppubsub "github.com/libp2p/go-libp2p-pubsub"
 )
 
 const (
-	MESSAGES_BUFFERSIZE  = 100
-	ENVELOPES_BUFFERSIZE = 100
+	MESSAGES_BUFFERSIZE = 100
 )
 
 type Entity struct {
@@ -28,30 +25,17 @@ type Entity struct {
 
 	Topic *p2ppubsub.Topic
 
-	// Only keyset maybe nil
-	Keyset *set.Keyset
-
 	// Channels
-	Messages  chan *msg.Message
-	Envelopes chan *msg.Envelope
-
-	// Nick is pretty much the same as the fragment of the DID
-	// But You set this, so you can trust it.
-	Nick string
+	Messages chan *msg.Message
 }
 
 // Create a new entity from a DID and give it a nick.
-func New(d *did.DID, k *set.Keyset, nick string) (*Entity, error) {
+func New(d *did.DID) (*Entity, error) {
 
 	// Only 1 topic, but this is where it's at! One topic per entity.
 	_topic, err := getOrCreateTopic(d.String())
 	if err != nil {
 		return nil, fmt.Errorf("entity/new: failed to join topic: %w", err)
-	}
-
-	// Look up nick if not set else set it.
-	if nick == "" {
-		nick = alias.GetOrCreateEntityAlias(d.String())
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -62,15 +46,10 @@ func New(d *did.DID, k *set.Keyset, nick string) (*Entity, error) {
 		Ctx:    ctx,
 		Cancel: cancel,
 
-		Nick: nick,
-
 		DID:   d,
 		Topic: _topic,
 
-		Messages:  make(chan *msg.Message, MESSAGES_BUFFERSIZE),
-		Envelopes: make(chan *msg.Envelope, ENVELOPES_BUFFERSIZE),
-
-		Keyset: k,
+		Messages: make(chan *msg.Message, MESSAGES_BUFFERSIZE),
 	}
 
 	// Cache the entity
@@ -79,15 +58,16 @@ func New(d *did.DID, k *set.Keyset, nick string) (*Entity, error) {
 	return e, nil
 }
 
-// Create a new entity from a DID and use fragment as nick.
-func NewFromDID(id string, nick string) (*Entity, error) {
+// Create a new entity from a DID.
+// In this case the DID is the strinf, not the struct.
+func NewFromDID(id string) (*Entity, error) {
 
 	d, err := did.New(id)
 	if err != nil {
 		return nil, fmt.Errorf("entity/newfromdid: failed to create did from ipnsKey: %w", err)
 	}
 
-	return New(d, nil, nick)
+	return New(d)
 }
 
 // Get an entity from the global map.
@@ -96,25 +76,37 @@ func NewFromDID(id string, nick string) (*Entity, error) {
 // And verify the entity.
 func GetOrCreate(id string) (*Entity, error) {
 
-	if id == "" {
-		return nil, fmt.Errorf("entity/getorcreate: empty id")
-	}
-
-	if !did.IsValidDID(id) {
-		return nil, fmt.Errorf("entity/getorcreate: invalid id")
-	}
-
-	var err error
-
+	// Check if we have one cahced
 	e := load(id)
 	if e != nil {
-		e.Nick = alias.GetOrCreateEntityAlias(id)
 		return e, nil
 	}
 
-	e, err = NewFromDID(id, "")
+	// Create a DID from the string
+	d, err := did.New(id)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create DID from string: %w", err)
+	}
+
+	return GetOrCreateFromDID(d)
+
+}
+
+// Get an entity from the global map.
+// The input is a full did string. If one is created it will have no Nick.
+// The function should do the required lookups to get the nick.
+// And verify the entity.
+func GetOrCreateFromDID(id *did.DID) (*Entity, error) {
+
+	e, err := New(id)
 	if err != nil {
 		return nil, fmt.Errorf("entity/getorcreate: failed to create entity: %w", err)
+	}
+
+	// Fetch the document
+	err = e.FetchAndSetDocument(false)
+	if err != nil {
+		return nil, fmt.Errorf("entity/getorcreate: failed to fetch and set document: %w", err)
 	}
 
 	err = e.Verify()

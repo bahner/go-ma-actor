@@ -2,16 +2,10 @@ package ui
 
 import (
 	"strings"
-
-	"github.com/bahner/go-ma-actor/alias"
 )
 
 func (ui *ChatUI) handleCommands(input string) {
 	args := strings.Split(input, " ")
-
-	// Update alias when a command is entered
-	ui.a.Nick = alias.GetOrCreateEntityAlias(ui.a.DID.String())
-	ui.e.Nick = alias.GetOrCreateEntityAlias(ui.e.DID.String())
 
 	switch args[0] {
 	case "/help":
@@ -22,6 +16,8 @@ func (ui *ChatUI) handleCommands(input string) {
 		ui.handleMsgCommand(args)
 	case "/broadcast":
 		ui.handleBroadcastCommand(args)
+	case "/set":
+		ui.handleSetCommand(args)
 	case "/resolve":
 		go ui.handleResolveCommand(args) // This make take some time. No need to block the UI
 	case "/discover":

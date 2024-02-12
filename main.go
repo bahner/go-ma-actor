@@ -6,6 +6,7 @@ import (
 
 	"github.com/bahner/go-ma-actor/config"
 	"github.com/bahner/go-ma-actor/entity"
+	"github.com/bahner/go-ma-actor/entity/actor"
 	"github.com/bahner/go-ma-actor/p2p"
 	"github.com/bahner/go-ma-actor/ui"
 	"github.com/spf13/pflag"
@@ -38,18 +39,29 @@ func main() {
 	go p.DiscoveryLoop(context.Background())
 
 	// The actor is needed for the WebHandler.
-	a, err := entity.NewFromKeyset(config.GetKeyset(), config.GetKeyset().DID.Fragment)
+	a, err := actor.NewFromKeyset(config.GetKeyset())
+	if err != nil {
+		log.Debugf("error creating actor: %s", err)
+	}
+
+	id := a.Entity.DID.String()
+
+	err = a.CreateAndSetDocument(id)
+	if err != nil {
+		log.Fatalf("error creating document: %s", err)
+	}
+
 	// Better safe than sorry.
 	// Without a valid actor, we can't do anything.
-	if err != nil || a == nil || a.Verify() != nil {
-		log.Fatalf("%s is not a valid actor: %v", a.DID.String(), err)
+	if a == nil || a.Verify() != nil {
+		log.Fatalf("%s is not a valid actor: %v", id, err)
 	}
 
 	// Start a simple web server to handle incoming requests.
 	// This is defined in web.go. It makes it possible to add extra parameters to the handler.
 	h := &entity.WebHandlerData{
 		P2P:    p,
-		Entity: a,
+		Entity: a.Entity,
 	}
 	http.HandleFunc("/", h.WebHandler)
 	log.Infof("Listening on %s", config.GetHttpSocket())

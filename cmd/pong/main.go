@@ -11,6 +11,7 @@ import (
 
 	"github.com/bahner/go-ma-actor/config"
 	"github.com/bahner/go-ma-actor/entity"
+	"github.com/bahner/go-ma-actor/entity/actor"
 	"github.com/bahner/go-ma-actor/p2p"
 	"github.com/bahner/go-ma/msg"
 
@@ -54,13 +55,15 @@ func main() {
 	p.DiscoverPeers()
 
 	k := config.GetKeyset()
-	e, err := entity.NewFromKeyset(k, k.DID.Fragment)
+	a, err := actor.NewFromKeyset(k)
 	if err != nil {
 		log.Errorf("Error initializing actor: %v", err)
 		os.Exit(70) // EX_SOFTWARE
 	}
 
-	fmt.Printf("I am : %s\n", e.DID.String())
+	me := a.Entity.DID.String()
+
+	fmt.Printf("I am : %s\n", me)
 	fmt.Printf("My public key is: %s\n", p.Node.ID().String())
 
 	// Now we can start continuous discovery in the background.
@@ -71,16 +74,16 @@ func main() {
 
 	ctxBackground := context.Background()
 	// Just me the entity here
-	go e.Subscribe(ctxBackground, e)
-	go handleEnvelopeEvents(ctxBackground, e)
-	go handleMessageEvents(ctxBackground, e)
+	go a.Subscribe(ctxBackground, a.Entity)
+	go handleEnvelopeEvents(ctxBackground, a)
+	go handleMessageEvents(ctxBackground, a)
 
-	b, err := msg.NewBroadcast(e.DID.String(), e.DID.String(), []byte(defaultBroadcast), "text/plain", k.SigningKey.PrivKey)
+	b, err := msg.NewBroadcast(me, me, []byte(defaultBroadcast), "text/plain", k.SigningKey.PrivKey)
 	if err != nil {
 		log.Fatalf("Error creating broadcast: %v", err)
 	}
 
-	err = b.Broadcast(ctx, e.Topic)
+	err = b.Broadcast(ctx, a.Entity.Topic)
 	if err != nil {
 		log.Fatalf("Error sending broadcast: %v", err)
 	}
@@ -88,7 +91,7 @@ func main() {
 	// This is defined in web.go. It makes it possible to add extra parameters to the handler.
 	h := &entity.WebHandlerData{
 		P2P:    p,
-		Entity: e,
+		Entity: a.Entity,
 	}
 	http.HandleFunc("/", h.WebHandler)
 	log.Infof("Listening on %s", config.GetHttpSocket())

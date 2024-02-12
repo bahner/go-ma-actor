@@ -1,8 +1,9 @@
-package entity
+package actor
 
 import (
 	"context"
 
+	"github.com/bahner/go-ma-actor/entity"
 	"github.com/bahner/go-ma/msg"
 	p2ppubsub "github.com/libp2p/go-libp2p-pubsub"
 	log "github.com/sirupsen/logrus"
@@ -14,16 +15,20 @@ const PUBSUB_MESSAGES_BUFFERSIZE = 32
 // the actor is the entity that will receive the messages.
 // It may well be the entity itself.
 // The context sho
-func (entity *Entity) Subscribe(ctx context.Context, actor *Entity) {
+func (a *Actor) Subscribe(ctx context.Context, e *entity.Entity) {
 
-	t := entity.DID.String()
+	// WHen an actor subscribes to an entity, it will receive messages and envelopes.
+	// Messages should sent to the entity, whereas envelopes should be sent to the actor.
 
-	log.Infof("Subscribing to %s as %s: ", t, actor.DID.String())
+	they := e.DID.String()
+	me := a.Entity.DID.String()
+
+	log.Infof("Subscribing to %s as %s: ", they, me)
 
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	sub, err := entity.Topic.Subscribe()
+	sub, err := e.Topic.Subscribe()
 	if err != nil {
 		log.Errorf("Failed to subscribe to topic: %v", err)
 		return
@@ -57,11 +62,11 @@ func (entity *Entity) Subscribe(ctx context.Context, actor *Entity) {
 	for {
 		select {
 		case <-ctx.Done():
-			log.Debugf("Entity %s is cancelled, exiting subscription loop...", t)
+			log.Debugf("Entity %s is cancelled, exiting subscription loop...", they)
 			return
 		case message, ok := <-messages:
 			if !ok {
-				log.Debugf("Message channel %s closed, exiting...", t)
+				log.Debugf("Message channel %s closed, exiting...", they)
 				return
 			}
 
@@ -69,7 +74,7 @@ func (entity *Entity) Subscribe(ctx context.Context, actor *Entity) {
 			m, err := msg.UnmarshalAndVerifyMessageFromCBOR(message.Data)
 			if err == nil {
 				log.Debugf("handleSubscriptionMessages: Received message: %v\n", m)
-				actor.Messages <- m
+				e.Messages <- m
 				continue
 			}
 
@@ -77,7 +82,7 @@ func (entity *Entity) Subscribe(ctx context.Context, actor *Entity) {
 			env, err := msg.UnmarshalAndVerifyEnvelopeFromCBOR(message.Data)
 			if err == nil {
 				log.Debugf("handleSubscriptionMessages: Received envelope: %v\n", env)
-				actor.Envelopes <- env
+				a.Envelopes <- env
 				continue
 			}
 		}
