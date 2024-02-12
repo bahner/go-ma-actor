@@ -98,6 +98,26 @@ func (e *Entity) CreateDocument(controller string) error {
 
 }
 
+func (e *Entity) GetOrCreateDocument(controller string) error {
+
+	id := e.DID.String()
+
+	// If we can't find one, create one.
+	d, err := doc.Fetch(id, false)
+	if err != nil {
+		return e.CreateDocument(controller)
+	}
+
+	// If we found one, set it unless it's nil.
+	if d != nil {
+		e.Doc = d
+		return nil
+	}
+
+	// If we didn't find one, and we can't create one, return an error.
+	return fmt.Errorf("entity: failed to get or create document for entity %s", e.DID.String())
+}
+
 // Publish entity document. This needs to be done, when the keyset is new.
 // Maybe we can check the assertionMethod and keyAgreement fields to see if
 // the document is already published corretly.

@@ -1,17 +1,20 @@
 package entity
 
-var entities map[string]*Entity
+import (
+	"sync"
+)
 
-func init() {
-	entities = make(map[string]*Entity)
+var entities sync.Map
+
+// store adds an entity to the map
+func store(e *Entity) {
+	entities.Store(e.DID.String(), e)
 }
 
-// cache adds a entity to the map
-func cache(e *Entity) {
-	entities[e.DID.String()] = e
-}
-
-// get returns a entity from the map
-func get(id string) *Entity {
-	return entities[id]
+// load returns an entity from the map
+func load(id string) *Entity {
+	if entity, ok := entities.Load(id); ok {
+		return entity.(*Entity) // Type assert to *Entity, since Load returns an interface{}
+	}
+	return nil
 }

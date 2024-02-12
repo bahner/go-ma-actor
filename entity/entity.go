@@ -43,7 +43,7 @@ type Entity struct {
 // Create a new entity from a DID and give it a nick.
 func New(d *did.DID, k *set.Keyset, nick string) (*Entity, error) {
 
-	// Only 1 topic, but this is where it's at! One topic er entity.
+	// Only 1 topic, but this is where it's at! One topic per entity.
 	_topic, err := getOrCreateTopic(d.String())
 	if err != nil {
 		return nil, fmt.Errorf("entity/new: failed to join topic: %w", err)
@@ -74,7 +74,7 @@ func New(d *did.DID, k *set.Keyset, nick string) (*Entity, error) {
 	}
 
 	// Cache the entity
-	cache(e)
+	store(e)
 
 	return e, nil
 }
@@ -106,7 +106,7 @@ func GetOrCreate(id string) (*Entity, error) {
 
 	var err error
 
-	e := get(id)
+	e := load(id)
 	if e != nil {
 		e.Nick = alias.GetOrCreateEntityAlias(id)
 		return e, nil
