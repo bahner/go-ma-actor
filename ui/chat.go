@@ -36,11 +36,13 @@ func (ui *ChatUI) handleChatMessage(input string) error {
 	// This could be a timeout for topic publishing
 	ctx := context.Background()
 
-	log.Debugf("Handling chatMessage: %s", input)
+	from := ui.a.Entity.DID.String()
+	to := ui.e.DID.String()
+
+	log.Debugf("Handling chatMessage: %s, from %s to %s", input, from, to)
 	msgBytes := []byte(input)
-	log.Debugf("ui.a.DID.Fragment: %s", ui.a.Entity.DID.Fragment)
-	log.Debugf("ui.e.ID: %s", ui.e.DID)
-	msg, err := msg.New(ui.a.Entity.DID.String(), ui.e.DID.String(), msgBytes, "text/plain", ui.a.Keyset.SigningKey.PrivKey)
+
+	msg, err := msg.New(from, to, msgBytes, "text/plain", ui.a.Keyset.SigningKey.PrivKey)
 	if err != nil {
 		log.Debugf("message creation error: %s", err)
 		return fmt.Errorf("message creation error: %w", err)

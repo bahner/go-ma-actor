@@ -20,7 +20,7 @@ type Entity struct {
 	Cancel context.CancelFunc
 
 	// External structs
-	DID *did.DID
+	DID did.DID
 	Doc *doc.Document
 
 	Topic *p2ppubsub.Topic
@@ -30,10 +30,10 @@ type Entity struct {
 }
 
 // Create a new entity from a DID and give it a nick.
-func New(d *did.DID) (*Entity, error) {
+func New(d did.DID) (*Entity, error) {
 
 	// Only 1 topic, but this is where it's at! One topic per entity.
-	_topic, err := getOrCreateTopic(d.String())
+	_topic, err := getOrCreateTopic(d.DID())
 	if err != nil {
 		return nil, fmt.Errorf("entity/new: failed to join topic: %w", err)
 	}
@@ -96,7 +96,7 @@ func GetOrCreate(id string) (*Entity, error) {
 // The input is a full did string. If one is created it will have no Nick.
 // The function should do the required lookups to get the nick.
 // And verify the entity.
-func GetOrCreateFromDID(id *did.DID) (*Entity, error) {
+func GetOrCreateFromDID(id did.DID) (*Entity, error) {
 
 	e, err := New(id)
 	if err != nil {

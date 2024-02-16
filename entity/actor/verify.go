@@ -2,6 +2,8 @@ package actor
 
 import (
 	"fmt"
+
+	"github.com/bahner/go-ma-actor/entity"
 )
 
 func (a *Actor) IsValid() bool {
@@ -13,11 +15,12 @@ func (a *Actor) IsValid() bool {
 func (a *Actor) Verify() error {
 
 	if a.Entity == nil {
-		return fmt.Errorf("entity: no entity")
+		return entity.ErrEntityIsNil
 	}
 
-	if a.Keyset == nil {
-		return fmt.Errorf("entity: no keyset")
+	err := a.Keyset.Verify()
+	if err != nil {
+		return fmt.Errorf("actor/veirfy: %w", err)
 	}
 
 	return a.Entity.Verify()

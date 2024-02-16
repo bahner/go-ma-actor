@@ -21,7 +21,7 @@ func (a *Actor) Subscribe(ctx context.Context, e *entity.Entity) {
 	// Messages should sent to the entity, whereas envelopes should be sent to the actor.
 
 	they := e.DID.String()
-	me := a.Entity.DID.String()
+	me := a.Entity.DID.DID
 
 	log.Infof("Subscribing to %s as %s: ", they, me)
 

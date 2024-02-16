@@ -1,28 +1,23 @@
 package entity
 
-import "fmt"
+import (
+	"fmt"
+)
 
 func (e *Entity) Verify() error {
 
-	if e.DID == nil {
-		return fmt.Errorf("entity/verify: did is nil")
-	}
-
-	if e.Doc == nil {
-		return fmt.Errorf("entity/verify: document is nil")
+	err := e.DID.Verify()
+	if err != nil {
+		return fmt.Errorf("entity/verify: %w", err)
 	}
 
 	if e.Topic == nil {
-		return fmt.Errorf("entity/verify: topic is nil")
+		return fmt.Errorf("entity/verify: %w", ErrTopicIsNil)
 	}
 
-	if !e.DID.IsValid() {
-		return fmt.Errorf("entity/verify: did is invalid")
-	}
-
-	err := e.Doc.Verify()
+	err = e.Doc.Verify()
 	if err != nil {
-		return fmt.Errorf("entity/verify: failed to verify document: %w", err)
+		return fmt.Errorf("entity/verify: %w", err)
 	}
 
 	return nil

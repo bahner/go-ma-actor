@@ -384,7 +384,7 @@ func GetOrCreateEntityAlias(id string) string {
 	d, err := did.New(id)
 	if err == nil {
 		// Lookup any existing alias
-		n, err := GetEntityAlias(d.String())
+		n, err := GetEntityAlias(d.DID())
 		if err == nil && n != "" {
 			return n
 		}

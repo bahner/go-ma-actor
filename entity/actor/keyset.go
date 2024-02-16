@@ -9,7 +9,7 @@ import (
 // Takes a keyset and an alias (name) and creates a new entity.
 // The keyset is used to create the encryption and signing keys.
 // The alias can be "" and will be set to the fragment of the DID.
-func NewFromKeyset(k *set.Keyset) (*Actor, error) {
+func NewFromKeyset(k set.Keyset) (*Actor, error) {
 
 	return New(k.DID, k)
 }

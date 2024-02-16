@@ -3,7 +3,6 @@ package actor
 import (
 	"fmt"
 
-	"github.com/bahner/go-ma/did"
 	"github.com/bahner/go-ma/did/doc"
 	"github.com/bahner/go-ma/key"
 	log "github.com/sirupsen/logrus"
@@ -22,8 +21,9 @@ func (a *Actor) CreateDocument(controller string) (*doc.Document, error) {
 		controller = id
 	}
 
-	if a.Keyset == nil {
-		return nil, fmt.Errorf("entity: no keyset for entity %s", id)
+	err := a.Keyset.Verify()
+	if err != nil {
+		return nil, fmt.Errorf("entity/document: failed to verify keyset: %s", err)
 	}
 
 	// Initialize a new DID Document
@@ -40,7 +40,7 @@ func (a *Actor) CreateDocument(controller string) (*doc.Document, error) {
 		id,
 		id,
 		key.KEY_AGREEMENT_KEY_TYPE,
-		did.GetFragment(a.Keyset.EncryptionKey.DID),
+		a.Keyset.EncryptionKey.DID.Fragment,
 		a.Keyset.EncryptionKey.PublicKeyMultibase)
 	if err != nil {
 		return nil, fmt.Errorf("entity/document: failed to create encryption verification method: %s", err)
@@ -66,7 +66,7 @@ func (a *Actor) CreateDocument(controller string) (*doc.Document, error) {
 		id,
 		id,
 		key.ASSERTION_METHOD_KEY_TYPE,
-		did.GetFragment(a.Keyset.SigningKey.DID),
+		a.Keyset.SigningKey.DID.Fragment,
 		a.Keyset.SigningKey.PublicKeyMultibase)
 	if err != nil {
 		return nil, fmt.Errorf("entity: failed to create signing verification method: %s", err)

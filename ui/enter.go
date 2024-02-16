@@ -84,7 +84,7 @@ func (ui *ChatUI) enterEntity(d string) error {
 	go ui.handleIncomingMessages(ui.currentEntityCtx, ui.e)
 	// Handle incoming envelopes to the entity as the actor.
 	// Only an actor can decrypt and handle envelopes.
-	go ui.handleIncomingEnvelopes(ui.currentEntityCtx, ui.a)
+	go handleIncomingEnvelopes(ui.currentEntityCtx, ui.e, ui.a)
 
 	// Update the location
 	// If this fails - 🤷🏽

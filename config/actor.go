@@ -129,7 +129,7 @@ func generateKeysetString(nick string) (string, error) {
 	return pks, nil
 }
 
-func publishIdentityFromKeyset(k *set.Keyset) error {
+func publishIdentityFromKeyset(k set.Keyset) error {
 
 	d, err := doc.NewFromKeyset(k)
 	if err != nil {
@@ -152,11 +152,11 @@ func publishIdentityFromKeyset(k *set.Keyset) error {
 	return nil
 }
 
-func GetKeyset() *set.Keyset {
-	return viper.Get("keyset").(*set.Keyset)
+func GetKeyset() set.Keyset {
+	return viper.Get("keyset").(set.Keyset)
 }
 
-func GetIPFSKey() *ipfs.Key {
+func GetIPFSKey() ipfs.Key {
 	return GetKeyset().IPFSKey
 }
 

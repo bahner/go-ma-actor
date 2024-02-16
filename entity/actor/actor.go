@@ -15,18 +15,21 @@ const ENVELOPES_BUFFERSIZE = 100
 type Actor struct {
 	Entity *entity.Entity
 
-	Keyset *set.Keyset
+	Keyset set.Keyset
 
+	// Envelopes are here. Messages comes to the entity.
+	// So Entity.Messages
 	Envelopes chan *msg.Envelope
 }
 
 // Create a new entity from a DID and a Keyset. We need both.
 // The DID is to verify the entity, and the keyset is to create the
 // DID Document.
-func New(d *did.DID, k *set.Keyset) (*Actor, error) {
+func New(d did.DID, k set.Keyset) (*Actor, error) {
 
-	if k == nil {
-		return nil, fmt.Errorf("entity/new: no keyset")
+	err := k.Verify()
+	if err != nil {
+		return nil, fmt.Errorf("entity/new: failed to verify keyset: %w", err)
 	}
 
 	// Hrm. Use the entity context or create own ...
@@ -43,7 +46,7 @@ func New(d *did.DID, k *set.Keyset) (*Actor, error) {
 		Keyset: k,
 	}
 
-	a.CreateDocument(d.String())
+	a.CreateDocument(d.DID())
 
 	// Cache the entity
 	store(a)
