@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 
@@ -41,6 +42,11 @@ func InitLogging() {
 	} else if logfile == "STDOUT" {
 		log.SetOutput(os.Stdout)
 	} else {
+		logfile, err = homedir.Expand(logfile)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(73) // EX_CANTCREAT
+		}
 		file, err := os.OpenFile(logfile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 		if err != nil {
 			fmt.Println(err)
