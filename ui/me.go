@@ -32,7 +32,7 @@ func (ui *ChatUI) handleMeCommands(args []string) {
 func (ui *ChatUI) handleWhoAmICommand(args []string) {
 
 	if len(args) == 2 {
-		ui.displaySystemMessage(ui.a.Entity.DID.String())
+		ui.displaySystemMessage(ui.a.Entity.DID.Id)
 	} else {
 		ui.handleHelpMeCommands(args)
 	}
@@ -41,7 +41,7 @@ func (ui *ChatUI) handleWhoAmICommand(args []string) {
 func (ui *ChatUI) handleWhereAmICommand(args []string) {
 
 	if len(args) == 2 {
-		ui.displaySystemMessage(ui.e.DID.String())
+		ui.displaySystemMessage(ui.e.DID.Id)
 	} else {
 		ui.handleHelpMeCommands(args)
 	}

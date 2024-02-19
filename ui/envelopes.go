@@ -28,7 +28,7 @@ func handleIncomingEnvelopes(ctx context.Context, e *entity.Entity, a *actor.Act
 
 			err := a.Keyset.Verify()
 			if err != nil {
-				log.Errorf("handleIncomingEnvelope: %s: %v", a.Entity.DID.String(), err)
+				log.Errorf("handleIncomingEnvelope: %s: %v", a.Entity.DID.Id, err)
 				continue
 			}
 

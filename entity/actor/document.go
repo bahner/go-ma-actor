@@ -15,7 +15,7 @@ import (
 // but we can only create Documents for actors. For entities we fetch them.
 func (a *Actor) CreateDocument(controller string) (*doc.Document, error) {
 
-	id := a.Entity.DID.String()
+	id := a.Entity.DID.Id
 
 	if controller == "" {
 		controller = id

@@ -19,6 +19,26 @@
             }
         },
         {
+            "name": "go-ma-actor generate",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${fileDirname}",
+            "console": "integratedTerminal",
+            "env": {
+                "GOLOG_FILE": "debug.log",
+                "GOLOG_LOG_LEVEL": "debug",
+                "GOLOG_STDOUT": "false",
+                "GOLOG_OUTPUT": "file"
+            },
+            "args": [
+                "--generate",
+                "--nick",
+                "bahner",
+                "--publish"
+            ]
+        },
+        {
             "name": "Launch Pong",
             "type": "go",
             "request": "launch",

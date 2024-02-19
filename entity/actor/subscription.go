@@ -20,8 +20,8 @@ func (a *Actor) Subscribe(ctx context.Context, e *entity.Entity) {
 	// WHen an actor subscribes to an entity, it will receive messages and envelopes.
 	// Messages should sent to the entity, whereas envelopes should be sent to the actor.
 
-	they := e.DID.String()
-	me := a.Entity.DID.DID
+	they := e.DID.Id
+	me := a.Entity.DID.Id
 
 	log.Infof("Subscribing to %s as %s: ", they, me)
 

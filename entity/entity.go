@@ -33,7 +33,7 @@ type Entity struct {
 func New(d did.DID) (*Entity, error) {
 
 	// Only 1 topic, but this is where it's at! One topic per entity.
-	_topic, err := getOrCreateTopic(d.DID())
+	_topic, err := getOrCreateTopic(d.Id)
 	if err != nil {
 		return nil, fmt.Errorf("entity/new: failed to join topic: %w", err)
 	}

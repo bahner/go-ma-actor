@@ -61,7 +61,7 @@ func main() {
 		os.Exit(70) // EX_SOFTWARE
 	}
 
-	me := a.Entity.DID.String()
+	me := a.Entity.DID.Id
 
 	fmt.Printf("I am : %s\n", me)
 	fmt.Printf("My public key is: %s\n", p.Node.ID().String())

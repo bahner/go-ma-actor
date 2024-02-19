@@ -13,9 +13,9 @@ import (
 )
 
 func handleMessageEvents(ctx context.Context, a *actor.Actor) {
-	log.Debugf("Starting handleMessageEvents for %s", a.Entity.DID.String())
+	log.Debugf("Starting handleMessageEvents for %s", a.Entity.DID.Id)
 
-	me := a.Entity.DID.String()
+	me := a.Entity.DID.Id
 
 	for {
 		select {
@@ -76,7 +76,7 @@ func handleMessageEvents(ctx context.Context, a *actor.Actor) {
 
 func broadcast(ctx context.Context, a *actor.Actor) error {
 
-	me := a.Entity.DID.String()
+	me := a.Entity.DID.Id
 
 	// Public announcements all go to the same topic, which is the DID of the actor's entity.
 	topic := me

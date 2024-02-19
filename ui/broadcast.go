@@ -16,8 +16,8 @@ func (ui *ChatUI) handleBroadcastCommand(args []string) {
 
 	if len(args) > 1 {
 
-		recipient := ui.e.DID.String()
-		me := ui.a.Entity.DID.String()
+		recipient := ui.e.DID.Id
+		me := ui.a.Entity.DID.Id
 
 		var message string
 		if len(args) > 2 {

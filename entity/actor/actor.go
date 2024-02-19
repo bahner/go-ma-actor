@@ -46,7 +46,7 @@ func New(d did.DID, k set.Keyset) (*Actor, error) {
 		Keyset: k,
 	}
 
-	a.CreateDocument(d.DID())
+	a.CreateDocument(d.Id)
 
 	// Cache the entity
 	store(a)
@@ -80,7 +80,7 @@ func GetOrCreate(id string) (*Actor, error) {
 		return nil, fmt.Errorf("entity/getorcreate: empty id")
 	}
 
-	if !did.IsValidDID(id) {
+	if !did.IsValid(id) {
 		return nil, fmt.Errorf("entity/getorcreate: invalid id")
 	}
 

@@ -15,7 +15,7 @@ func (ui *ChatUI) handleWhereisCommand(args []string) {
 		id := alias.LookupEntityNick(args[1]) // This should return a DID
 		nick := alias.GetOrCreateEntityAlias(id)
 
-		if !did.IsValidDID(id) {
+		if !did.IsValid(id) {
 			ui.displaySystemMessage("Invalid DID: " + id)
 			return
 		}

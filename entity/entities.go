@@ -8,7 +8,7 @@ var entities sync.Map
 
 // store adds an entity to the map
 func store(e *Entity) {
-	entities.Store(e.DID.String(), e)
+	entities.Store(e.DID.Id, e)
 }
 
 // load returns an entity from the map

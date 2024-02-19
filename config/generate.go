@@ -58,6 +58,6 @@ func generateConfigFile(actor string, node string) {
 	}
 
 	// Print the YAML defaults
-	fmt.Println("# " + ks.DID.String())
+	fmt.Println("# " + ks.DID.Id)
 	fmt.Println(string(defaultsYAML))
 }

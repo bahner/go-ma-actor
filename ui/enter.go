@@ -39,7 +39,7 @@ func (ui *ChatUI) enterEntity(d string) error {
 
 	// First lookup any possible alias for the entity
 	d = alias.LookupEntityNick(d)
-	me := ui.a.Entity.DID.String()
+	me := ui.a.Entity.DID.Id
 
 	e, err := entity.GetOrCreate(d)
 	// Without a valid entity, we can't do anything.
@@ -54,7 +54,7 @@ func (ui *ChatUI) enterEntity(d string) error {
 	// FIXEME: hm. Why not?
 	// If this is not the same as the last known location, then
 	// update the last known location
-	if d == e.DID.String() {
+	if d == e.DID.Id {
 		ui.displaySystemMessage(errAlreadyHereWarning.Error())
 	}
 
@@ -71,7 +71,7 @@ func (ui *ChatUI) enterEntity(d string) error {
 	// Set the new entity context.
 	ui.currentEntityCtx, ui.currentEntityCancel = context.WithCancel(context.Background())
 
-	entityNick := alias.LookupEntityNick(e.DID.String())
+	entityNick := alias.LookupEntityNick(e.DID.Id)
 	ui.msgBox.Clear()
 	ui.msgBox.SetTitle(entityNick)
 
@@ -88,7 +88,7 @@ func (ui *ChatUI) enterEntity(d string) error {
 
 	// Update the location
 	// If this fails - 🤷🏽
-	go ui.a.UpdateLastKnowLocation(e.DID.String())
+	go ui.a.UpdateLastKnowLocation(e.DID.Id)
 
 	return nil
 }

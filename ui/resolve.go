@@ -19,7 +19,7 @@ func (ui *ChatUI) handleResolveCommand(args []string) {
 			return
 		}
 
-		ui.displaySystemMessage("Resolving DID Document for " + e.DID.String() + "...")
+		ui.displaySystemMessage("Resolving DID Document for " + e.DID.Id + "...")
 		d, err := doc.Fetch(id, false)
 		if err != nil {
 			ui.displaySystemMessage("Error fetching DID Document: " + err.Error())
@@ -31,7 +31,7 @@ func (ui *ChatUI) handleResolveCommand(args []string) {
 			return
 		}
 
-		ui.displaySystemMessage("Resolved DID Document for " + e.DID.String() + " (CID: " + c.String() + ")")
+		ui.displaySystemMessage("Resolved DID Document for " + e.DID.Id + " (CID: " + c.String() + ")")
 		e.Doc = d
 
 	} else {

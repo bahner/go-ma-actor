@@ -36,8 +36,8 @@ func (ui *ChatUI) handleChatMessage(input string) error {
 	// This could be a timeout for topic publishing
 	ctx := context.Background()
 
-	from := ui.a.Entity.DID.String()
-	to := ui.e.DID.String()
+	from := ui.a.Entity.DID.Id
+	to := ui.e.DID.Id
 
 	log.Debugf("Handling chatMessage: %s, from %s to %s", input, from, to)
 	msgBytes := []byte(input)

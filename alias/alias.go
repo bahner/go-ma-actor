@@ -68,8 +68,9 @@ func GetDB() (*sql.DB, error) {
 // Returns an empty string an error if the alias does not exist
 func GetEntityAlias(id string) (string, error) {
 
-	if !did.IsValidDID(id) {
-		return "", fmt.Errorf("invalid DID: %s", id)
+	err := did.Validate(id)
+	if err != nil {
+		return "", fmt.Errorf("GetEntityAlias %s: %w", id, err)
 	}
 
 	db, err := GetDB()
@@ -116,7 +117,7 @@ func GetNodeAlias(id string) (string, error) {
 
 	_, err := peer.Decode(id)
 	if err != nil {
-		return "", fmt.Errorf("invalid ID: %s", id)
+		return "", fmt.Errorf("GetNodeAlias %s, %w", id, err)
 	}
 
 	db, err := GetDB()
@@ -161,8 +162,9 @@ func GetNodeID(nick string) (string, error) {
 // If the alias already exists, it will be updated.
 func SetEntityAlias(id string, nick string) error {
 
-	if !did.IsValidDID(id) {
-		return fmt.Errorf("invalid DID: %s", id)
+	err := did.Validate(id)
+	if err != nil {
+		return fmt.Errorf("SetEntityAlias %s: %w", id, err)
 	}
 
 	db, err := GetDB()
@@ -184,7 +186,7 @@ func SetNodeAlias(id string, nick string) error {
 
 	_, err := peer.Decode(id)
 	if err != nil {
-		return fmt.Errorf("invalid ID: %s", id)
+		return fmt.Errorf("invalid Peer ID %s: %w", id, err)
 	}
 
 	db, err := GetDB()
@@ -203,8 +205,9 @@ func SetNodeAlias(id string, nick string) error {
 // Removes an entity alias from the database if it exists
 func RemoveEntityAlias(id string) error {
 
-	if !did.IsValidDID(id) {
-		return fmt.Errorf("invalid DID: %s", id)
+	err := did.Validate(id)
+	if err != nil {
+		return fmt.Errorf("RemoveEntityAlias %s: %w", id, err)
 	}
 
 	db, err := GetDB()
@@ -225,7 +228,7 @@ func RemoveNodeAlias(id string) error {
 
 	_, err := peer.Decode(id)
 	if err != nil {
-		return fmt.Errorf("invalid ID: %s", id)
+		return fmt.Errorf("invalid ID %s: %w", id, err)
 	}
 
 	db, err := GetDB()
@@ -247,7 +250,7 @@ func LookupEntityDID(id string) string {
 
 	n, err := GetEntityAlias(id)
 	if err != nil {
-		log.Debugf("Error looking up entity DID for %s: %s", id, err)
+		log.Debugf("Error looking up entity DID for %s: %v", id, err)
 		return id
 	}
 
@@ -260,7 +263,7 @@ func LookupEntityNick(nick string) string {
 
 	n, err := GetEntityDID(nick)
 	if err != nil {
-		log.Debugf("Error looking up DID for entity with nick %s: %s", nick, err)
+		log.Debugf("Error looking up DID for entity with nick %s: %v", nick, err)
 		return nick
 	}
 
@@ -271,11 +274,11 @@ func LookupEntityNick(nick string) string {
 // If the alias does not exist, the function returns the input string
 func LookupNodeID(id string) string {
 
-	// Don't valid ID here. It's not necessary.
+	// Don't validate ID here. It's not necessary.
 
 	n, err := GetNodeAlias(id)
 	if err != nil {
-		log.Debugf("Error looking up node alias for NodeID %s: %s", id, err)
+		log.Debugf("Error looking up node alias for NodeID %s: %v", id, err)
 		return id
 	}
 
@@ -288,7 +291,7 @@ func LookupNodeAlias(nick string) string {
 
 	n, err := GetNodeID(nick)
 	if err != nil {
-		log.Debugf("Error looking up node ID for nick %s: %s", nick, err)
+		log.Debugf("Error looking up node ID for nick %s: %v", nick, err)
 		return nick
 	}
 
@@ -300,12 +303,12 @@ func EntityAliases() string {
 
 	db, err := GetDB()
 	if err != nil {
-		return fmt.Sprintf("Error getting aliases: %s", err)
+		return fmt.Sprintf("Error getting aliases: %v", err)
 	}
 
 	rows, err := db.Query("SELECT did, nick FROM entities")
 	if err != nil {
-		return fmt.Sprintf("Error getting aliases: %s", err)
+		return fmt.Sprintf("Error getting aliases: %v", err)
 	}
 
 	defer rows.Close()
@@ -315,7 +318,7 @@ func EntityAliases() string {
 		var did, nick string
 		err = rows.Scan(&did, &nick)
 		if err != nil {
-			return fmt.Sprintf("Error getting aliases: %s", err)
+			return fmt.Sprintf("Error getting aliases: %v", err)
 		}
 		s += fmt.Sprintf("%s: %s\n", did, nick)
 	}
@@ -328,12 +331,12 @@ func NodeAliases() string {
 
 	db, err := GetDB()
 	if err != nil {
-		return fmt.Sprintf("Error getting aliases: %s", err)
+		return fmt.Sprintf("Error getting aliases: %v", err)
 	}
 
 	rows, err := db.Query("SELECT id, nick FROM nodes")
 	if err != nil {
-		return fmt.Sprintf("Error getting aliases: %s", err)
+		return fmt.Sprintf("Error getting aliases: %v", err)
 	}
 
 	defer rows.Close()
@@ -343,7 +346,7 @@ func NodeAliases() string {
 		var id, nick string
 		err = rows.Scan(&id, &nick)
 		if err != nil {
-			return fmt.Sprintf("Error getting aliases: %s", err)
+			return fmt.Sprintf("Error getting aliases: %v", err)
 		}
 		s += fmt.Sprintf("%s: %s\n", id, nick)
 	}
@@ -384,7 +387,7 @@ func GetOrCreateEntityAlias(id string) string {
 	d, err := did.New(id)
 	if err == nil {
 		// Lookup any existing alias
-		n, err := GetEntityAlias(d.DID())
+		n, err := GetEntityAlias(d.Id)
 		if err == nil && n != "" {
 			return n
 		}

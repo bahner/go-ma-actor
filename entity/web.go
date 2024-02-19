@@ -40,7 +40,7 @@ func webHandler(w http.ResponseWriter, r *http.Request, p *p2p.P2P, e *Entity) {
 
 	doc := NewWebHandlerDocument()
 
-	doc.Title = fmt.Sprintf("Entity: %s", e.DID.String())
+	doc.Title = fmt.Sprintf("Entity: %s", e.DID.Id)
 	doc.H1 = doc.Title
 	doc.H2 = fmt.Sprintf("%s@%s", ma.RENDEZVOUS, (p.Node.ID().String()))
 	doc.Addrs = p.Node.Addrs()

@@ -44,7 +44,7 @@ func main() {
 		log.Debugf("error creating actor: %s", err)
 	}
 
-	id := a.Entity.DID.String()
+	id := a.Entity.DID.Id
 
 	err = a.CreateAndSetDocument(id)
 	if err != nil {

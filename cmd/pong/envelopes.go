@@ -8,7 +8,7 @@ import (
 )
 
 func handleEnvelopeEvents(ctx context.Context, a *actor.Actor) {
-	me := a.Entity.DID.DID
+	me := a.Entity.DID.Id
 
 	log.Debugf("Starting handleEnvelopeEvents for %s", me)
 
