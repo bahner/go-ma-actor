@@ -64,7 +64,7 @@ func NewFromDID(id string) (*Entity, error) {
 
 	d, err := did.New(id)
 	if err != nil {
-		return nil, fmt.Errorf("entity/newfromdid: failed to create did from ipnsKey: %w", err)
+		return nil, fmt.Errorf("entity/getorcreate: %w", err)
 	}
 
 	return New(d)
@@ -85,7 +85,7 @@ func GetOrCreate(id string) (*Entity, error) {
 	// Create a DID from the string
 	d, err := did.New(id)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create DID from string: %w", err)
+		return nil, fmt.Errorf("GetOrCreate: %w", err)
 	}
 
 	return GetOrCreateFromDID(d)
@@ -100,18 +100,18 @@ func GetOrCreateFromDID(id did.DID) (*Entity, error) {
 
 	e, err := New(id)
 	if err != nil {
-		return nil, fmt.Errorf("entity/getorcreate: failed to create entity: %w", err)
+		return nil, fmt.Errorf("GetOrCreateFromDID: %w", err)
 	}
 
 	// Fetch the document
 	err = e.FetchAndSetDocument(false)
 	if err != nil {
-		return nil, fmt.Errorf("entity/getorcreate: failed to fetch and set document: %w", err)
+		return nil, fmt.Errorf("GetOrCreateFromDID: %w", err)
 	}
 
 	err = e.Verify()
 	if err != nil {
-		return nil, fmt.Errorf("entity/getorcreate: failed to verify created entity: %w", err)
+		return nil, fmt.Errorf("GetOrCreateFromDID: %w", err)
 	}
 
 	return e, nil

@@ -12,8 +12,12 @@ import (
 // is responsible for decrypting the envelope. The entity
 // is only provided in order to decide whether to accept the message or not.
 // The original Subscribe features the actor, So envelopes are sent here.
-func handleIncomingEnvelopes(ctx context.Context, e *entity.Entity, a *actor.Actor) {
-	log.Debugf("Waiting for actor envelopes")
+func (ui *ChatUI) handleIncomingEnvelopes(ctx context.Context, e *entity.Entity, a *actor.Actor) {
+
+	mesg := "Waiting for envelopes to " + a.Entity.DID.Id + " in " + e.DID.Id
+	log.Info(mesg)
+
+	ui.displayStatusMessage(mesg)
 	for {
 		select {
 		case <-ctx.Done():
@@ -41,8 +45,8 @@ func handleIncomingEnvelopes(ctx context.Context, e *entity.Entity, a *actor.Act
 
 			log.Debugf("Opened envelope and found message: %v\n", string(m.Content))
 
-			// Send the message to the actor for processing. It can decide to ignore it.
-			e.Messages <- m
+			// When an envelope is opened, it means it's for us. Not the entity which gave it to us.
+			ui.displayPrivateMessage(m)
 		}
 	}
 }

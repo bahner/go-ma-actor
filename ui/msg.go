@@ -32,6 +32,7 @@ func (ui *ChatUI) handleMsgCommand(args []string) {
 		} else {
 			message = args[2]
 		}
+
 		msgBytes := []byte(message)
 		if log.GetLevel() == log.DebugLevel {
 			ui.displaySystemMessage(fmt.Sprintf("Sending message to %s: %s", recipient, message))
@@ -44,21 +45,26 @@ func (ui *ChatUI) handleMsgCommand(args []string) {
 			ui.displaySystemMessage(fmt.Sprintf("message creation error: %s", err))
 		}
 
-		resp, err := entity.GetOrCreate(recipient)
+		recp, err := entity.GetOrCreate(recipient)
 		if err != nil {
 			ui.displaySystemMessage(fmt.Sprintf("entity creation error: %s", err))
 		}
 
-		if resp == nil {
+		if recp == nil {
 			ui.displaySystemMessage(fmt.Sprintf("entity not found: %s", recipient))
 			return
 		}
 
-		err = msg.Send(context.Background(), resp.Topic)
+		// FIXME: get direct messaging to work.
+		// err = msg.Send(context.Background(), recp.Topic)
+		// Send private message in the entity's context. It's a whisper.
+		// But should've been sent to the actor, not the entity. A loveletter, like.
+		medium := ui.e.Topic
+		err = msg.Send(context.Background(), medium)
 		if err != nil {
 			ui.displaySystemMessage(fmt.Sprintf("message publishing error: %s", err))
 		}
-		log.Debugf("Message published to topic: %s", ui.e.Topic.String())
+		log.Debugf("Message published to topic: %s", medium.String())
 	} else {
 		ui.handleHelpMsgCommand(args)
 	}

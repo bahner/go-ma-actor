@@ -5,7 +5,9 @@ import (
 
 	"github.com/bahner/go-ma"
 	"github.com/bahner/go-ma/key/set"
+	"github.com/mitchellh/go-homedir"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 	"gopkg.in/yaml.v2"
 )
 
@@ -19,6 +21,11 @@ func generateConfigFile(actor string, node string) {
 		log.Fatalf("error: %v", err)
 	}
 
+	logFile, err := homedir.Expand("~/.ma/" + viper.GetString("actor.nick") + ".log")
+	if err != nil {
+		log.Fatalf("generateConfigFile: %v", err)
+	}
+
 	// Get the default settings as a map
 	// Note: Viper does not have a built-in way to directly extract only the defaults
 	// so we manually recreate the structure based on the defaults we have set.
@@ -30,7 +37,7 @@ func generateConfigFile(actor string, node string) {
 		"aliases": defaultAliases,
 		"log": map[string]interface{}{
 			"level": defaultLogLevel,
-			"file":  defaultLogfile,
+			"file":  logFile,
 		},
 		"api": map[string]interface{}{
 			"maddr": ma.DEFAULT_IPFS_API_MULTIADDR,

@@ -32,3 +32,8 @@ are all that's required for a successful bootup.
 Add a connect command to connect to a specific host directly, eg:
 
 /connect relay
+
+
+## BUGS
+
+handle topics better. Messages aren't always coming through.

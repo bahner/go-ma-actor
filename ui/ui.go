@@ -12,6 +12,7 @@ import (
 	"github.com/gdamore/tcell/v2"
 	p2ppubsub "github.com/libp2p/go-libp2p-pubsub"
 	"github.com/rivo/tview"
+	"github.com/spf13/viper"
 )
 
 const (
@@ -80,7 +81,7 @@ func NewChatUI(p *p2p.P2P, a *actor.Actor) (*ChatUI, error) {
 	// an input field for typing messages into
 	chInput := make(chan string, 32)
 	input := tview.NewInputField().
-		SetLabel(defaultLimbo + " > ").
+		SetLabel(viper.GetString("actor.nick") + ": ").
 		SetFieldWidth(0).
 		SetFieldBackgroundColor(tcell.ColorBlack)
 
@@ -154,7 +155,10 @@ func (ui *ChatUI) Run() error {
 	go ui.initBroadcast()
 
 	// We must wait for this to finish.
-	ui.enterEntity(config.GetHome())
+	err := ui.enterEntity(config.GetHome())
+	if err != nil {
+		ui.displayStatusMessage(err.Error())
+	}
 
 	go ui.handleEvents()
 

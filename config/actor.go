@@ -14,7 +14,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const defaultNick string = "ghost"
+const defaultNick string = "skeleton"
 
 func init() {
 	// Keyset
@@ -27,10 +27,6 @@ func init() {
 	// Nick used for keyset generation (fragment)
 	pflag.StringP("nick", "n", defaultNick, "Nickname to use in character creation")
 	viper.BindPFlag("actor.nick", pflag.Lookup("nick"))
-	err := viper.BindEnv("actor.nick", "USER")
-	if err != nil {
-		log.Fatalf("Error binding environment variable 'USER': %s\n", err)
-	}
 
 	pflag.StringP("location", "l", "", "DID of the initial location.")
 	viper.BindPFlag("location.home", pflag.Lookup("home"))

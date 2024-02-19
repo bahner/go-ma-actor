@@ -7,6 +7,7 @@ import (
 
 	"github.com/bahner/go-ma-actor/alias"
 	"github.com/bahner/go-ma-actor/entity"
+	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -39,12 +40,18 @@ func (ui *ChatUI) enterEntity(d string) error {
 
 	// First lookup any possible alias for the entity
 	d = alias.LookupEntityNick(d)
+
+	err := ui.a.Verify()
+	if err != nil {
+		return fmt.Errorf("enterEntity: actor: %w", err)
+	}
+
 	me := ui.a.Entity.DID.Id
 
 	e, err := entity.GetOrCreate(d)
 	// Without a valid entity, we can't do anything.
 	if err != nil || e == nil || e.Verify() != nil {
-		return fmt.Errorf("enterEntity: failed to get or create entity: %v", err)
+		return fmt.Errorf("enterEntity: %w", err)
 	}
 
 	if d == me {
@@ -61,6 +68,7 @@ func (ui *ChatUI) enterEntity(d string) error {
 	// Here we go. This is the real deal.
 	// Cancel the old entity.
 	if ui.currentEntityCancel != nil {
+		log.Debugf("Cancelling old entity: %s", ui.e.DID.Id)
 		// Cancel the old entity
 		ui.currentEntityCancel()
 	}
@@ -69,9 +77,13 @@ func (ui *ChatUI) enterEntity(d string) error {
 	ui.e = e
 
 	// Set the new entity context.
+	log.Debugf("Setting new entity context for %s", e.DID.Id)
 	ui.currentEntityCtx, ui.currentEntityCancel = context.WithCancel(context.Background())
 
 	entityNick := alias.LookupEntityNick(e.DID.Id)
+	if entityNick != e.DID.Id {
+		log.Debugf("Changing entity nick from %s to %s", e.DID.Id, entityNick)
+	}
 	ui.msgBox.Clear()
 	ui.msgBox.SetTitle(entityNick)
 
@@ -80,11 +92,11 @@ func (ui *ChatUI) enterEntity(d string) error {
 	// Let the actor subscribe to the new entity, so
 	// that envelopes are passed on correctly.
 	go ui.a.Subscribe(ui.currentEntityCtx, ui.e)
-	// Handle incoming messages to the entity
-	go ui.handleIncomingMessages(ui.currentEntityCtx, ui.e)
 	// Handle incoming envelopes to the entity as the actor.
 	// Only an actor can decrypt and handle envelopes.
-	go handleIncomingEnvelopes(ui.currentEntityCtx, ui.e, ui.a)
+	go ui.handleIncomingEnvelopes(ui.currentEntityCtx, ui.e, ui.a)
+	// Handle incoming messages to the entity
+	go ui.handleIncomingMessages(ui.currentEntityCtx, ui.e)
 
 	// Update the location
 	// If this fails - 🤷🏽
