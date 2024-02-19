@@ -36,6 +36,16 @@ func (ui *ChatUI) handleChatMessage(input string) error {
 	// This could be a timeout for topic publishing
 	ctx := context.Background()
 
+	if ui.a == nil {
+		ui.displaySystemMessage(ErrYouDontExist.Error())
+		return ErrYouDontExist
+	}
+
+	if ui.e == nil {
+		ui.displaySystemMessage(ErrNoEntitySelected.Error())
+		return ErrNoEntitySelected
+	}
+
 	from := ui.a.Entity.DID.Id
 	to := ui.e.DID.Id
 
