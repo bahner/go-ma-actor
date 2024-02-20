@@ -42,8 +42,9 @@ func New(d did.DID, k set.Keyset) (*Actor, error) {
 	}
 
 	a := &Actor{
-		Entity: e,
-		Keyset: k,
+		Entity:    e,
+		Keyset:    k,
+		Envelopes: make(chan *msg.Envelope, ENVELOPES_BUFFERSIZE),
 	}
 
 	a.CreateDocument(d.Id)

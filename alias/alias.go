@@ -15,14 +15,14 @@ import (
 const (
 	defaultAliasLength = 8
 
-	_SELECT_ENTITY_NICK = "SELECT nick FROM entities WHERE did = ?"
-	_SELECT_ENTITY_DID  = "SELECT did FROM entities WHERE nick = ?"
-	_SELECT_NODE_NICK   = "SELECT nick FROM nodes WHERE id = ?"
-	_SELECT_NODE_ID     = "SELECT id FROM nodes WHERE nick = ?"
+	_SELECT_ENTITY_NICK = "SELECT nick FROM entities WHERE did = ? or nick = ?"
+	_SELECT_ENTITY_DID  = "SELECT did FROM entities WHERE did = ? or nick = ?"
+	_SELECT_NODE_NICK   = "SELECT nick FROM nodes WHERE id = ? or nick = ?"
+	_SELECT_NODE_ID     = "SELECT id FROM nodes WHERE id =? or nick = ?"
 	_UPSERT_ENTITY      = "INSERT INTO entities (did, nick) VALUES (?, ?) ON CONFLICT(did) DO UPDATE SET nick = ?"
 	_UPSERT_NODE        = "INSERT INTO nodes (id, nick) VALUES (?, ?) ON CONFLICT(id) DO UPDATE SET nick = ?"
-	_DELETE_ENTITY      = "DELETE FROM entities WHERE did = ?"
-	_DELETE_NODE        = "DELETE FROM nodes WHERE id = ?"
+	_DELETE_ENTITY      = "DELETE FROM entities WHERE did = ? or nick = ?"
+	_DELETE_NODE        = "DELETE FROM nodes WHERE id = ? or nick = ?"
 )
 
 var (
@@ -80,7 +80,7 @@ func GetEntityAlias(id string) (string, error) {
 
 	var a string
 
-	err = db.QueryRow(_SELECT_ENTITY_NICK, id).Scan(&a)
+	err = db.QueryRow(_SELECT_ENTITY_NICK, id, id).Scan(&a)
 	if err != nil {
 		return "", err
 	}
@@ -103,7 +103,7 @@ func GetEntityDID(nick string) (string, error) {
 
 	var id string
 
-	err = db.QueryRow(_SELECT_ENTITY_DID, nick).Scan(&id)
+	err = db.QueryRow(_SELECT_ENTITY_DID, nick, nick).Scan(&id)
 	if err != nil {
 		return "", err
 	}
@@ -127,7 +127,7 @@ func GetNodeAlias(id string) (string, error) {
 
 	var a string
 
-	err = db.QueryRow(_SELECT_NODE_NICK, id).Scan(&a)
+	err = db.QueryRow(_SELECT_NODE_NICK, id, id).Scan(&a)
 	if err != nil {
 		return "", err
 	}
@@ -150,7 +150,7 @@ func GetNodeID(nick string) (string, error) {
 
 	var id string
 
-	err = db.QueryRow(_SELECT_NODE_ID, nick).Scan(&id)
+	err = db.QueryRow(_SELECT_NODE_ID, nick, nick).Scan(&id)
 	if err != nil {
 		return "", err
 	}

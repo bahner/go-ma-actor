@@ -25,8 +25,8 @@ func (a *Actor) Subscribe(ctx context.Context, e *entity.Entity) {
 
 	log.Infof("Subscribing to %s as %s: ", they, me)
 
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
+	// ctx, cancel := context.WithCancel(ctx)
+	// defer cancel()
 
 	sub, err := e.Topic.Subscribe()
 	if err != nil {
