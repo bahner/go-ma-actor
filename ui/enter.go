@@ -2,17 +2,10 @@ package ui
 
 import (
 	"context"
-	"errors"
-	"fmt"
 
 	"github.com/bahner/go-ma-actor/alias"
 	"github.com/bahner/go-ma-actor/entity"
 	log "github.com/sirupsen/logrus"
-)
-
-var (
-	errSelfEntryWarning   = errors.New("entering yourself")
-	errAlreadyHereWarning = errors.New("entering the same entity")
 )
 
 func (ui *ChatUI) handleEnterCommand(args []string) {
@@ -22,7 +15,7 @@ func (ui *ChatUI) handleEnterCommand(args []string) {
 		_did := args[1]
 
 		// This function handles the verification of the entity
-		err := ui.enterEntity(_did)
+		err := ui.enterEntity(_did, false) // force = false
 		if err != nil {
 			ui.displaySystemMessage("Error entering entity: " + err.Error())
 			return
@@ -36,33 +29,32 @@ func (ui *ChatUI) handleEnterCommand(args []string) {
 // This is *the* function that changes the entity. Do Everything™ here.
 // Do *not* use this to change the actor.
 // INput is the nick or DID of the entity.
-func (ui *ChatUI) enterEntity(d string) error {
-
-	// First lookup any possible alias for the entity
-	d = alias.LookupEntityNick(d)
+func (ui *ChatUI) enterEntity(d string, force bool) error {
 
 	err := ui.a.Verify()
 	if err != nil {
-		return fmt.Errorf("enterEntity: actor: %w", err)
+		return err
 	}
 
+	// First lookup any possible alias for the entity
+	d = alias.LookupEntityNick(d)
 	me := ui.a.Entity.DID.Id
+
+	if d == me {
+		return ErrSelfEntryWarning
+	}
 
 	e, err := entity.GetOrCreate(d)
 	// Without a valid entity, we can't do anything.
 	if err != nil || e == nil || e.Verify() != nil {
-		return fmt.Errorf("enterEntity: %w", err)
-	}
-
-	if d == me {
-		ui.displaySystemMessage(errSelfEntryWarning.Error())
+		return err
 	}
 
 	// FIXEME: hm. Why not?
 	// If this is not the same as the last known location, then
 	// update the last known location
-	if d == e.DID.Id {
-		ui.displaySystemMessage(errAlreadyHereWarning.Error())
+	if d == e.DID.Id && !force {
+		return ErrAlreadyHereWarning
 	}
 
 	// Here we go. This is the real deal.

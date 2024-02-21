@@ -155,7 +155,7 @@ func (ui *ChatUI) Run() error {
 	go ui.initBroadcast()
 
 	// We must wait for this to finish.
-	err := ui.enterEntity(config.GetHome())
+	err := ui.enterEntity(config.GetHome(), true)
 	if err != nil {
 		ui.displayStatusMessage(err.Error())
 	}

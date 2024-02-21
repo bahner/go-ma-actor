@@ -4,6 +4,7 @@ func (ui *ChatUI) handleHelpCommands(args []string) {
 
 	if len(args) == 1 {
 		ui.displaySystemMessage("Usage: /help [command]")
+		ui.displaySystemMessage("")
 		ui.displaySystemMessage("Available commands:")
 		ui.displaySystemMessage("/help")
 		ui.displaySystemMessage("/help alias")
@@ -18,7 +19,6 @@ func (ui *ChatUI) handleHelpCommands(args []string) {
 		ui.displaySystemMessage("/help resolve")
 		ui.displaySystemMessage("/help status")
 		ui.displaySystemMessage("/help whereis")
-		ui.displaySystemMessage("Type /help [command] for more information")
 	} else {
 		switch args[1] {
 		case "status":
