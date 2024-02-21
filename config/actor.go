@@ -9,7 +9,6 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/bahner/go-ma/did/doc"
-	"github.com/bahner/go-ma/key/ipfs"
 	"github.com/bahner/go-ma/key/set"
 	log "github.com/sirupsen/logrus"
 )
@@ -154,10 +153,6 @@ func publishIdentityFromKeyset(k set.Keyset) error {
 
 func GetKeyset() set.Keyset {
 	return viper.Get("keyset").(set.Keyset)
-}
-
-func GetIPFSKey() ipfs.Key {
-	return GetKeyset().IPFSKey
 }
 
 func GetActorIdentity() string {
