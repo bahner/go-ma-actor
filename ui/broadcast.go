@@ -30,7 +30,7 @@ func (ui *ChatUI) handleBroadcastCommand(args []string) {
 			ui.displaySystemMessage(fmt.Sprintf("Broadcasting %s to %s", message, recipient))
 		}
 
-		msg, err := msg.NewBroadcast(me, recipient, msgBytes, "text/plain", ui.a.Keyset.SigningKey.PrivKey)
+		msg, err := msg.NewBroadcast(me, msgBytes, "text/plain", ui.a.Keyset.SigningKey.PrivKey)
 		if err != nil {
 			ui.displaySystemMessage(fmt.Sprintf("Broadcast creation error: %s", err))
 		}

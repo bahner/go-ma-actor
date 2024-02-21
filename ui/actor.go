@@ -5,7 +5,6 @@ import (
 
 	"github.com/bahner/go-ma/msg"
 	log "github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 )
 
 func (ui *ChatUI) startActor() {
@@ -24,7 +23,7 @@ func (ui *ChatUI) startActor() {
 	go ui.handleIncomingMessages(ctx, ui.a.Entity)
 
 	greeting := []byte("Hello, world! " + ui.a.Entity.DID.Fragment + " is here.")
-	mesg, err := msg.NewBroadcast(ui.a.Entity.DID.Id, viper.GetString("actor.home"), greeting, "text/plain", ui.a.Keyset.SigningKey.PrivKey)
+	mesg, err := msg.NewBroadcast(ui.a.Entity.DID.Id, greeting, "text/plain", ui.a.Keyset.SigningKey.PrivKey)
 	if err != nil {
 		ui.displaySystemMessage("Error creating greeting message: " + err.Error())
 	}

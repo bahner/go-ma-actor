@@ -82,7 +82,7 @@ func broadcast(ctx context.Context, a *actor.Actor) error {
 	topic := me
 
 	// Broadcast are sent to the topic, and the topic is the DID of the recipient
-	r, err := msg.NewBroadcast(topic, topic, []byte("Public Announcment: "+viper.GetString("pong.msg")), "text/plain", a.Keyset.SigningKey.PrivKey)
+	r, err := msg.NewBroadcast(topic, []byte("Public Announcment: "+viper.GetString("pong.msg")), "text/plain", a.Keyset.SigningKey.PrivKey)
 	if err != nil {
 		return fmt.Errorf("failed creating new message: %w", errors.Cause(err))
 	}

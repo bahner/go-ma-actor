@@ -78,7 +78,7 @@ func main() {
 	go handleEnvelopeEvents(ctxBackground, a)
 	go handleMessageEvents(ctxBackground, a)
 
-	b, err := msg.NewBroadcast(me, me, []byte(defaultBroadcast), "text/plain", k.SigningKey.PrivKey)
+	b, err := msg.NewBroadcast(me, []byte(defaultBroadcast), "text/plain", k.SigningKey.PrivKey)
 	if err != nil {
 		log.Fatalf("Error creating broadcast: %v", err)
 	}
