@@ -21,15 +21,13 @@ func (ui *ChatUI) startActor() {
 	go ui.handleIncomingEnvelopes(ctx, ui.a.Entity, ui.a)
 	go ui.handleIncomingMessages(ctx, ui.a.Entity)
 
-	// Now create a self entity.
-	// me, err := entity.NewFromDID(ui.a.Entity.DID.Id)
+	if ui.b != nil {
+		greeting := []byte("Hello, world! " + ui.a.Entity.DID.Id + " is here.")
+		mesg, err := msg.NewBroadcast(ui.a.Entity.DID.Id, greeting, "text/plain", ui.a.Keyset.SigningKey.PrivKey)
+		if err != nil {
+			ui.displaySystemMessage("Error creating greeting message: " + err.Error())
+		}
 
-	greeting := []byte("Hello, world! " + ui.a.Entity.DID.Fragment + " is here.")
-	mesg, err := msg.NewBroadcast(ui.a.Entity.DID.Id, greeting, "text/plain", ui.a.Keyset.SigningKey.PrivKey)
-	if err != nil {
-		ui.displaySystemMessage("Error creating greeting message: " + err.Error())
+		mesg.Broadcast(ctx, ui.b)
 	}
-
-	mesg.Broadcast(ctx, ui.a.Entity.Topic)
-
 }

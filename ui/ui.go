@@ -113,11 +113,13 @@ func (ui *ChatUI) Run() error {
 
 	defer ui.end()
 
+	// STart the broadcast subscription first, so
+	// actors can announce themselves.
+	go ui.initBroadcast()
 	// The actor should just run in the background for ever.
 	// It will handle incoming messages and envelopes.
 	// It shouldn't change - ever.
 	go ui.startActor()
-	go ui.initBroadcast()
 
 	// We must wait for this to finish.
 	err := ui.enterEntity(config.GetHome(), true)

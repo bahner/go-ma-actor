@@ -5,7 +5,14 @@ import (
 )
 
 func (ui *ChatUI) handleStatusCommand(args []string) {
-	if len(args) > 1 {
+
+	if len(args) == 1 {
+		ui.displaySystemMessage(ui.getStatusHost())
+		ui.displaySystemMessage(ui.getStatusTopic())
+		return
+	}
+
+	if len(args) == 2 {
 		switch args[1] {
 		case "sub":
 			ui.displayStatusMessage(ui.getStatusSub())
@@ -16,9 +23,10 @@ func (ui *ChatUI) handleStatusCommand(args []string) {
 		default:
 			ui.displaySystemMessage("Unknown status type: " + args[1])
 		}
-	} else {
-		ui.handleHelpStatusCommands(args)
+		return
 	}
+
+	ui.handleHelpStatusCommands(args)
 }
 
 // displayStatusMessage writes a status message to the message window.
@@ -37,9 +45,12 @@ func (ui *ChatUI) getStatusTopic() string {
 	// peers := ui.keyAgreement.ListPeers()
 	aConnected := ui.a.Entity.Topic.ListPeers()
 	eConnected := ui.e.Topic.ListPeers()
-	return fmt.Sprintf("\nEntity: %s\n%s\nActor: %s\n%s",
+	bConnected := ui.b.ListPeers()
+	return fmt.Sprintf("\nEntity: %s\n%s\nActor: %s\n%s\nBroadcast: %s\n%s",
 		ui.e.Topic.String(), eConnected[:],
-		ui.a.Entity.Topic.String(), aConnected[:])
+		ui.a.Entity.Topic.String(), aConnected[:],
+		ui.b.String(), bConnected[:],
+	)
 }
 
 func (ui *ChatUI) getStatusHost() string {
@@ -47,14 +58,11 @@ func (ui *ChatUI) getStatusHost() string {
 	// Just an example below:
 	var result string
 	result += "Peer ID: " + ui.p.Node.ID().String() + "\n"
-	result += "Peers:\n"
-	for _, p := range ui.p.Node.Network().Peers() {
-		result += p.String() + "\n"
-	}
+	result += fmt.Sprintf("Peers no# %d\n", len(ui.p.Node.Network().Peers()))
 	return result
 }
 
 func (ui *ChatUI) handleHelpStatusCommands(args []string) {
-	ui.displaySystemMessage("Usage: /status")
+	ui.displaySystemMessage("Usage: /status topics|host")
 	ui.displaySystemMessage("Displays the current status of the chat client")
 }

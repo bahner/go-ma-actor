@@ -57,5 +57,5 @@ func (ui *ChatUI) handleHelpQuitCommand(args []string) {
 }
 
 func (ui *ChatUI) handleHelpUnknownCommand(args []string) {
-	ui.displaySystemMessage("Unknown command: " + args[0])
+	ui.displaySystemMessage("Unknown command: " + args[1])
 }
