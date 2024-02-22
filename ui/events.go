@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/bahner/go-ma"
+	log "github.com/sirupsen/logrus"
 )
 
 // // displaySelfMessage writes a message from ourself to the message window,
@@ -37,8 +38,10 @@ func (ui *ChatUI) handleEvents() {
 		select {
 		case input := <-ui.chInput:
 			if strings.HasPrefix(input, "/") {
+				log.Debug("hadleEvents got command: ", input)
 				ui.handleCommands(input)
 			} else {
+				log.Debug("hadleEvents got message: ", input)
 				ui.handleChatMessage(input)
 			}
 

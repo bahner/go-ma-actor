@@ -60,9 +60,10 @@ type ChatUI struct {
 	// The Topic is used for publication of messages after encryption and signing.
 	// The names are obviously, from the corresponding DIDDocument.
 
-	app       *tview.Application
-	peersList *tview.TextView
-	msgBox    *tview.TextView
+	app        *tview.Application
+	peersList  *tview.TextView
+	msgBox     *tview.TextView
+	inputField *tview.InputField
 
 	msgW      io.Writer
 	chInput   chan string

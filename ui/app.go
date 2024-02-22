@@ -35,13 +35,13 @@ func (ui *ChatUI) setupApp() {
 
 	// The ordering here is a little kludgy, but acceptable for now.
 	// the input fiield setup became rather verbose, so it was moved to its own file.
-	input := ui.setupInputField()
+	ui.inputField = ui.setupInputField()
 
 	// flex is a vertical box with the chatPanel on top and the input field at the bottom.
 	flex := tview.NewFlex().
 		SetDirection(tview.FlexRow).
 		AddItem(chatPanel, 0, 1, false).
-		AddItem(input, 1, 1, true)
+		AddItem(ui.inputField, 1, 1, true)
 
 	ui.app.SetRoot(flex, true)
 
