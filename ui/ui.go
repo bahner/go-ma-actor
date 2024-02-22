@@ -12,6 +12,8 @@ import (
 	"github.com/gdamore/tcell/v2"
 	p2ppubsub "github.com/libp2p/go-libp2p-pubsub"
 	"github.com/rivo/tview"
+	"github.com/spf13/pflag"
+	"github.com/spf13/viper"
 )
 
 const (
@@ -19,7 +21,17 @@ const (
 	PUBSUB_MESSAGES_BUFFERSIZE     = 32
 
 	defaultLimbo = "closet"
+
+	defaultPeerslistWidth = 10
 )
+
+func init() {
+
+	// UI
+	pflag.Int("peerslist-width", defaultPeerslistWidth, "Sets the width of the peerslist pane in the UI")
+	viper.BindPFlag("ui.peerslist-width", pflag.Lookup("peerslist-width"))
+
+}
 
 // ChatUI is a Text User Interface (TUI) for a Room.
 // The Run method will draw the UI to the terminal in "fullscreen"
@@ -85,7 +97,7 @@ func NewChatUI(p *p2p.P2P, a *actor.Actor) (*ChatUI, error) {
 	// the peers list takes 20 columns, and the messages take the remaining space
 	chatPanel := tview.NewFlex().
 		AddItem(msgBox, 0, 1, false).
-		AddItem(peersList, 20, 1, false)
+		AddItem(peersList, config.GetUIPeerslistWidth(), 1, false)
 
 	ui := &ChatUI{
 		a:         a,
