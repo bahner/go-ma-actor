@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/bahner/go-ma"
-	"github.com/bahner/go-ma-actor/entity"
 	"github.com/bahner/go-ma/msg"
 	p2ppubsub "github.com/libp2p/go-libp2p-pubsub"
 	log "github.com/sirupsen/logrus"
@@ -16,7 +15,6 @@ func (ui *ChatUI) handleBroadcastCommand(args []string) {
 
 	if len(args) > 1 {
 
-		recipient := ui.e.DID.Id
 		me := ui.a.Entity.DID.Id
 
 		var message string
@@ -27,7 +25,7 @@ func (ui *ChatUI) handleBroadcastCommand(args []string) {
 		}
 		msgBytes := []byte(message)
 		if log.GetLevel() == log.DebugLevel {
-			ui.displaySystemMessage(fmt.Sprintf("Broadcasting %s to %s", message, recipient))
+			ui.displaySystemMessage(fmt.Sprintf("Broadcasting %s", message))
 		}
 
 		msg, err := msg.NewBroadcast(me, msgBytes, "text/plain", ui.a.Keyset.SigningKey.PrivKey)
@@ -35,17 +33,12 @@ func (ui *ChatUI) handleBroadcastCommand(args []string) {
 			ui.displaySystemMessage(fmt.Sprintf("Broadcast creation error: %s", err))
 		}
 
-		resp, err := entity.GetOrCreate(recipient)
-		if err != nil {
-			ui.displaySystemMessage(fmt.Sprintf("Entity creation error: %s", err))
-		}
-
-		err = msg.Broadcast(context.Background(), resp.Topic)
+		err = msg.Broadcast(context.Background(), ui.b)
 		if err != nil {
 			ui.displaySystemMessage(fmt.Sprintf("Broadcast error: %s", err))
 		}
 
-		log.Debugf("Message broadcasted to topic: %s", ui.e.Topic.String())
+		log.Debugf("Message broadcasted to topic: %s", ui.b)
 	} else {
 		ui.handleHelpBroadcastCommand(args)
 	}
@@ -72,6 +65,8 @@ func (ui *ChatUI) initBroadcast() error {
 	if err != nil {
 		return fmt.Errorf("initBroadcast: failed to join broadcast topic: %v", err)
 	}
+
+	go ui.subscribeBroadcasts()
 
 	return nil
 
