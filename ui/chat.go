@@ -58,7 +58,7 @@ func (ui *ChatUI) handleChatMessage(input string) error {
 		return fmt.Errorf("message creation error: %w", err)
 	}
 
-	err = msg.Broadcast(ctx, ui.e.Topic)
+	err = msg.Send(ctx, ui.e.Topic)
 	if err != nil {
 		log.Debugf("message publishing error: %s", err)
 		return fmt.Errorf("message publishing error: %w", err)

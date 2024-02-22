@@ -28,6 +28,6 @@ func (ui *ChatUI) startActor() {
 		ui.displaySystemMessage("Error creating greeting message: " + err.Error())
 	}
 
-	mesg.Send(ctx, ui.a.Entity.Topic)
+	mesg.Broadcast(ctx, ui.a.Entity.Topic)
 
 }
