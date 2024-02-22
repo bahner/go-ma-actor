@@ -9,6 +9,7 @@ import (
 	"github.com/bahner/go-ma-actor/entity/actor"
 	"github.com/bahner/go-ma-actor/p2p"
 	"github.com/bahner/go-ma/msg"
+	"github.com/gdamore/tcell/v2"
 	p2ppubsub "github.com/libp2p/go-libp2p-pubsub"
 	"github.com/rivo/tview"
 )
@@ -64,6 +65,12 @@ type ChatUI struct {
 func NewChatUI(p *p2p.P2P, a *actor.Actor) (*ChatUI, error) {
 
 	app := tview.NewApplication()
+
+	tview.Styles.PrimitiveBackgroundColor = tcell.ColorNavajoWhite
+	tview.Styles.PrimaryTextColor = tcell.ColorBlack
+	tview.Styles.ContrastBackgroundColor = tcell.ColorNavajoWhite
+	tview.Styles.BorderColor = tcell.ColorDarkGray
+	tview.Styles.TitleColor = tcell.ColorDarkSlateGray
 
 	// make a text view to contain our chat messages
 	msgBox := setupMsgbox(app)

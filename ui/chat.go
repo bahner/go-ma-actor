@@ -14,7 +14,7 @@ import (
 // func (ui *ChatUI) displayChatMessage(cm *msg.Message) {
 func (ui *ChatUI) displayChatMessage(cm *msg.Message) {
 	from := alias.GetOrCreateEntityAlias(cm.From)
-	prompt := withColor("orange", fmt.Sprintf("<%s>:", from))
+	prompt := withColor("black", fmt.Sprintf("<%s>:", from))
 	fmt.Fprintf(ui.msgW, "%s %s\n", prompt, string(cm.Content))
 }
 

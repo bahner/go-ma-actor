@@ -11,7 +11,7 @@ func (ui *ChatUI) setupInputField() *tview.InputField {
 	inputField := tview.NewInputField().
 		SetLabel(viper.GetString("actor.nick") + ": ").
 		SetFieldWidth(0).
-		SetFieldBackgroundColor(tcell.ColorBlack)
+		SetLabelColor(tcell.ColorBlack)
 
 	inputField.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Key() {
