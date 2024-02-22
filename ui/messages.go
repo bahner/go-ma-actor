@@ -3,15 +3,15 @@ package ui
 import (
 	"context"
 
-	"github.com/bahner/go-ma"
 	"github.com/bahner/go-ma-actor/entity"
 	log "github.com/sirupsen/logrus"
 )
 
-// Handle incoming messages to an entity. The topic is just to filter,
-// which recipients *not* to handle here.
+// Handle incoming messages to an entity. Also adds a reject to be able to filter self.
+// If reject is nil, no filtering is done.
 func (ui *ChatUI) handleIncomingMessages(ctx context.Context, e *entity.Entity) {
 	t := e.Topic.String()
+
 	log.Debugf("Waiting for messages from topic %s", t)
 
 	for {
@@ -26,21 +26,9 @@ func (ui *ChatUI) handleIncomingMessages(ctx context.Context, e *entity.Entity) 
 			}
 			log.Debugf("Received message from %s to %s", m.From, m.To)
 
-			// Only broadcasts to the actual subscriber.
-			if m.MimeType == ma.BROADCAST_MIME_TYPE && m.To == t {
-				log.Debugf("Received broadcast from %s to %s", m.From, m.To)
-				ui.chMessage <- m
-				continue
-			}
-
 			// Ignore messages to other topics than this goroutine's.
 			if m.To != t {
-				log.Debugf("Received message to %s. Expected %s. Ignoring...", m.To, t)
-				continue
-			}
-
-			if m.From == t {
-				log.Debugf("Received message from self, ignoring...")
+				log.Debugf("handleIncomingMessages: Received message to %s. Expected %s. Ignoring...", m.To, t)
 				continue
 			}
 

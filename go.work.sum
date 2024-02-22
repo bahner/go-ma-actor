@@ -1,5 +1,6 @@
 github.com/bahner/go-ma v0.5.0 h1:oJXgAwnFt8uf1BcOvqLXDQYOdNTYQZnR5ZrObnLQfE8=
 github.com/bahner/go-ma v0.5.0/go.mod h1:WM8wAs1tYjIuQLnM5kGkOo177N0dRQ4bXO4p/t63w+E=
+github.com/bahner/go-ma v0.6.1/go.mod h1:WM8wAs1tYjIuQLnM5kGkOo177N0dRQ4bXO4p/t63w+E=
 github.com/coreos/go-systemd v0.0.0-20181012123002-c6f51f82210d h1:t5Wuyh53qYyg9eqn4BbnlIT+vmhyww0TatL+zT3uWgI=
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
 github.com/fatih/color v1.14.1/go.mod h1:2oHN61fhTpgcxD3TSWCgKDiH1+x4OiDVVGH8WlgGZGg=

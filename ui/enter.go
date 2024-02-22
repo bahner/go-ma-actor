@@ -40,9 +40,9 @@ func (ui *ChatUI) enterEntity(d string, force bool) error {
 	d = alias.LookupEntityNick(d)
 	me := ui.a.Entity.DID.Id
 
-	if d == me {
-		return ErrSelfEntryWarning
-	}
+	// if d == me {
+	// 	return ErrSelfEntryWarning
+	// }
 
 	e, err := entity.GetOrCreate(d)
 	// Without a valid entity, we can't do anything.
@@ -53,7 +53,7 @@ func (ui *ChatUI) enterEntity(d string, force bool) error {
 	// FIXEME: hm. Why not?
 	// If this is not the same as the last known location, then
 	// update the last known location
-	if d == e.DID.Id && !force {
+	if ui.e != nil && d == ui.e.DID.Id && !force {
 		return ErrAlreadyHereWarning
 	}
 
@@ -81,14 +81,22 @@ func (ui *ChatUI) enterEntity(d string, force bool) error {
 
 	// Start handling the new topic
 	// This *must* be called *after* the entity is set!
-	// Let the actor subscribe to the new entity, so
-	// that envelopes are passed on correctly.
-	go ui.a.Subscribe(ui.currentEntityCtx, ui.e)
-	// Handle incoming envelopes to the entity as the actor.
-	// Only an actor can decrypt and handle envelopes.
-	go ui.handleIncomingEnvelopes(ui.currentEntityCtx, ui.e, ui.a)
-	// Handle incoming messages to the entity
-	go ui.handleIncomingMessages(ui.currentEntityCtx, ui.e)
+
+	if d != me {
+		// Let the actor subscribe any new entity, so
+		// that envelopes are passed on correctly.
+		go ui.a.Subscribe(ui.currentEntityCtx, ui.e)
+
+		// Handle incoming envelopes to the entity as the actor.
+		// Only an actor can decrypt and handle envelopes.
+
+		// Don't listen for envelopes when entering self.
+		go ui.handleIncomingEnvelopes(ui.currentEntityCtx, ui.e, ui.a)
+
+		// Handle incoming messages to the entity, also accept messages from self.
+		go ui.handleIncomingMessages(ui.currentEntityCtx, ui.e)
+
+	}
 
 	// Update the location
 	// If this fails - 🤷🏽

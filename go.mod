@@ -3,7 +3,7 @@ module github.com/bahner/go-ma-actor
 go 1.22
 
 require (
-	github.com/bahner/go-ma v0.6.1-0.20240221202130-0209f93220c3
+	github.com/bahner/go-ma v0.6.1
 	github.com/gdamore/tcell/v2 v2.7.0
 	github.com/libp2p/go-libp2p v0.32.2
 	github.com/libp2p/go-libp2p-kad-dht v0.25.2
