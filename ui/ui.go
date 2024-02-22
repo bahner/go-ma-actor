@@ -9,7 +9,6 @@ import (
 	"github.com/bahner/go-ma-actor/entity/actor"
 	"github.com/bahner/go-ma-actor/p2p"
 	"github.com/bahner/go-ma/msg"
-	"github.com/gdamore/tcell/v2"
 	p2ppubsub "github.com/libp2p/go-libp2p-pubsub"
 	"github.com/rivo/tview"
 	"github.com/spf13/pflag"
@@ -78,50 +77,17 @@ func NewChatUI(p *p2p.P2P, a *actor.Actor) (*ChatUI, error) {
 
 	app := tview.NewApplication()
 
-	tview.Styles.PrimitiveBackgroundColor = tcell.ColorNavajoWhite
-	tview.Styles.PrimaryTextColor = tcell.ColorBlack
-	tview.Styles.ContrastBackgroundColor = tcell.ColorNavajoWhite
-	tview.Styles.BorderColor = tcell.ColorDarkGray
-	tview.Styles.TitleColor = tcell.ColorDarkSlateGray
-
-	// make a text view to contain our chat messages
-	msgBox := setupMsgbox(app)
-
-	// make a text view to hold the list of peers in the room, updated by ui.refreshPeers()
-	peersList := tview.NewTextView()
-	peersList.SetBorder(true)
-	peersList.SetTitle("Peers")
-	peersList.SetChangedFunc(func() { app.Draw() })
-
-	// chatPanel is a horizontal box with messages on the left and peers on the right
-	// the peers list takes 20 columns, and the messages take the remaining space
-	chatPanel := tview.NewFlex().
-		AddItem(msgBox, 0, 1, false).
-		AddItem(peersList, config.GetUIPeerslistWidth(), 1, false)
-
 	ui := &ChatUI{
 		a:         a,
 		p:         p,
 		app:       app,
-		peersList: peersList,
-		msgW:      msgBox,
-		msgBox:    msgBox,
 		chInput:   make(chan string, 32),
 		chMessage: make(chan *msg.Message, UI_MESSAGES_CHANNEL_BUFFERSIZE),
 		chDone:    make(chan struct{}, 1),
 	}
 
-	// The ordering here is a little kludgy, but acceptable for now.
-	// the input fiield setup became rather verbose, so it was moved to its own file.
-	input := ui.setupInputField()
-
-	// flex is a vertical box with the chatPanel on top and the input field at the bottom.
-	flex := tview.NewFlex().
-		SetDirection(tview.FlexRow).
-		AddItem(chatPanel, 0, 1, false).
-		AddItem(input, 1, 1, true)
-
-	app.SetRoot(flex, true)
+	// Since tview is global we can just run this which sets the style for the whole app.
+	ui.setupApp()
 
 	return ui, nil
 }
