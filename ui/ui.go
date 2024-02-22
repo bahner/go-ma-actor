@@ -43,6 +43,10 @@ type ChatUI struct {
 	broadcastCtx    context.Context
 	broadcastCancel context.CancelFunc
 
+	// History of entries
+	inputHistory        []string
+	currentHistoryIndex int
+
 	// The Topic is used for publication of messages after encryption and signing.
 	// The names are obviously, from the corresponding DIDDocument.
 
@@ -85,29 +89,6 @@ func NewChatUI(p *p2p.P2P, a *actor.Actor) (*ChatUI, error) {
 		SetFieldWidth(0).
 		SetFieldBackgroundColor(tcell.ColorBlack)
 
-	// the done func is called when the user hits enter, or tabs out of the field
-	input.SetDoneFunc(func(key tcell.Key) {
-		if key != tcell.KeyEnter {
-			// we don't want to do anything if they just tabbed away
-			return
-		}
-		line := input.GetText()
-		if len(line) == 0 {
-			// ignore blank lines
-			return
-		}
-
-		// bail if requested
-		if line == "/quit" {
-			app.Stop()
-			return
-		}
-
-		// send the line onto the input chan and reset the field text
-		chInput <- line
-		input.SetText("")
-	})
-
 	// make a text view to hold the list of peers in the room, updated by ui.refreshPeers()
 	peersList := tview.NewTextView()
 	peersList.SetBorder(true)
@@ -129,7 +110,7 @@ func NewChatUI(p *p2p.P2P, a *actor.Actor) (*ChatUI, error) {
 
 	app.SetRoot(flex, true)
 
-	return &ChatUI{
+	ui := &ChatUI{
 		a:         a,
 		p:         p,
 		app:       app,
@@ -139,7 +120,12 @@ func NewChatUI(p *p2p.P2P, a *actor.Actor) (*ChatUI, error) {
 		chInput:   chInput,
 		chMessage: make(chan *msg.Message, UI_MESSAGES_CHANNEL_BUFFERSIZE),
 		chDone:    make(chan struct{}, 1),
-	}, nil
+	}
+
+	// A little kludgy, but acceptable for now.
+	ui.setupInputField(input, app)
+
+	return ui, nil
 }
 
 // Run starts the chat event loop in the background, then starts
