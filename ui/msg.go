@@ -45,6 +45,11 @@ func (ui *ChatUI) handleMsgCommand(args []string) {
 			ui.displaySystemMessage(fmt.Sprintf("message creation error: %s", err))
 		}
 
+		envelope, err := msg.Enclose()
+		if err != nil {
+			ui.displaySystemMessage(fmt.Sprintf("envelope creation error: %s", err))
+		}
+
 		recp, err := entity.GetOrCreate(recipient)
 		if err != nil {
 			ui.displaySystemMessage(fmt.Sprintf("entity creation error: %s", err))
@@ -60,7 +65,7 @@ func (ui *ChatUI) handleMsgCommand(args []string) {
 		// Send private message in the entity's context. It's a whisper.
 		// But should've been sent to the actor, not the entity. A loveletter, like.
 		medium := ui.e.Topic
-		err = msg.Send(context.Background(), medium)
+		err = envelope.Send(context.Background(), medium)
 		if err != nil {
 			ui.displaySystemMessage(fmt.Sprintf("message publishing error: %s", err))
 		}
