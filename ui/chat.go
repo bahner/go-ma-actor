@@ -30,6 +30,12 @@ func (ui *ChatUI) displayPrivateMessage(cm *msg.Message) {
 	fmt.Fprintf(ui.msgW, "%s %s\n", prompt, string(cm.Content))
 }
 
+func (ui *ChatUI) displaySentPrivateMessage(cm *msg.Message) {
+	to := alias.GetOrCreateEntityAlias(cm.To)
+	prompt := withColor("green", fmt.Sprintf("@%s:", to))
+	fmt.Fprintf(ui.msgW, "%s %s\n", prompt, string(cm.Content))
+}
+
 func (ui *ChatUI) handleChatMessage(input string) error {
 	// Wrapping the string message into the msg.Message structure
 

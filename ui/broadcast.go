@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/bahner/go-ma"
+	"github.com/bahner/go-ma-actor/config"
 	"github.com/bahner/go-ma/msg"
 	p2ppubsub "github.com/libp2p/go-libp2p-pubsub"
 	log "github.com/sirupsen/logrus"
@@ -66,7 +67,11 @@ func (ui *ChatUI) initBroadcast() error {
 		return fmt.Errorf("initBroadcast: failed to join broadcast topic: %v", err)
 	}
 
-	go ui.subscribeBroadcasts()
+	// We don't want to respond to broadcasts in pong mode.
+	// That would create a broadcast loop.
+	if !config.PongMode() {
+		go ui.subscribeBroadcasts()
+	}
 
 	return nil
 

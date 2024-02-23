@@ -33,7 +33,9 @@ Add a connect command to connect to a specific host directly, eg:
 
 /connect relay
 
+### Pinning
+We should probably handle pinning. Maybe not for DID Docs, as they have timestamp, so wont be reused.
+
 
 ## BUGS
 
-handle topics better. Messages aren't always coming through.

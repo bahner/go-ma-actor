@@ -47,7 +47,7 @@ func New(h host.Host, dhtOpts ...p2pDHT.Option) (*DHT, error) {
 }
 
 func (d *DHT) Bootstrap(ctx context.Context) error {
-	log.Info("Initializing Kademlia DHT.")
+	log.Info("Initialising Kademlia DHT.")
 
 	err := d.IpfsDHT.Bootstrap(context.Background())
 	if err != nil {

@@ -26,6 +26,8 @@ func (ui *ChatUI) handleCommands(input string) {
 		ui.triggerDiscovery()
 	case "/enter":
 		ui.handleEnterCommand(args)
+	case "/nick":
+		ui.handleNickCommand(args)
 	case "/alias":
 		ui.handleAliasCommand(args)
 	case "/aliases":

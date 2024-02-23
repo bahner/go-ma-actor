@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/mitchellh/go-homedir"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
@@ -48,6 +49,10 @@ func init() {
 func Init(configName string) error {
 
 	if configFile != "" {
+		configFile, err := homedir.Expand(configFile)
+		if err != nil {
+			log.Fatalf("error: %v", err)
+		}
 		log.Infof("Using config file: %s", configFile)
 		viper.SetConfigFile(configFile)
 	} else if configName != "" {

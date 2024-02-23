@@ -64,12 +64,13 @@ func (ui *ChatUI) handleEditCommand(args []string) {
 
 	log.Debugf("Editor returned: %s", m)
 
-	ui.chInput <- string(m)
+	ui.app.QueueUpdateDraw(func() {
+		ui.inputField = ui.setupInputField()
+		ui.updateRoot()
+		ui.inputField.SetText(string(m))
+		ui.app.SetFocus(ui.inputField)
+	})
 
-	log.Debugf("Sent %s to ui.chInput", m)
-
-	log.Debug("Setting focus to inputField")
-	ui.app.SetFocus(ui.inputField)
-	ui.app.Draw()
+	log.Debug("Editor command handled")
 
 }

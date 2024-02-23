@@ -29,7 +29,7 @@ func (ui *ChatUI) setupApp() {
 
 	// chatPanel is a horizontal box with messages on the left and peers on the right
 	// the peers list takes 20 columns, and the messages take the remaining space
-	chatPanel := tview.NewFlex().
+	ui.chatPanel = tview.NewFlex().
 		AddItem(msgBox, 0, 1, false).
 		AddItem(peersList, config.GetUIPeerslistWidth(), 1, false)
 
@@ -37,12 +37,34 @@ func (ui *ChatUI) setupApp() {
 	// the input fiield setup became rather verbose, so it was moved to its own file.
 	ui.inputField = ui.setupInputField()
 
-	// flex is a vertical box with the chatPanel on top and the input field at the bottom.
-	flex := tview.NewFlex().
+	ui.updateRoot()
+
+}
+
+func (ui *ChatUI) updateRoot() {
+	ui.screen = tview.NewFlex().
 		SetDirection(tview.FlexRow).
-		AddItem(chatPanel, 0, 1, false).
-		AddItem(ui.inputField, 1, 1, true)
+		AddItem(ui.chatPanel, 0, 1, false).
+		AddItem(ui.inputField, 1, 1, true) // True meaans it has focus.
+	ui.app.SetRoot(ui.screen, true)
+}
 
-	ui.app.SetRoot(flex, true)
+func setupMsgbox(app *tview.Application) *tview.TextView {
 
+	// make a text view to contain our chat messages
+	msgBox := tview.NewTextView()
+	msgBox.SetDynamicColors(true)
+	msgBox.SetBorder(true)
+	msgBox.SetScrollable(true)
+	msgBox.SetTitle(defaultLimbo)
+
+	// text views are io.Writers, but they don't automatically refresh.
+	// this sets a change handler to force the app to redraw when we get
+	// new messages to display.
+	msgBox.SetChangedFunc(func() {
+		app.Draw()
+		msgBox.ScrollToEnd()
+	})
+
+	return msgBox
 }

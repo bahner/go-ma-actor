@@ -36,14 +36,14 @@ func (ui *ChatUI) handleMsgCommand(args []string) {
 		msgBytes := []byte(message)
 		if log.GetLevel() == log.DebugLevel {
 			ui.displaySystemMessage(fmt.Sprintf("Sending message to %s: %s", recipient, message))
-		} else {
-			ui.displaySystemMessage(fmt.Sprintf("Sending message to %s", recipient))
 		}
 
 		msg, err := msg.New(ui.a.Entity.DID.Id, recipient, msgBytes, "text/plain", ui.a.Keyset.SigningKey.PrivKey)
 		if err != nil {
 			ui.displaySystemMessage(fmt.Sprintf("message creation error: %s", err))
 		}
+
+		ui.displaySentPrivateMessage(msg)
 
 		envelope, err := msg.Enclose()
 		if err != nil {

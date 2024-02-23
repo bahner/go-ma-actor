@@ -11,8 +11,9 @@ import (
 // If reject is nil, no filtering is done.
 func (ui *ChatUI) handleIncomingMessages(ctx context.Context, e *entity.Entity) {
 	t := e.Topic.String()
+	me := ui.a.Entity.DID.Id
 
-	log.Debugf("Waiting for messages from topic %s", t)
+	log.Debugf("Handling incoming messages to %s", t)
 
 	for {
 		select {
@@ -26,14 +27,14 @@ func (ui *ChatUI) handleIncomingMessages(ctx context.Context, e *entity.Entity) 
 			}
 			log.Debugf("Received message from %s to %s", m.From, m.To)
 
-			// Ignore messages to other topics than this goroutine's.
-			if m.To != t {
-				log.Debugf("handleIncomingMessages: Received message to %s. Expected %s. Ignoring...", m.To, t)
+			// Accept messages to the general topic or to the actor.
+			if m.To == t || m.To == me {
+				log.Debugf("handleIncomingMessages: Accepted message of type %s from %s to %s", m.MimeType, m.From, m.To)
+				ui.chMessage <- m
 				continue
 			}
 
-			log.Debugf("handleIncomingMessages: Accepted message of type %s from %s to %s", m.MimeType, m.From, m.To)
-			ui.chMessage <- m
+			log.Debugf("handleIncomingMessages: Received message to %s. Expected %s. Ignoring...", m.To, t)
 		}
 	}
 }

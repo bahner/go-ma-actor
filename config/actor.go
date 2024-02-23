@@ -51,10 +51,12 @@ func InitActor() {
 	}
 
 	if viper.GetBool("publish") && keyset_string != "" {
+		fmt.Print("Publishing identity to IPFS...")
 		err := publishIdentityFromKeyset(keyset)
 		if err != nil {
 			log.Warnf("config.initActor: %v", err)
 		}
+		fmt.Println("done.")
 	}
 
 	viper.Set("keyset", keyset)

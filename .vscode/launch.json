@@ -39,26 +39,14 @@
             ]
         },
         {
-            "name": "Launch Pong",
+            "name": "Launch Foo",
             "type": "go",
             "request": "launch",
             "mode": "auto",
             "program": "${fileDirname}",
             "args": [
                 "-c",
-                "~/.ma/pong.yaml"
-            ],
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "Baren",
-            "type": "go",
-            "request": "launch",
-            "mode": "auto",
-            "program": "${fileDirname}",
-            "args": [
-                "-c",
-                "/home/bahner/.ma/baren.yaml"
+                "~/.ma/foo.yaml"
             ],
             "console": "integratedTerminal"
         },

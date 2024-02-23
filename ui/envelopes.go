@@ -15,7 +15,7 @@ import (
 // The original Subscribe features the actor, So envelopes are sent here.
 func (ui *ChatUI) handleIncomingEnvelopes(ctx context.Context, e *entity.Entity, a *actor.Actor) {
 
-	mesg := fmt.Sprintf("Waiting for envelopes to " + a.Entity.DID.Id + " in " + e.DID.Id)
+	mesg := fmt.Sprintf("Handling incoming envelopes to " + a.Entity.DID.Id + " in " + e.DID.Id)
 	log.Info(mesg)
 
 	for {
