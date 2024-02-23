@@ -64,4 +64,13 @@ func (ui *ChatUI) handleEditCommand(args []string) {
 
 	log.Debugf("Editor returned: %s", m)
 
+	ui.app.QueueUpdateDraw(func() {
+		ui.inputField = ui.setupInputField()
+		ui.updateRoot()
+		ui.inputField.SetText(string(m))
+		ui.app.SetFocus(ui.inputField)
+	})
+
+	log.Debug("Editor command handled")
+
 }

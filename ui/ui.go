@@ -64,6 +64,8 @@ type ChatUI struct {
 	peersList  *tview.TextView
 	msgBox     *tview.TextView
 	inputField *tview.InputField
+	chatPanel  *tview.Flex
+	screen     *tview.Flex
 
 	msgW      io.Writer
 	chInput   chan string
