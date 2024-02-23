@@ -15,6 +15,10 @@ func (ui *ChatUI) setupInputField() *tview.InputField {
 
 	inputField.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Key() {
+		case tcell.KeyEscape:
+			ui.app.QueueUpdateDraw(func() {
+				ui.app.SetFocus(ui.inputField)
+			})
 		case tcell.KeyUp:
 			if ui.currentHistoryIndex < len(ui.inputHistory)-1 {
 				ui.currentHistoryIndex++
@@ -35,18 +39,6 @@ func (ui *ChatUI) setupInputField() *tview.InputField {
 			}
 		}
 		return event // let other keys pass through
-	})
-
-	inputField.SetDoneFunc(func(key tcell.Key) {
-		if key == tcell.KeyEnter {
-			input := inputField.GetText()
-			if input != "" {
-				ui.inputHistory = append(ui.inputHistory, input) // Add to history
-				ui.currentHistoryIndex = -1                      // Reset index
-				ui.chInput <- input                              // Send input to be handled
-				inputField.SetText("")                           // Clear the input field
-			}
-		}
 	})
 
 	// the done func is called when the user hits enter, or tabs out of the field
