@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/bahner/go-ma"
 	"github.com/bahner/go-ma-actor/config"
@@ -71,6 +72,7 @@ func (ui *ChatUI) initBroadcast() error {
 	// That would create a broadcast loop.
 	if !config.PongMode() {
 		go ui.subscribeBroadcasts()
+		time.Sleep(1 * time.Second) // Just to allow it to start. Nothing else.
 	}
 
 	return nil

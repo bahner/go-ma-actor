@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/bahner/go-ma/msg"
+	"github.com/bahner/go-ma-actor/internal"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -27,13 +27,5 @@ func (ui *ChatUI) startActor() {
 	go ui.handleIncomingMessages(ctx, ui.a.Entity)
 	fmt.Println("done.")
 
-	if ui.b != nil {
-		greeting := []byte("Hello, world! " + ui.a.Entity.DID.Id + " is here.")
-		mesg, err := msg.NewBroadcast(ui.a.Entity.DID.Id, greeting, "text/plain", ui.a.Keyset.SigningKey.PrivKey)
-		if err != nil {
-			ui.displaySystemMessage("Error creating greeting message: " + err.Error())
-		}
-
-		mesg.Broadcast(ctx, ui.b)
-	}
+	internal.HelloWorld(ctx, ui.a, ui.b)
 }

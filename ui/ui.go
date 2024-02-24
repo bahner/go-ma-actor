@@ -94,6 +94,12 @@ func NewChatUI(p *p2p.P2P, a *actor.Actor) (*ChatUI, error) {
 		chDone:    make(chan struct{}, 1),
 	}
 
+	// Start the broadcast subscription first, so
+	// actors can announce themselves.
+	fmt.Print("Initialising broadcasts...")
+	ui.initBroadcast()
+	fmt.Println("done.")
+
 	// Since tview is global we can just run this which sets the style for the whole app.
 	ui.setupApp()
 
@@ -111,19 +117,13 @@ func (ui *ChatUI) Run() error {
 		// In Pong we can just stop here. We dont' need to display anything.
 		// or handle input events. Hence this is a blocking call.
 		log.Infof("Running in Pong mode")
-		pong.Run(ctx, ui.a, ui.p)
+		pong.Run(ctx, ui.a, ui.b, ui.p)
 		log.Warnf("Pong run loop ended, exiting...")
 		os.Exit(0)
 
 	}
 
 	defer ui.end()
-
-	// Start the broadcast subscription first, so
-	// actors can announce themselves.
-	fmt.Print("Initialising broadcasts...")
-	ui.initBroadcast()
-	fmt.Println("done.")
 
 	// The actor should just run in the background for ever.
 	// It will handle incoming messages and envelopes.
