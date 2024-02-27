@@ -8,7 +8,7 @@ GO ?= go
 PREFIX ?= /usr/local
 KEYSET = go-ma-create-keyset
 FETCH = go-ma-fetch-document
-ALL =  $(FETCH)  $(KEYSET) $(NAME)
+ALL =  $(FETCH) $(KEYSET) $(NAME)
 BIN = $(PREFIX)/bin
 
 ifneq (,$(wildcard ./.env))

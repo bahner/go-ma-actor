@@ -31,7 +31,7 @@ func init() {
 	viper.BindPFlag("actor.nick", pflag.Lookup("nick"))
 
 	pflag.StringP("location", "l", "", "DID of the initial location.")
-	viper.BindPFlag("location.home", pflag.Lookup("home"))
+	viper.BindPFlag("actor.home", pflag.Lookup("home"))
 
 }
 

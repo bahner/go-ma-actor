@@ -27,28 +27,28 @@ func init() {
 
 	// P2P Settings
 	pflag.Int("low-watermark", defaultConnmgrLowWatermark, "Low watermark for peer discovery.")
-	viper.SetDefault("libp2p.connmgr.low-watermark", defaultConnmgrLowWatermark)
-	viper.BindPFlag("libp2p.connmgr.low-watermark", pflag.Lookup("low-watermark"))
+	viper.SetDefault("p2p.connmgr.low-watermark", defaultConnmgrLowWatermark)
+	viper.BindPFlag("p2p.connmgr.low-watermark", pflag.Lookup("low-watermark"))
 
 	pflag.Int("high-watermark", defaultConnmgrHighWatermark, "High watermark for peer discovery.")
-	viper.SetDefault("libp2p.connmgr.high-watermark", defaultConnmgrHighWatermark)
-	viper.BindPFlag("libp2p.connmgr.high-watermark", pflag.Lookup("high-watermark"))
+	viper.SetDefault("p2p.connmgr.high-watermark", defaultConnmgrHighWatermark)
+	viper.BindPFlag("p2p.connmgr.high-watermark", pflag.Lookup("high-watermark"))
 
 	pflag.Duration("grace-period", defaultConnmgrGracePeriod, "Grace period for connection manager.")
-	viper.SetDefault("libp2p.connmgr.grace-period", defaultConnmgrGracePeriod)
-	viper.BindPFlag("libp2p.connmgr.grace-period", pflag.Lookup("grace-period"))
+	viper.SetDefault("p2p.connmgr.grace-period", defaultConnmgrGracePeriod)
+	viper.BindPFlag("p2p.connmgr.grace-period", pflag.Lookup("grace-period"))
 
 	pflag.Duration("discovery-retry", defaultDiscoveryRetryInterval, "Retry interval for peer discovery.")
-	viper.SetDefault("libp2p.discovery-retry", defaultDiscoveryRetryInterval)
-	viper.BindPFlag("libp2p.discovery-retry", pflag.Lookup("discovery-retryl"))
+	viper.SetDefault("p2p.discovery-retry", defaultDiscoveryRetryInterval)
+	viper.BindPFlag("p2p.discovery-retry", pflag.Lookup("discovery-retryl"))
 
 	pflag.Duration("discovery-timeout", defaultDiscoveryTimeout, "Timeout for peer discovery.")
-	viper.SetDefault("libp2p.discovery-timeout", defaultDiscoveryTimeout)
-	viper.BindPFlag("libp2p.discovery-timeout", pflag.Lookup("discoveryTimeout"))
+	viper.SetDefault("p2p.discovery-timeout", defaultDiscoveryTimeout)
+	viper.BindPFlag("p2p.discovery-timeout", pflag.Lookup("discoveryTimeout"))
 
 	pflag.Int("listen-port", defaultListenPort, "Port for libp2p node to listen on.")
-	viper.SetDefault("libp2p.port", defaultListenPort)
-	viper.BindPFlag("libp2p.port", pflag.Lookup("listen-port"))
+	viper.SetDefault("p2p.port", defaultListenPort)
+	viper.BindPFlag("p2p.port", pflag.Lookup("listen-port"))
 }
 
 // P2P Node identity

@@ -40,13 +40,14 @@ func generateConfigFile(actor string, node string) {
 			"level": defaultLogLevel,
 			"file":  logFile,
 		},
+		// NB! This is a cross over from go-ma
 		"api": map[string]interface{}{
 			"maddr": ma.DEFAULT_IPFS_API_MULTIADDR,
 		},
 		"http": map[string]interface{}{
 			"socket": defaultHttpSocket,
 		},
-		"libp2p": map[string]interface{}{
+		"p2p": map[string]interface{}{
 			"identity": node,
 			"port":     defaultListenPort,
 			"connmgr": map[string]interface{}{

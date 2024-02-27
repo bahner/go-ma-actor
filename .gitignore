@@ -23,6 +23,6 @@ go-space-thumb
 go-space-thumb*
 *secret
 # Log, config and binary
-go-ma-actor*
+go-ma-*
 *.log
 .publish.sh
