@@ -9,8 +9,8 @@ import (
 	"github.com/bahner/go-ma-actor/config"
 	"github.com/bahner/go-ma-actor/entity"
 	"github.com/bahner/go-ma-actor/entity/actor"
+	"github.com/bahner/go-ma-actor/mode/pong"
 	"github.com/bahner/go-ma-actor/p2p"
-	"github.com/bahner/go-ma-actor/pong"
 	"github.com/bahner/go-ma/msg"
 	p2ppubsub "github.com/libp2p/go-libp2p-pubsub"
 	"github.com/rivo/tview"
@@ -65,12 +65,11 @@ type ChatUI struct {
 	// The Topic is used for publication of messages after encryption and signing.
 	// The names are obviously, from the corresponding DIDDocument.
 
-	app        *tview.Application
-	peersList  *tview.TextView
-	msgBox     *tview.TextView
-	inputField *tview.InputField
-	chatPanel  *tview.Flex
-	screen     *tview.Flex
+	app       *tview.Application
+	peersList *tview.TextView
+	msgBox    *tview.TextView
+	chatPanel *tview.Flex
+	screen    *tview.Flex
 
 	msgW      io.Writer
 	chInput   chan string

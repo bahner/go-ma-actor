@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	defaultHttpSocket string = "0.0.0.0:5003"
+	defaultHttpSocket string = "127.0.0.1:5001"
 )
 
 func init() {

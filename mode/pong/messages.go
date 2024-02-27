@@ -58,7 +58,7 @@ func messageReply(ctx context.Context, a *actor.Actor, m *msg.Message) error {
 	// Switch sender and receiver. Reply back to from :-)
 	replyFrom := m.To
 	replyTo := m.From
-	replyMsg := []byte(viper.GetString("pong.reply"))
+	replyMsg := []byte(viper.GetString("mode.pong.reply"))
 
 	// Broadcast are sent to the topic, and the topic is the DID of the recipient
 	r, err := msg.New(replyFrom, replyTo, replyMsg, "text/plain", a.Keyset.SigningKey.PrivKey)

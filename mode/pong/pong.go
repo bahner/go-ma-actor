@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/bahner/go-ma-actor/config"
 	"github.com/bahner/go-ma-actor/entity/actor"
 	"github.com/bahner/go-ma-actor/internal"
 	"github.com/bahner/go-ma-actor/p2p"
@@ -13,11 +14,9 @@ import (
 	"github.com/spf13/viper"
 )
 
-const defaultReply = "Pong!"
-
 func init() {
-	pflag.String("pong-reply", defaultReply, "The message to send back to the sender")
-	viper.BindPFlag("pong.reply", pflag.Lookup("pong-reply"))
+	pflag.String("pong-reply", config.DefaultPongReply, "The message to send back to the sender")
+	viper.BindPFlag("mode.pong.reply", pflag.Lookup("pong-reply"))
 }
 
 // Run the pong actor. Cancel it from outside to stop it.

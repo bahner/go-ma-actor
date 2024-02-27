@@ -3,12 +3,11 @@ package main
 import (
 	"context"
 	"fmt"
-	"net/http"
-	"net/http/pprof"
+	"os"
 
 	"github.com/bahner/go-ma-actor/config"
-	"github.com/bahner/go-ma-actor/entity"
 	"github.com/bahner/go-ma-actor/entity/actor"
+	"github.com/bahner/go-ma-actor/mode/relay"
 	"github.com/bahner/go-ma-actor/p2p"
 	"github.com/bahner/go-ma-actor/ui"
 	"github.com/spf13/pflag"
@@ -20,13 +19,21 @@ func main() {
 
 	pflag.Parse()
 
-	config.Init("actor")
-	config.InitLogging()
-	config.InitP2P()
-	config.InitActor()
+	mode := config.InitMode()
+	config.Init(mode)
+	fmt.Printf("Starting in %s mode.\n", mode)
 
 	fmt.Print("Initialising libp2p...")
-	p, err := p2p.Init(nil)
+	var (
+		p   *p2p.P2P
+		err error
+	)
+	if config.RelayMode() {
+		fmt.Print("Relay mode enabled.")
+		p, err = p2p.Init(nil, relay.GetOptions()...)
+	} else {
+		p, err = p2p.Init(nil)
+	}
 	if err != nil {
 		log.Fatalf("failed to initialize p2p: %v", err)
 	}
@@ -36,6 +43,12 @@ func main() {
 	fmt.Print("Starting discovery loop...")
 	go p.DiscoveryLoop(context.Background())
 	fmt.Println("done.")
+
+	if config.RelayMode() {
+		fmt.Println("Starting relay mode...")
+		startWebServer(p, nil)
+		os.Exit(0) // This won't be reached.
+	}
 
 	// The actor is needed for the WebHandler.
 	fmt.Print("Creating actor from keyset...")
@@ -69,21 +82,6 @@ func main() {
 	}
 	fmt.Println("done.")
 
-	fmt.Print("Starting web server...")
-	// Start a simple web server to handle incoming requests.
-	// This is defined in web.go. It makes it possible to add extra parameters to the handler.
-	h := &entity.WebHandlerData{
-		P2P:    p,
-		Entity: a.Entity,
-	}
-	mux := http.NewServeMux()
-	mux.HandleFunc("/", h.WebHandler)
-	mux.HandleFunc("/profile", pprof.Profile)
-	go http.ListenAndServe(config.GetHttpSocket(), mux)
-	log.Infof("Listening on %s", config.GetHttpSocket())
-	fmt.Println("done.")
-	fmt.Println("Web server started on http://" + config.GetHttpSocket() + "/")
-
 	// Draw the UI.
 	fmt.Print("Creating text UI...")
 	ui, err := ui.NewChatUI(p, a)
@@ -92,7 +90,10 @@ func main() {
 	}
 	fmt.Println("done.")
 
-	// Run the UI.
+	fmt.Print("Starting web server...")
+	go startWebServer(p, a)
+	fmt.Println("done.")
+
 	fmt.Println("Starting the actor...")
 	if err := ui.Run(); err != nil {
 		log.Errorf("error running text UI: %s", err)

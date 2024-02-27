@@ -96,6 +96,13 @@ func Init(configName string) error {
 		os.Exit(0)
 	}
 
+	InitLogging()
+	InitP2P()
+
+	if !RelayMode() {
+		InitActor()
+	}
+
 	return nil
 
 }

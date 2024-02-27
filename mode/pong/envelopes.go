@@ -50,7 +50,7 @@ func envelopeReply(ctx context.Context, a *actor.Actor, m *msg.Message) error {
 	// We need to reverse the to and from here. The message is from the other actor, and we are sending to them.
 	replyTo := m.From
 	replyFrom := m.To
-	replyMsg := []byte(viper.GetString("pong.reply"))
+	replyMsg := []byte(viper.GetString("mode.pong.reply"))
 
 	// Broadcast are sent to the topic, and the topic is the DID of the recipient
 	reply, err := msg.New(replyFrom, replyTo, replyMsg, "text/plain", a.Keyset.SigningKey.PrivKey)

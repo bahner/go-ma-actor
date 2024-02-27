@@ -1,4 +1,0 @@
-# TODO
-
-Make sure that only clients with the same rendezvous string are relayed.
-Actually no need for a full keyset, should just be the privkey. Nie and short

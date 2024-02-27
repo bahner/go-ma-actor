@@ -31,7 +31,6 @@ $(NAME): tidy
 
 clean:
 	rm -f $(NAME)
-	make -C cmd/relay clean
 
 console:
 	docker-compose up -d
@@ -43,17 +42,13 @@ distclean: clean
 down:
 	docker-compose down
 
-relay:
-	make -C cmd/relay go-ma-relay
-
 image:
 	docker build \
 		-t $(IMAGE) \
 		--build-arg "BUILD_IMAGE=$(BUILD_IMAGE)" \
 		.
 
-install: relay $(NAME)
-	sudo make -C cmd/relay install
+install: $(NAME)
 	sudo install -m755 $(NAME) $(DESTDIR)$(PREFIX)/bin/$(NAME)
 
 
