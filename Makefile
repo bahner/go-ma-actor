@@ -6,6 +6,10 @@ export VERSION = "v0.0.2"
 
 GO ?= go
 PREFIX ?= /usr/local
+KEYSET = go-ma-create-keyset
+FETCH = go-ma-fetch-document
+ALL =  $(FETCH)  $(KEYSET) $(NAME)
+BIN = $(PREFIX)/bin
 
 ifneq (,$(wildcard ./.env))
     include .env
@@ -14,10 +18,21 @@ endif
 
 default: clean tidy $(NAME)
 
-all: clean tidy install
+all: tidy $(ALL)
 
-build: $(NAME)
+$(BIN): $(ALL)
+	test -d $(BIN)
+	sudo install -m755 $(ALL) $(DESTDIR)$(BIN)
+	
+$(NAME): tidy
+	$(GO) build -o $(NAME) ./cmd/actor
 
+$(FETCH): tidy
+	$(GO) build -o $(FETCH) ./cmd/fetch_document
+	
+$(KEYSET): tidy
+	$(GO) build -o $(KEYSET) ./cmd/create_keyset
+	
 init: go.mod tidy
 
 go.mod:
@@ -26,11 +41,8 @@ go.mod:
 tidy: go.mod
 	$(GO) mod tidy
 
-$(NAME): tidy
-	$(GO) build -o $(NAME)
-
 clean:
-	rm -f $(NAME)
+	rm -f $(ALL)
 
 console:
 	docker-compose up -d
@@ -48,9 +60,7 @@ image:
 		--build-arg "BUILD_IMAGE=$(BUILD_IMAGE)" \
 		.
 
-install: $(NAME)
-	sudo install -m755 $(NAME) $(DESTDIR)$(PREFIX)/bin/$(NAME)
-
+install: $(BIN)
 
 lint:
 	find -name "*.yaml" -exec yamllint -c .yamllintrc {} \;

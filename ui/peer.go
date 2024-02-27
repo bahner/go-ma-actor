@@ -3,7 +3,7 @@ package ui
 import (
 	"fmt"
 
-	"github.com/bahner/go-ma-actor/peer"
+	"github.com/bahner/go-ma-actor/p2p/peer"
 	log "github.com/sirupsen/logrus"
 )
 

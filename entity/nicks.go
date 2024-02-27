@@ -3,7 +3,7 @@ package entity
 import (
 	"errors"
 
-	"github.com/bahner/go-ma-actor/db"
+	"github.com/bahner/go-ma-actor/config/db"
 	nanoid "github.com/matoous/go-nanoid/v2"
 	_ "github.com/mattn/go-sqlite3"
 )

@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/bahner/go-ma-actor/internal"
+	"github.com/bahner/go-ma-actor/entity/actor"
 )
 
 func (ui *ChatUI) startActor() {
@@ -25,5 +25,5 @@ func (ui *ChatUI) startActor() {
 	go ui.handleIncomingMessages(ctx, ui.a.Entity)
 	fmt.Println("done.")
 
-	internal.HelloWorld(ctx, ui.a, ui.b)
+	actor.HelloWorld(ctx, ui.a, ui.b)
 }

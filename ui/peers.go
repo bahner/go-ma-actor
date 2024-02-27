@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/bahner/go-ma-actor/peer"
+	"github.com/bahner/go-ma-actor/p2p/peer"
 )
 
 // refreshPeers pulls the list of peers currently in the chat room and

@@ -6,7 +6,6 @@ import (
 
 	"github.com/bahner/go-ma-actor/config"
 	"github.com/bahner/go-ma-actor/entity/actor"
-	"github.com/bahner/go-ma-actor/internal"
 	"github.com/bahner/go-ma-actor/p2p"
 	p2ppubsub "github.com/libp2p/go-libp2p-pubsub"
 	log "github.com/sirupsen/logrus"
@@ -28,7 +27,7 @@ func Run(ctx context.Context, a *actor.Actor, b *p2ppubsub.Topic, n *p2p.P2P) {
 	go handleEnvelopeEvents(ctx, a)
 	go handleMessageEvents(ctx, a)
 
-	internal.HelloWorld(ctx, a, b)
+	actor.HelloWorld(ctx, a, b)
 
 	fmt.Printf("Running in pong mode as %s@%s\n", a.Entity.DID.Id, n.Node.ID())
 	fmt.Println("Press Ctrl-C to stop.")

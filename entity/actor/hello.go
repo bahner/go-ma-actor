@@ -1,14 +1,13 @@
-package internal
+package actor
 
 import (
 	"context"
 
-	"github.com/bahner/go-ma-actor/entity/actor"
 	"github.com/bahner/go-ma/msg"
 	p2ppubsub "github.com/libp2p/go-libp2p-pubsub"
 )
 
-func HelloWorld(ctx context.Context, a *actor.Actor, b *p2ppubsub.Topic) {
+func HelloWorld(ctx context.Context, a *Actor, b *p2ppubsub.Topic) {
 
 	if a == nil {
 		return

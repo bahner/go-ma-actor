@@ -3,7 +3,7 @@ package peer
 import (
 	"errors"
 
-	"github.com/bahner/go-ma-actor/db"
+	"github.com/bahner/go-ma-actor/config/db"
 	_ "github.com/mattn/go-sqlite3"
 )
 

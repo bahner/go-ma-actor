@@ -7,7 +7,7 @@ import (
 	"github.com/bahner/go-ma"
 	"github.com/bahner/go-ma-actor/config"
 	"github.com/bahner/go-ma-actor/p2p"
-	actorPeer "github.com/bahner/go-ma-actor/peer"
+	actorPeer "github.com/bahner/go-ma-actor/p2p/peer"
 	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/multiformats/go-multiaddr"
 )
