@@ -8,6 +8,7 @@ import (
 	"github.com/bahner/go-ma/did/doc"
 	"github.com/bahner/go-ma/msg"
 	p2ppubsub "github.com/libp2p/go-libp2p-pubsub"
+	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -15,21 +16,23 @@ const (
 )
 
 type Entity struct {
+
+	// Live non-stored data
 	// Context to be able to clean up entity.
 	Ctx    context.Context
 	Cancel context.CancelFunc
+	Topic  *p2ppubsub.Topic
 
-	// External structs
-	DID did.DID
-	Doc *doc.Document
-
-	Topic *p2ppubsub.Topic
+	//Stored data
+	DID  did.DID
+	Doc  *doc.Document
+	Nick string // NOT the fragment. Can be but, nut needn't be.
 
 	// Channels
 	Messages chan *msg.Message
 }
 
-// Create a new entity from a DID and give it a nick.
+// Create a new entity from a DID
 func New(d did.DID) (*Entity, error) {
 
 	// Only 1 topic, but this is where it's at! One topic per entity.
@@ -52,8 +55,13 @@ func New(d did.DID) (*Entity, error) {
 		Messages: make(chan *msg.Message, MESSAGES_BUFFERSIZE),
 	}
 
+	err = e.getOrCreateAndSetNick()
+	if err != nil {
+		log.Debugf("entity/new: failed to get and set nick: %s", err)
+	}
+
 	// Cache the entity
-	store(e)
+	entities.Store(d.Id, e)
 
 	return e, nil
 }
@@ -71,18 +79,18 @@ func NewFromDID(id string) (*Entity, error) {
 }
 
 // Get an entity from the global map.
-// The input is a full did string. If one is created it will have no Nick.
-// The function should do the required lookups to get the nick.
-// And verify the entity.
 func GetOrCreate(id string) (*Entity, error) {
 
-	// Check if we have one cahced
-	e := load(id)
+	// Check if we have one cached
+	e := load(GetDID(id)) // Be nice and see if this is a nick.
 	if e != nil {
+		err := e.getOrCreateAndSetNick() // If this fails nothing should happen.
+		if err != nil {
+			log.Debugf("GetOrCreate: failed to find existing nick: %s", err)
+		}
 		return e, nil
 	}
 
-	// Create a DID from the string
 	d, err := did.New(id)
 	if err != nil {
 		return nil, fmt.Errorf("GetOrCreate: %w", err)
@@ -115,4 +123,8 @@ func GetOrCreateFromDID(id did.DID) (*Entity, error) {
 	}
 
 	return e, nil
+}
+
+func Lookup(id string) (*Entity, error) {
+	return GetOrCreate(GetDID(id))
 }

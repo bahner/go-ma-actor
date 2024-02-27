@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/bahner/go-ma-actor/alias"
 	"github.com/bahner/go-ma-actor/peer"
 )
 
@@ -23,9 +22,9 @@ func (ui *ChatUI) refreshPeers() {
 	for _, p := range peers {
 
 		ap, err := peer.GetOrCreate(p)
-		ap.Alias = alias.GetOrCreateNodeAlias(ap.ID)
+
 		if err == nil {
-			plist = append(plist, ap.Alias)
+			plist = append(plist, ap.Nick)
 		}
 	}
 

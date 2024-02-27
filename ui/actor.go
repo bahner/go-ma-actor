@@ -5,12 +5,10 @@ import (
 	"fmt"
 
 	"github.com/bahner/go-ma-actor/internal"
-	log "github.com/sirupsen/logrus"
 )
 
 func (ui *ChatUI) startActor() {
 
-	log.Info("Starting actor...")
 	ctx := context.Background()
 
 	// Now that the UI is created, we can start the actor and subscribe to its events.

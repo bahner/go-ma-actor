@@ -35,7 +35,7 @@ func generateConfigFile(actor string, node string) {
 			"home":     defaultHome,
 			"nick":     viper.GetString("actor.nick"),
 		},
-		"aliases": defaultAliases,
+		"aliases": defaultAliasesDB,
 		"log": map[string]interface{}{
 			"level": defaultLogLevel,
 			"file":  logFile,

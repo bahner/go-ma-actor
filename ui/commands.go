@@ -5,6 +5,7 @@ import (
 )
 
 func (ui *ChatUI) handleCommands(input string) {
+	input = strings.TrimSpace(input) // Clear the cruft, if any
 	args := strings.Split(input, " ")
 
 	switch args[0] {
@@ -26,18 +27,14 @@ func (ui *ChatUI) handleCommands(input string) {
 		ui.triggerDiscovery()
 	case "/enter":
 		ui.handleEnterCommand(args)
-	case "/nick":
-		ui.handleNickCommand(args)
-	case "/alias":
-		ui.handleAliasCommand(args)
-	case "/aliases":
-		ui.handleAliasListCommand(args)
+	case "/peer":
+		ui.handlePeerCommand(args)
+	case "/entity":
+		ui.handleEntityCommand(args)
 	case "/whereis":
 		ui.handleWhereisCommand(args)
 	case "/me":
 		ui.handleMeCommands(args)
-	case "discover":
-		ui.triggerDiscovery()
 	case "/refresh":
 		ui.refreshPeers()
 	default:

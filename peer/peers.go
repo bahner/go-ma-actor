@@ -1,65 +1,167 @@
 package peer
 
-var peers map[string]*Peer
+import (
+	"errors"
 
-func init() {
-	peers = make(map[string]*Peer)
-}
+	"github.com/bahner/go-ma-actor/db"
+	_ "github.com/mattn/go-sqlite3"
+)
 
-// add adds a peer to the map
-func add(p *Peer) {
-	peers[p.ID] = p
-}
+const (
+	_SELECT = "SELECT node FROM nodes WHERE id =?"
+	_UPSERT = "INSERT INTO nodes (id, node) VALUES (?, ?) ON CONFLICT(id) DO UPDATE SET node = ?"
+	_DELETE = "DELETE FROM nodes WHERE id = ?"
+	_PEERS  = "SELECT node FROM nodes"
+)
 
-// get returns a peer from the map
-func get(id string) *Peer {
-	return peers[id]
-}
+const (
+	defaultAliasLength = 8
+)
 
-func GetAliasByID(id string) string {
-	return peers[id].Alias
-}
+var (
+	ErrNotFound = errors.New("Peer not found")
+)
 
-func GetIDByAlias(alias string) string {
-	p := GetByAlias(alias)
-	return p.ID
-}
+// Sets a node in the database
+// The key is the node's ID
+func Set(p Peer) error {
 
-func GetByAlias(alias string) *Peer {
-	for _, p := range peers {
-		if p.Alias == alias {
-			return p
-		}
+	d, err := db.Get()
+	if err != nil {
+		return err
 	}
+
+	v, err := p.MarshalToCBOR()
+	if err != nil {
+		return err
+	}
+	_, err = d.Exec(_UPSERT, p.ID, v, v)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
-// List returns a list of peers
-func List() []*Peer {
-	var result []*Peer
-	for _, p := range peers {
-		result = append(result, p)
+// Fetches a nodefrom the database
+// Returns a Peer{} if it does not exist
+func Get(id string) (Peer, error) {
+
+	db, err := db.Get()
+	if err != nil {
+		return Peer{}, err
 	}
-	return result
+
+	var (
+		p Peer
+		v []byte
+	)
+
+	err = db.QueryRow(_SELECT, id).Scan(&v)
+	if err != nil {
+		return Peer{}, err
+	}
+
+	err = UnmarshalFromCBOR(v, &p)
+	if err == nil {
+		return p, nil
+	}
+
+	return Peer{}, err
 }
 
-// Remove removes a peer from the map
-func Delete(id string) {
-	delete(peers, id)
+// Removes a node from the database if it exists
+func Remove(id string) error {
+
+	d, err := db.Get()
+	if err != nil {
+		return err
+	}
+
+	_, err = d.Exec(_DELETE, id)
+	if err != nil {
+		return err
+	}
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func ListAliases() []string {
-	var result []string
-	for _, p := range peers {
-		result = append(result, p.Alias)
+// Returns the ID of a node. Returns the input if the node does not exist
+func GetID(id string) string {
+
+	p, err := LookupNick(id)
+	if err == nil {
+		return p.ID
 	}
-	return result
+
+	return id
+
 }
 
-func ListIDs() []string {
-	var result []string
-	for _, p := range peers {
-		result = append(result, p.ID)
+func LookupNick(id string) (Peer, error) {
+
+	peers, err := Peers()
+	if err != nil {
+		return Peer{}, err
 	}
-	return result
+
+	for _, p := range peers {
+		if p.Nick == id {
+			return p, nil
+		}
+	}
+
+	return Peer{}, ErrNotFound
+}
+
+func Lookup(id string) (Peer, error) {
+
+	// Lookup Nick first, that's probably the most used case
+	p, err := LookupNick(id)
+	if err == nil {
+		return p, nil
+	}
+
+	return Get(id)
+}
+
+// Peers returns a slice of all peers in the database
+// If an error occurs, an empty slice is returned
+func Peers() ([]Peer, error) {
+	var (
+		peers = []Peer{}
+		p     Peer
+		b     []byte
+	)
+
+	d, err := db.Get()
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := d.Query(_PEERS)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		err = rows.Scan(&b)
+		if err != nil {
+			return nil, err
+		}
+		p = Peer{}
+		err = UnmarshalFromCBOR(b, &p)
+		if err != nil || p.ID == "" || p.Nick == "" || p.AddrInfo == nil {
+			continue
+		}
+
+		peers = append(peers, p)
+	}
+
+	return peers, nil
 }

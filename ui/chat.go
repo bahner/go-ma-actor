@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/bahner/go-ma-actor/alias"
+	"github.com/bahner/go-ma-actor/entity"
 	"github.com/bahner/go-ma/msg"
 	log "github.com/sirupsen/logrus"
 )
@@ -13,26 +13,42 @@ import (
 // with the sender's nick highlighted in green.
 // func (ui *ChatUI) displayChatMessage(cm *msg.Message) {
 func (ui *ChatUI) displayChatMessage(cm *msg.Message) {
-	from := alias.GetOrCreateEntityAlias(cm.From)
-	prompt := withColor("black", fmt.Sprintf("<%s>:", from))
+	e, err := entity.Lookup(cm.From)
+	if err != nil {
+		log.Debugf("entity lookup error: %s", err)
+		return
+	}
+	prompt := withColor("black", fmt.Sprintf("<%s>:", e.Nick))
 	fmt.Fprintf(ui.msgW, "%s %s\n", prompt, string(cm.Content))
 }
 
 func (ui *ChatUI) displayBroadcastMessage(cm *msg.Message) {
-	from := alias.GetOrCreateEntityAlias(cm.From)
-	prompt := withColor("blue", fmt.Sprintf("<%s>:", from))
+	e, err := entity.Lookup(cm.From)
+	if err != nil {
+		log.Debugf("entity lookup error: %s", err)
+		return
+	}
+	prompt := withColor("blue", fmt.Sprintf("<%s>:", e.Nick))
 	fmt.Fprintf(ui.msgW, "%s %s\n", prompt, string(cm.Content))
 }
 
 func (ui *ChatUI) displayPrivateMessage(cm *msg.Message) {
-	from := alias.GetOrCreateEntityAlias(cm.From)
-	prompt := withColor("green", fmt.Sprintf("<%s>:", from))
+	e, err := entity.Lookup(cm.From)
+	if err != nil {
+		log.Debugf("entity lookup error: %s", err)
+		return
+	}
+	prompt := withColor("green", fmt.Sprintf("<%s>:", e.Nick))
 	fmt.Fprintf(ui.msgW, "%s %s\n", prompt, string(cm.Content))
 }
 
 func (ui *ChatUI) displaySentPrivateMessage(cm *msg.Message) {
-	to := alias.GetOrCreateEntityAlias(cm.To)
-	prompt := withColor("green", fmt.Sprintf("@%s:", to))
+	e, err := entity.Lookup(cm.To)
+	if err != nil {
+		log.Debugf("entity lookup error: %s", err)
+		return
+	}
+	prompt := withColor("green", fmt.Sprintf("@%s:", e.Nick))
 	fmt.Fprintf(ui.msgW, "%s %s\n", prompt, string(cm.Content))
 }
 

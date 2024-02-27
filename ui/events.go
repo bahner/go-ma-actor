@@ -22,8 +22,8 @@ func withColor(color, msg string) string {
 }
 
 func (ui *ChatUI) displaySystemMessage(msg string) {
-	prompt := withColor("cyan", "[SYSTEM]:")
-	fmt.Fprintf(ui.msgW, "%s %s\n", prompt, msg)
+	out := withColor("purple", msg)
+	fmt.Fprintf(ui.msgW, "%s\n", out)
 }
 
 // handleEvents runs an event loop that sends user input to the chat room
@@ -41,7 +41,6 @@ func (ui *ChatUI) handleEvents() {
 				log.Debug("hadleEvents got command: ", input)
 				ui.handleCommands(input)
 			} else {
-				log.Debug("hadleEvents got message: ", input)
 				ui.handleChatMessage(input)
 			}
 

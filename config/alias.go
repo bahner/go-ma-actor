@@ -6,18 +6,18 @@ import (
 	"github.com/spf13/viper"
 )
 
-const defaultAliases = "~/.ma/aliases.db"
+const defaultAliasesDB = "~/.ma/aliases.db"
 
 func init() {
 
-	pflag.String("aliases", defaultAliases, "File to *write* node aliases to. If the file does not exist, it will be created.")
-	viper.BindPFlag("aliases", pflag.Lookup("aliases"))
-	viper.SetDefault("aliases", defaultAliases)
+	pflag.String("db-aliases", defaultAliasesDB, "File to *write* node aliases to. If the file does not exist, it will be created.")
+	viper.BindPFlag("db.aliases", pflag.Lookup("db-aliases"))
+	viper.SetDefault("db.aliases", defaultAliasesDB)
 }
 
 // Returns expanded path to the aliases file
 // If the expansion fails it returns an empty string
-func GetAliases() string {
+func GetAliasesDB() string {
 
 	path := viper.GetString("aliases")
 	path, err := homedir.Expand(path)

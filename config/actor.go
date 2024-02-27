@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 
@@ -13,7 +14,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const defaultNick string = "skeleton"
+const (
+	defaultNick string = "skeleton"
+)
 
 func init() {
 	// Keyset
@@ -183,4 +186,18 @@ func GetDocPublishOptions() *doc.PublishOptions {
 
 func GetPublishContext() context.Context {
 	return context.Background()
+}
+
+// Returns expanded path to the peers file
+// If the expansion fails it returns an empty string
+func GetActorsDB() string {
+
+	path := viper.GetString("db.actors")
+	path, err := homedir.Expand(path)
+	if err != nil {
+		return ""
+	}
+
+	return path
+
 }

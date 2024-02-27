@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/bahner/go-ma-actor/alias"
 	"github.com/bahner/go-ma-actor/entity"
 	"github.com/bahner/go-ma/did"
 	"github.com/bahner/go-ma/msg"
@@ -18,7 +17,7 @@ func (ui *ChatUI) handleMsgCommand(args []string) {
 
 		recipient := args[1]
 		if !did.IsValid(recipient) {
-			recipient = alias.LookupEntityNick(recipient)
+			recipient = entity.GetDID(recipient)
 		}
 
 		if recipient == "" {

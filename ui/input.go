@@ -4,7 +4,6 @@ import (
 	"github.com/gdamore/tcell/v2"
 
 	"github.com/rivo/tview"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
@@ -40,7 +39,6 @@ func (ui *ChatUI) setupInputField() *tview.InputField {
 				return nil             // event handled
 			}
 		}
-		log.Debugf("inputCapture: %v", event)
 		return event // let other keys pass through
 	})
 

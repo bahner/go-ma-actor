@@ -1,15 +1,16 @@
 package entity
 
 import (
+	"errors"
 	"sync"
+
+	_ "github.com/mattn/go-sqlite3"
 )
 
-var entities sync.Map
-
-// store adds an entity to the map
-func store(e *Entity) {
-	entities.Store(e.DID.Id, e)
-}
+var (
+	ErrNotFound = errors.New("Entity not found")
+	entities    sync.Map
+)
 
 // load returns an entity from the map
 func load(id string) *Entity {
@@ -18,3 +19,7 @@ func load(id string) *Entity {
 	}
 	return nil
 }
+
+// func Entities() *sync.Map {
+// 	return &entities
+// }

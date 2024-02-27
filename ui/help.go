@@ -33,10 +33,8 @@ func (ui *ChatUI) handleHelpCommands(args []string) {
 			ui.handleHelpEnterCommand(args)
 		case "resolve":
 			ui.handleHelpResolveCommand(args)
-		case "alias":
-			ui.handleHelpAliasCommands(args)
-		case "aliases":
-			ui.handleHelpAliasesCommand(args)
+		// case "alias":
+		// 	ui.handleHelpAliasCommands(args)
 		case "whereis":
 			ui.handleHelpWhereisCommand(args)
 		case "me":

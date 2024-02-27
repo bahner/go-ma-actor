@@ -3,7 +3,6 @@ package ui
 import (
 	"context"
 
-	"github.com/bahner/go-ma-actor/alias"
 	"github.com/bahner/go-ma-actor/entity"
 	log "github.com/sirupsen/logrus"
 )
@@ -31,22 +30,25 @@ func (ui *ChatUI) handleEnterCommand(args []string) {
 // INput is the nick or DID of the entity.
 func (ui *ChatUI) enterEntity(d string, force bool) error {
 
-	err := ui.a.Verify()
+	var (
+		e   *entity.Entity
+		err error
+	)
+
+	err = ui.a.Verify()
 	if err != nil {
 		return err
 	}
 
-	// First lookup any possible alias for the entity
-	d = alias.LookupEntityNick(d)
-	me := ui.a.Entity.DID.Id
+	// If we have a cached entity for this nick, use it.
+	e, err = entity.Lookup(d)
+	if err != nil {
+		// If we don't have it stored, then create it.
+		e, err = entity.GetOrCreate(d)
+	}
 
-	// if d == me {
-	// 	return ErrSelfEntryWarning
-	// }
-
-	e, err := entity.GetOrCreate(d)
 	// Without a valid entity, we can't do anything.
-	if err != nil || e == nil || e.Verify() != nil {
+	if err != nil || e.Verify() != nil {
 		return err
 	}
 
@@ -72,17 +74,13 @@ func (ui *ChatUI) enterEntity(d string, force bool) error {
 	log.Debugf("Setting new entity context for %s", e.DID.Id)
 	ui.currentEntityCtx, ui.currentEntityCancel = context.WithCancel(context.Background())
 
-	entityNick := alias.LookupEntityNick(e.DID.Id)
-	if entityNick != e.DID.Id {
-		log.Debugf("Changing entity nick from %s to %s", e.DID.Id, entityNick)
-	}
 	ui.msgBox.Clear()
-	ui.msgBox.SetTitle(entityNick)
+	ui.msgBox.SetTitle(e.Nick)
 
 	// Start handling the new topic
 	// This *must* be called *after* the entity is set!
-
-	if d != me {
+	// And only unless we're entering self. Then there's no need. It's already running.
+	if ui.e.DID.Id != ui.a.Entity.DID.Id {
 		// Let the actor subscribe any new entity, so
 		// that envelopes are passed on correctly.
 		go ui.a.Subscribe(ui.currentEntityCtx, ui.e)

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"net/http/pprof"
 
 	"github.com/bahner/go-ma-actor/config"
 	"github.com/bahner/go-ma-actor/entity"
@@ -26,15 +27,6 @@ func main() {
 
 	fmt.Print("Initialising libp2p...")
 	p, err := p2p.Init(nil)
-	if err != nil {
-		log.Fatalf("failed to initialize p2p: %v", err)
-	}
-	fmt.Println("done.")
-
-	// We need to discover peers before we can do anything else.
-	// So this is a blocking call.
-	fmt.Print("Discovering peers...")
-	p.DiscoverPeers()
 	if err != nil {
 		log.Fatalf("failed to initialize p2p: %v", err)
 	}
@@ -68,6 +60,15 @@ func main() {
 		log.Fatalf("%s is not a valid actor: %v", id, err)
 	}
 
+	// We need to discover peers before we can do anything else.
+	// So this is a blocking call.
+	fmt.Print("Discovering peers...")
+	p.DiscoverPeers()
+	if err != nil {
+		log.Fatalf("failed to initialize p2p: %v", err)
+	}
+	fmt.Println("done.")
+
 	fmt.Print("Starting web server...")
 	// Start a simple web server to handle incoming requests.
 	// This is defined in web.go. It makes it possible to add extra parameters to the handler.
@@ -75,9 +76,11 @@ func main() {
 		P2P:    p,
 		Entity: a.Entity,
 	}
-	http.HandleFunc("/", h.WebHandler)
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", h.WebHandler)
+	mux.HandleFunc("/profile", pprof.Profile)
+	go http.ListenAndServe(config.GetHttpSocket(), mux)
 	log.Infof("Listening on %s", config.GetHttpSocket())
-	go http.ListenAndServe(config.GetHttpSocket(), nil)
 	fmt.Println("done.")
 	fmt.Println("Web server started on http://" + config.GetHttpSocket() + "/")
 

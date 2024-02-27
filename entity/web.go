@@ -5,9 +5,9 @@ import (
 	"net/http"
 
 	"github.com/bahner/go-ma"
-	"github.com/bahner/go-ma-actor/alias"
 	"github.com/bahner/go-ma-actor/config"
 	"github.com/bahner/go-ma-actor/p2p"
+	actorPeer "github.com/bahner/go-ma-actor/peer"
 	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/multiformats/go-multiaddr"
 )
@@ -79,8 +79,14 @@ func (d *WebHandlerDocument) String() string {
 	// Peers with Same Rendezvous
 	if len(d.PeersWithSameRendez) > 0 {
 		html += fmt.Sprintf("<h2>Discovered peers (%d):</h2>\n<ul>", len(d.PeersWithSameRendez))
-		for _, peer := range d.PeersWithSameRendez {
-			html += "<li>" + peer.String() + "(" + alias.GetOrCreateNodeAlias(peer.String()) + ")</li>"
+		for _, pr := range d.PeersWithSameRendez {
+			p, err := actorPeer.Lookup(pr.String())
+			if err == nil {
+				html += "<li>" + p.ID + "(" + p.Nick + ")</li>"
+			} else {
+				html += "<li>" + pr.String() + "</li>"
+			}
+
 		}
 		html += "</ul>"
 	}

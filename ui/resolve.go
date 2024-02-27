@@ -1,7 +1,6 @@
 package ui
 
 import (
-	"github.com/bahner/go-ma-actor/alias"
 	"github.com/bahner/go-ma-actor/entity"
 	"github.com/bahner/go-ma/api"
 	"github.com/bahner/go-ma/did/doc"
@@ -11,8 +10,7 @@ func (ui *ChatUI) handleResolveCommand(args []string) {
 
 	if len(args) == 2 {
 
-		id := alias.LookupEntityNick(args[1])
-
+		id := args[1]
 		e, err := entity.GetOrCreate(id)
 		if err != nil {
 			ui.displaySystemMessage("Error fetching entity: " + err.Error())
