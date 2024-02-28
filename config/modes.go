@@ -20,7 +20,7 @@ func init() {
 	pflag.Bool("pong", defaultPongMode, "Pong mode with automatic replies and no UI.")
 	viper.BindPFlag("mode.pong.enabled", pflag.Lookup("pong"))
 
-	pflag.Bool("relay", defaultRelayMode, "The relay to use for the p2p network.")
+	pflag.Bool("relay", defaultRelayMode, "Relay mode with no actor, to just listen and relay messages.")
 	viper.BindPFlag("mode.relay", pflag.Lookup("relay"))
 
 	pflag.Bool("debug", defaultDebugMode, "Enable debug mode. Adds pprof and other debug endpoints to the webserver.")
