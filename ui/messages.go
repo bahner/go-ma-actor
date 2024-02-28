@@ -29,7 +29,7 @@ func (ui *ChatUI) handleIncomingMessages(ctx context.Context, e *entity.Entity) 
 
 			// Accept messages to the general topic or to the actor.
 			if m.To == t || m.To == me {
-				log.Debugf("handleIncomingMessages: Accepted message of type %s from %s to %s", m.MimeType, m.From, m.To)
+				log.Debugf("handleIncomingMessages: Accepted message of type %s from %s to %s", m.Type, m.From, m.To)
 				ui.chMessage <- m
 				continue
 			}

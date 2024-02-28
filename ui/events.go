@@ -45,7 +45,7 @@ func (ui *ChatUI) handleEvents() {
 			}
 
 		case m := <-ui.chMessage:
-			if m.MimeType == ma.BROADCAST_MIME_TYPE {
+			if m.Type == ma.BROADCAST_MESSAGE_TYPE {
 				ui.displayBroadcastMessage(m)
 				continue
 			}
