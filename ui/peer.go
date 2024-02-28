@@ -7,113 +7,161 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// PEER
 func (ui *ChatUI) handleHelpPeerCommands(args []string) {
-	ui.displaySystemMessage("Usage: /peer remove|show|nick")
+	ui.displaySystemMessage("Usage: /peer show|nick")
 	ui.displaySystemMessage("Manages peer info")
 }
 
 func (ui *ChatUI) handlePeerCommand(args []string) {
 
-	if len(args) > 2 {
+	if len(args) >= 2 {
 		command := args[1]
 		switch command {
 		case "nick":
 			ui.handlePeerNickCommand(args)
 			return
-		case "remove":
-			ui.handlePeerRemoveCommand(args)
-			return
 		case "show":
 			ui.handlePeerShowCommand(args)
 			return
 		default:
-			ui.displaySystemMessage("Unknown alias entity command: " + command)
+			ui.displaySystemMessage("Unknown peer command: " + command)
 		}
 	}
 
 	ui.handleHelpPeerCommands(args)
-
 }
 
-func (ui *ChatUI) handleHelpPeerRemoveCommand() {
-	ui.displaySystemMessage("/peer remove <id|nick>")
-}
-
-func (ui *ChatUI) handlePeerRemoveCommand(args []string) {
-
-	if len(args) == 3 {
-		err := peer.Remove(args[3])
-		if err != nil {
-			ui.displaySystemMessage("Error removing peer: " + err.Error())
-			return
-		}
-	} else {
-		ui.handleHelpPeerRemoveCommand()
-	}
-
-}
-
-func (ui *ChatUI) handleHelpPeerNickCommand(args []string) {
-	ui.displaySystemMessage("Usage: /peer nick <id> <nick>")
-	ui.displaySystemMessage("Set a nick for a peer")
-}
-
-func (ui *ChatUI) handlePeerNickCommand(args []string) {
-
-	// No nick given, hence just show the existing nick
-	if len(args) == 3 {
-		p, err := peer.Lookup(args[2])
-		if err != nil {
-			ui.displaySystemMessage("Error fetching alias: " + err.Error())
-			return
-		}
-		log.Debugf("%s: %s", p, p.Nick)
-		ui.displaySystemMessage(fmt.Sprintf("Alias for %s is set to %s", p.ID, p.Nick))
-		return
-	}
-
-	if len(args) == 4 {
-		p, err := peer.Lookup(args[2])
-		if err != nil {
-			ui.displaySystemMessage("Error fetching alias: " + err.Error())
-			return
-		}
-		p.Nick = args[3]
-		err = peer.Set(p)
-		if err != nil {
-			ui.displaySystemMessage("Error setting alias: " + err.Error())
-			return
-		}
-		log.Debugf("Setting alias for %s to %s", p.ID, p.Nick)
-		ui.displaySystemMessage(fmt.Sprintf("Alias for %s set to %s", p.ID, p.Nick))
-		return
-	}
-
-	ui.handleHelpPeerNickCommand(args)
-
-}
-
+// SHOW
 func (ui *ChatUI) handlePeerShowCommand(args []string) {
 
 	if len(args) == 3 {
 		id := args[2]
-		val, err := peer.Lookup(id)
+		p, err := peer.Lookup(id)
 		if err != nil {
 			ui.displaySystemMessage("Error: " + err.Error())
 			return
 		}
-		peerInfo := fmt.Sprintf("ID: %s\nNick: %s\nAddrs:", val.ID, val.Nick)
-		ui.displaySystemMessage(peerInfo)
-		for _, a := range val.AddrInfo.Addrs {
-			ui.displaySystemMessage(a.String())
+		ui.displaySystemMessage("ID: " + p.ID)
+		ui.displaySystemMessage("Nick: " + p.Nick)
+		ui.displaySystemMessage("Maddrs:")
+		for _, maddr := range p.AddrInfo.Addrs {
+			ui.displaySystemMessage(maddr.String())
 		}
 	} else {
 		ui.handleHelpPeerShowCommand(args)
 	}
-
 }
 
 func (ui *ChatUI) handleHelpPeerShowCommand(args []string) {
 	ui.displaySystemMessage("Usage: /peer show <id|nick>")
-	ui.displaySystemMessage("Shows the peer info")
+	ui.displaySystemMessage("       Shows the peer info")
+}
+
+// NICK
+func (ui *ChatUI) handleHelpPeerNickCommand(args []string) {
+	ui.displaySystemMessage("Usage: /peer nick list|set|show")
+	ui.displaySystemMessage("       Manages peer nicks")
+}
+
+func (ui *ChatUI) handlePeerNickCommand(args []string) {
+
+	if len(args) >= 3 {
+		command := args[2]
+		switch command {
+		case "list":
+			ui.handlePeerNickListCommand(args)
+			return
+		case "set":
+			ui.handlePeerNickSetCommand(args)
+			return
+		case "show":
+			ui.handlePeerNickShowCommand(args)
+			return
+		default:
+			ui.displaySystemMessage("Unknown alias peer command: " + command)
+		}
+	}
+
+	ui.handleHelpPeerNickCommand(args)
+}
+
+// LIST
+func (ui *ChatUI) handlePeerNickListCommand(args []string) {
+
+	log.Debugf("peer list command: %v", args)
+	if len(args) == 3 {
+
+		peers, err := peer.Peers()
+		if err != nil {
+			ui.displaySystemMessage("Error: " + err.Error())
+			return
+		}
+		log.Debugf("peers: %v", peers)
+
+		if len(peers) > 0 {
+			for _, v := range peers {
+				ui.displaySystemMessage(v.ID + " : " + v.Nick)
+			}
+		} else {
+			ui.displaySystemMessage("No peers found")
+		}
+	} else {
+		ui.handleHelpPeerNickListCommand(args)
+	}
+}
+
+func (ui *ChatUI) handleHelpPeerNickListCommand(args []string) {
+	ui.displaySystemMessage("Usage: /peer nick list")
+	ui.displaySystemMessage("List peer DID and nicks")
+}
+
+// SET
+func (ui ChatUI) handlePeerNickSetCommand(args []string) {
+
+	if len(args) == 5 {
+		id := args[3]
+		nick := args[4]
+		p, err := peer.Lookup(id)
+		if err != nil {
+			ui.displaySystemMessage("Error: " + err.Error())
+			return
+		}
+		p.Nick = nick
+		peer.Set(p)
+		if err != nil {
+			ui.displaySystemMessage("Error setting peer nick: " + err.Error())
+			return
+		}
+		ui.displaySystemMessage(p.ID + " is now known as " + p.Nick)
+	} else {
+		ui.handleHelpPeerNickSetCommand(args)
+	}
+}
+
+func (ui *ChatUI) handleHelpPeerNickSetCommand(args []string) {
+	ui.displaySystemMessage("Usage: /peer nick set <id|nick> <nick>")
+	ui.displaySystemMessage("       Sets a nick for an peer")
+}
+
+// SHOW
+func (ui *ChatUI) handlePeerNickShowCommand(args []string) {
+
+	if len(args) == 4 {
+		id := args[3]
+		p, err := peer.Lookup(id)
+		if err != nil {
+			ui.displaySystemMessage("Error: " + err.Error())
+			return
+		}
+		peerInfo := fmt.Sprintf(p.ID + " is also known as " + p.Nick)
+		ui.displaySystemMessage(peerInfo)
+	} else {
+		ui.handleHelpPeerNickShowCommand(args)
+	}
+}
+
+func (ui *ChatUI) handleHelpPeerNickShowCommand(args []string) {
+	ui.displaySystemMessage("Usage: /peer nick show <id|nick>")
+	ui.displaySystemMessage("       Shows the peer info")
 }

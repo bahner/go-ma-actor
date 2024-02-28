@@ -72,8 +72,8 @@ func GetNodeMultibasePrivKey() string {
 
 func GetNodeIdentity() crypto.PrivKey {
 
-	log.Debugf("config.GetNodeIdentity: %s", viper.GetString("libp2p.identity"))
-	_, privKeyBytes, err := mb.Decode(viper.GetString("libp2p.identity"))
+	log.Debugf("config.GetNodeIdentity: %s", viper.GetString("p2p.identity"))
+	_, privKeyBytes, err := mb.Decode(viper.GetString("p2p.identity"))
 	if err != nil {
 		log.Debugf("config.GetNodeIdentity: Failed to decode node identity: %v", err)
 		return nil
@@ -125,7 +125,7 @@ func GetDiscoveryContext() (context.Context, func()) {
 }
 
 func GetDiscoveryTimeout() time.Duration {
-	return time.Duration(viper.GetDuration("libp2p.discovery-timeout"))
+	return time.Duration(viper.GetDuration("p2p.discovery-timeout"))
 }
 
 func GetDiscoveryTimeoutString() string {
@@ -133,7 +133,7 @@ func GetDiscoveryTimeoutString() string {
 }
 
 func GetLowWatermark() int {
-	return viper.GetInt("libp2p.connmgr.low-watermark")
+	return viper.GetInt("p2p.connmgr.low-watermark")
 }
 
 func GetLowWatermarkString() string {
@@ -141,7 +141,7 @@ func GetLowWatermarkString() string {
 }
 
 func GetHighWatermark() int {
-	return viper.GetInt("libp2p.connmgr.high-watermark")
+	return viper.GetInt("p2p.connmgr.high-watermark")
 }
 
 func GetHighWatermarkString() string {
@@ -149,7 +149,7 @@ func GetHighWatermarkString() string {
 }
 
 func GetConnMgrGracePeriod() time.Duration {
-	return viper.GetDuration("libp2p.connmgr.grace-period")
+	return viper.GetDuration("p2p.connmgr.grace-period")
 }
 
 func GetConnMgrGraceString() string {
@@ -157,7 +157,7 @@ func GetConnMgrGraceString() string {
 }
 
 func GetListenPort() int {
-	return viper.GetInt("libp2p.port")
+	return viper.GetInt("p2p.port")
 }
 
 func GetListenPortString() string {
@@ -165,7 +165,7 @@ func GetListenPortString() string {
 }
 
 func GetDiscoveryRetryInterval() time.Duration {
-	return viper.GetDuration("libp2p.discovery-retry")
+	return viper.GetDuration("p2p.discovery-retry")
 }
 
 func GetDiscoveryRetryIntervalString() string {

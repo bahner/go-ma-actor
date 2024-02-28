@@ -8,8 +8,9 @@ import (
 )
 
 func (ui *ChatUI) handleHelpEntityCommands(args []string) {
-	ui.displaySystemMessage("Usage: /entity remove|show|nick")
-	ui.displaySystemMessage("Manages entity info")
+	ui.displayHelpUsage("/entity nick list|remove|show|nick")
+	ui.displayHelpText("Manages entity info")
+	ui.displayHelpText("At this point only nick are handled")
 }
 
 func (ui *ChatUI) handleEntityCommand(args []string) {
@@ -17,17 +18,11 @@ func (ui *ChatUI) handleEntityCommand(args []string) {
 	if len(args) >= 2 {
 		command := args[1]
 		switch command {
-		case "list":
-			ui.handleEntityListCommand(args)
-			return
 		case "nick":
 			ui.handleEntityNickCommand(args)
 			return
-		case "remove":
-			ui.handleEntityRemoveCommand(args)
-			return
 		case "show":
-			ui.handleEntityShowCommand(args)
+			ui.handleEntityNickShowCommand(args)
 			return
 		default:
 			ui.displaySystemMessage("Unknown alias entity command: " + command)
@@ -38,10 +33,10 @@ func (ui *ChatUI) handleEntityCommand(args []string) {
 
 }
 
-func (ui *ChatUI) handleEntityListCommand(args []string) {
+func (ui *ChatUI) handleEntityNickListCommand(args []string) {
 
 	log.Debugf("entity list command: %v", args)
-	if len(args) == 2 {
+	if len(args) == 3 {
 
 		nicks := entity.ListNicks()
 		log.Debugf("entities: %v", nicks)
@@ -60,77 +55,86 @@ func (ui *ChatUI) handleEntityListCommand(args []string) {
 }
 
 func (ui *ChatUI) handleHelpEntityListCommand(args []string) {
-	ui.displaySystemMessage("Usage: /entity list")
-	ui.displaySystemMessage("List entity DID and nicks")
-}
-
-func (ui *ChatUI) handleHelpEntityRemoveCommand() {
-	ui.displaySystemMessage("/entity remove <id|nick>")
-}
-
-func (ui *ChatUI) handleEntityRemoveCommand(args []string) {
-
-	if len(args) == 3 {
-		err := entity.RemoveNick(args[3])
-		if err != nil {
-			ui.displaySystemMessage("Error removing entity: " + err.Error())
-			return
-		}
-	} else {
-		ui.handleHelpEntityRemoveCommand()
-	}
-
+	ui.displayHelpUsage("/entity list")
+	ui.displayHelpText("List entity DID and nicks")
 }
 
 func (ui *ChatUI) handleHelpEntityNickCommand(args []string) {
-	ui.displaySystemMessage("Usage: /entity nick <id> <nick>")
-	ui.displaySystemMessage("Set a nick for a entity")
+	ui.displayHelpUsage("/entity nick set|remove|show")
+	ui.displayHelpText("Set a nick for a entity")
+	ui.handleEntityNickSetCommand(args)
+	ui.handleEntityNickRemoveCommand(args)
+	ui.handleEntityNickShowCommand(args)
 }
+
+// case "remove":
+// 	ui.handleEntityRemoveCommand(args)
+// 	return
 
 func (ui *ChatUI) handleEntityNickCommand(args []string) {
 
-	// No nick given, hence just show the existing nick
-	if len(args) == 3 {
-		p, err := entity.Lookup(args[2])
-		if err != nil {
-			ui.displaySystemMessage("Error fetching alias: " + err.Error())
+	if len(args) >= 3 {
+		command := args[2]
+		switch command {
+		case "list":
+			ui.handleEntityNickListCommand(args)
 			return
-		}
-		log.Debugf("%s: %s", p.DID, p.Nick)
-		ui.displaySystemMessage(fmt.Sprintf("Alias for %s is set to %s", p.DID, p.Nick))
-		return
-	}
-
-	if len(args) == 4 {
-		e, err := entity.Lookup(args[2])
-		if err != nil {
-			ui.displaySystemMessage("Error fetching alias: " + err.Error())
+		case "set":
+			ui.handleEntityNickSetCommand(args)
 			return
-		}
-		err = e.SetNick(args[3])
-		if err != nil {
-			ui.displaySystemMessage("Error setting alias: " + err.Error())
+		case "remove":
+			ui.handleEntityNickRemoveCommand(args)
 			return
+		case "show":
+			ui.handleEntityNickShowCommand(args)
+			return
+		default:
+			ui.displaySystemMessage("Unknown alias entity command: " + command)
 		}
-		log.Debugf("Setting alias for %s to %s", e.DID, e.Nick)
-		ui.displaySystemMessage(fmt.Sprintf("Alias for %s set to %s", e.DID, e.Nick))
-		return
 	}
 
 	ui.handleHelpEntityNickCommand(args)
-
 }
 
-func (ui *ChatUI) handleEntityShowCommand(args []string) {
+// SET
+func (ui ChatUI) handleEntityNickSetCommand(args []string) {
 
-	if len(args) == 3 {
-		id := args[2]
+	if len(args) == 5 {
+		id := args[3]
+		nick := args[4]
 		e, err := entity.Lookup(id)
 		if err != nil {
 			ui.displaySystemMessage("Error: " + err.Error())
 			return
 		}
-		entityInfo := fmt.Sprintf("DID: %s\nNick: %s\n", e.DID, e.Nick)
+		e.SetNick(nick)
+		if err != nil {
+			ui.displaySystemMessage("Error setting entity nick: " + err.Error())
+			return
+		}
+		ui.displaySystemMessage(e.DID.Id + " is now known as " + e.Nick)
+	} else {
+		ui.handleHelpEntityNickSetCommand(args)
+	}
+
+}
+
+func (ui *ChatUI) handleHelpEntityNickSetCommand(args []string) {
+	ui.displayHelpUsage("/entity nick set <id|nick> <nick>")
+	ui.displayHelpText("Sets a nick for an entity")
+}
+
+// SHOW
+func (ui *ChatUI) handleEntityNickShowCommand(args []string) {
+
+	if len(args) == 4 {
+		id := args[3]
+		e, err := entity.Lookup(id)
+		if err != nil {
+			ui.displaySystemMessage("Error: " + err.Error())
+			return
+		}
+		entityInfo := fmt.Sprintf(e.DID.Id + " is also known as " + e.Nick)
 		ui.displaySystemMessage(entityInfo)
 	} else {
 		ui.handleHelpEntityShowCommand(args)
@@ -139,6 +143,24 @@ func (ui *ChatUI) handleEntityShowCommand(args []string) {
 }
 
 func (ui *ChatUI) handleHelpEntityShowCommand(args []string) {
-	ui.displaySystemMessage("Usage: /entity show <id|nick>")
-	ui.displaySystemMessage("Shows the entity info")
+	ui.displayHelpUsage("/entity nick show <id|nick>")
+	ui.displayHelpText("Shows the entity info")
+}
+
+// REMOVE
+func (ui *ChatUI) handleEntityNickRemoveCommand(args []string) {
+
+	if len(args) == 4 {
+		id := entity.GetDID(args[3])
+		entity.RemoveNick(id)
+		ui.displaySystemMessage("Nick removed for " + id + " if it existed")
+	} else {
+		ui.handleHelpEntityNickRemoveCommand(args)
+	}
+
+}
+
+func (ui *ChatUI) handleHelpEntityNickRemoveCommand(args []string) {
+	ui.displayHelpUsage("/entity nick remove <id|nick>")
+	ui.displayHelpText("Removes a nick for an entity")
 }

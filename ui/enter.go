@@ -105,5 +105,8 @@ func (ui *ChatUI) enterEntity(d string, force bool) error {
 
 func (ui *ChatUI) handleHelpEnterCommand(args []string) {
 	ui.displaySystemMessage("Usage: /enter <DID>")
-	ui.displaySystemMessage("Enters a chat room with the specified DID")
+	ui.displaySystemMessage("Enters an entity with the specified DID.")
+	ui.displaySystemMessage("What this means is that messages will be sent to this entity.")
+	ui.displaySystemMessage("Everybody 'in' the entity will be able to read the messages.")
+	ui.displaySystemMessage("NB! use /msg to send encrypted messages to any recipient.")
 }
