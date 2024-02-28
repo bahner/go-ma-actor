@@ -1,7 +1,6 @@
 package ui
 
 import (
-	"github.com/bahner/go-ma-actor/config"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
@@ -31,7 +30,7 @@ func (ui *ChatUI) setupApp() {
 	// the peers list takes 20 columns, and the messages take the remaining space
 	ui.chatPanel = tview.NewFlex().
 		AddItem(msgBox, 0, 1, false).
-		AddItem(peersList, config.GetUIPeerslistWidth(), 1, false)
+		AddItem(peersList, getUIPeerslistWidth(), 1, false)
 
 	// The ordering here is a little kludgy, but acceptable for now.
 	// the input fiield setup became rather verbose, so it was moved to its own file.

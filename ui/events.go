@@ -33,7 +33,7 @@ func (ui *ChatUI) displaySystemMessage(msg string) {
 // refreshes the list of peers in the UI.
 
 func (ui *ChatUI) handleEvents() {
-	peerRefreshTicker := time.NewTicker(time.Second)
+	peerRefreshTicker := time.NewTicker(getUIPeersRefreshInterval())
 	defer peerRefreshTicker.Stop()
 
 	for {

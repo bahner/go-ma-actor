@@ -37,6 +37,8 @@ func (ui *ChatUI) handleCommands(input string) {
 		ui.handleMeCommands(args)
 	case "/refresh":
 		ui.refreshPeers()
+		ui.msgBox.Clear()
+		ui.app.Draw()
 	default:
 		ui.displaySystemMessage("Unknown command: " + args[0])
 	}
