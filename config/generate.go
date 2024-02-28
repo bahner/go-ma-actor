@@ -16,11 +16,6 @@ const defaultHome = "did:ma:k2k4r8kzkhamrqz9m5yy0tihj1fso3t6znnuidu00dbtnh3plaza
 
 func generateConfigFile(actor string, node string) {
 
-	ks, err := set.Unpack(actor)
-	if err != nil {
-		log.Fatalf("error: %v", err)
-	}
-
 	logFile, err := homedir.Expand("~/.ma/" + viper.GetString("actor.nick") + ".log")
 	if err != nil {
 		log.Fatalf("generateConfigFile: %v", err)
@@ -76,7 +71,14 @@ func generateConfigFile(actor string, node string) {
 		log.Fatalf("error: %v", err)
 	}
 
-	// Print the YAML defaults
-	fmt.Println("# " + ks.DID.Id)
+	// Print the YAML defaults, skip ID if not available
+	if !viper.GetBool("show-defaults") {
+		ks, err := set.Unpack(actor)
+		if err != nil {
+			log.Fatalf("error: %v", err)
+		}
+
+		fmt.Println("# " + ks.DID.Id)
+	}
 	fmt.Println(string(defaultsYAML))
 }
