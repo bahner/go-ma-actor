@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/bahner/go-ma-actor/config"
 	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
 
 const (
-	defaultDB        = "~/.ma/ma.db"
 	dbMaxConnections = 1
 	dbTimeout        = 100
 )
@@ -23,9 +23,9 @@ var (
 
 func init() {
 
-	pflag.String("db-file", defaultDB, "File to *write* node peers and entities to. If the file does not exist, it will be created.")
+	pflag.String("db-file", config.DefaultDB, "File to *write* node peers and entities to. If the file does not exist, it will be created.")
 	viper.BindPFlag("db.file", pflag.Lookup("db-file"))
-	viper.SetDefault("db.file", defaultDB)
+	viper.SetDefault("db.file", config.DefaultDB)
 }
 
 // Returns expanded path to the db-file file

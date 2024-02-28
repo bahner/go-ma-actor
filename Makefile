@@ -5,6 +5,7 @@ MODULE_NAME = github.com/bahner/go-ma-actor
 export VERSION = "v0.0.2"
 
 GO ?= go
+GOOPTS ?= -ldflags="-s -w"
 PREFIX ?= /usr/local
 KEYSET = go-ma-create-keyset
 FETCH = go-ma-fetch-document
@@ -25,13 +26,13 @@ $(BIN): $(ALL)
 	sudo install -m755 $(ALL) $(DESTDIR)$(BIN)
 	
 $(NAME): tidy
-	$(GO) build -o $(NAME) ./cmd/actor
+	$(GO) build -o $(NAME) $(GOOPTS) ./cmd/actor
 
 $(FETCH): tidy
-	$(GO) build -o $(FETCH) ./cmd/fetch_document
+	$(GO) build -o $(FETCH) $(GOOPTS) ./cmd/fetch_document
 	
 $(KEYSET): tidy
-	$(GO) build -o $(KEYSET) ./cmd/create_keyset
+	$(GO) build -o $(KEYSET) $(GOOPTS) ./cmd/create_keyset
 	
 init: go.mod tidy
 
