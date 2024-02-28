@@ -79,6 +79,14 @@ func Init(configName string) error {
 
 	if viper.GetBool("show-config") {
 		configMap := viper.AllSettings()
+
+		// remove non-sensical values
+		delete(configMap, "version")
+		delete(configMap, "show-config")
+		delete(configMap, "show-defaults")
+		delete(configMap, "generate")
+		delete(configMap, "publish")
+
 		configYAML, err := yaml.Marshal(configMap)
 		if err != nil {
 			log.Fatalf("error: %v", err)
