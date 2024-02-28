@@ -13,7 +13,7 @@ import (
 
 const (
 	NAME       = "go-ma-actor"
-	VERSION    = "v0.0.4"
+	VERSION    = "v0.2.1"
 	ENV_PREFIX = "GO_MA_ACTOR"
 )
 
