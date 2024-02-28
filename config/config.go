@@ -34,8 +34,10 @@ func init() {
 
 	// Allow to set config file via command line flag.
 	pflag.StringVarP(&configFile, "config", "c", "", "Config file to use.")
+
 	pflag.Bool("show-config", false, "Whether to print the config.")
 	viper.BindPFlag("show-config", pflag.Lookup("show-config"))
+
 	pflag.Bool("show-defaults", false, "Whether to print the config.")
 	viper.BindPFlag("show-defaults", pflag.Lookup("show-defaults"))
 

@@ -56,7 +56,7 @@ func (d *WebHandlerDocument) String() string {
 	if d.Title != "" {
 		html += "<title>" + d.Title + "</title>\n"
 	}
-	html += fmt.Sprintf(`<meta http-equiv="refresh" content="%d">`, int(config.GetDiscoveryTimeout().Seconds()))
+	html += fmt.Sprintf(`<meta http-equiv="refresh" content="%d">`, config.GetHttpRefresh())
 	html += "</head>\n<body>\n"
 	if d.H1 != "" {
 		html += "<h1>" + d.H1 + "</h1>\n"

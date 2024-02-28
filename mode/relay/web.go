@@ -50,13 +50,11 @@ func webHandler(w http.ResponseWriter, r *http.Request, p *p2p.P2P) {
 
 func (d *WebHandlerDocument) String() string {
 
-	retryInterval := config.GetDiscoveryRetryInterval()
-
 	html := "<!DOCTYPE html>\n<html>\n<head>\n"
 	if d.Title != "" {
 		html += "<title>" + d.Title + "</title>\n"
 	}
-	html += fmt.Sprintf(`<meta http-equiv="refresh" content="%d">`, int(retryInterval.Seconds()))
+	html += fmt.Sprintf(`<meta http-equiv="refresh" content="%d">`, config.GetHttpRefresh())
 	html += "</head>\n<body>\n"
 	if d.H1 != "" {
 		html += "<h1>" + d.H1 + "</h1>\n"
