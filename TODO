@@ -22,6 +22,8 @@ sent from.
 
 ## Bugs
 
+/WHen setting a nick to an existing nick the message is OK, not an error. The change doesnæt go through, as is correct.
+
 ### Bootstrap peers
 
 Make a list of host, ie. Multiaddrs or nodeIds configurable, so that these

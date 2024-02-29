@@ -41,7 +41,7 @@ func startWebServer(p *p2p.P2P, a *actor.Actor) {
 
 	// Add pprof handlers when debug mode is set
 	if config.DebugMode() {
-		mux.HandleFunc("/profile", pprof.Profile)
+		mux.HandleFunc("/debug/pprof", pprof.Profile)
 	}
 
 	log.Infof("Listening on %s", config.GetHttpSocket())
