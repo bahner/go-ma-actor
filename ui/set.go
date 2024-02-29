@@ -6,6 +6,8 @@ func (ui *ChatUI) handleSetCommand(args []string) {
 		switch args[1] {
 		case "broadcast":
 			ui.handleSetBroadcastCommand(args)
+		case "discovery":
+			ui.handleSetDiscoveryCommand(args)
 		}
 	} else {
 		ui.handleHelpSetCommands(args)
@@ -14,6 +16,6 @@ func (ui *ChatUI) handleSetCommand(args []string) {
 }
 
 func (ui *ChatUI) handleHelpSetCommands(args []string) {
-	ui.displaySystemMessage("Usage: /set broadcast on|off")
-	ui.displaySystemMessage("For now toggles broadcast messages on and off")
+	ui.displayHelpUsage("/set broadcast|discovery on|off")
+	ui.displayHelpText("Toggles broadcast and peer discovery on and off")
 }

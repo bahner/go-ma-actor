@@ -174,6 +174,6 @@ func (ui *ChatUI) handleSetBroadcastCommand(args []string) {
 }
 
 func (ui *ChatUI) handleHelpSetBroadcastCommand(args []string) {
-	ui.displaySystemMessage("Usage: /set broadcast on|off")
-	ui.displaySystemMessage("For now toggles broadcast messages on and off")
+	ui.displayHelpUsage("/set broadcast on|off")
+	ui.displayHelpText("Toggles broadcast messages on and off")
 }

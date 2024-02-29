@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"os"
 
@@ -37,11 +36,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to initialize p2p: %v", err)
 	}
-	fmt.Println("done.")
-
-	// Now we can start continuous discovery in the background.
-	fmt.Print("Starting discovery loop...")
-	go p.DiscoveryLoop(context.Background())
 	fmt.Println("done.")
 
 	if config.RelayMode() {

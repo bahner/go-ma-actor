@@ -66,6 +66,10 @@ type ChatUI struct {
 	broadcastCtx    context.Context
 	broadcastCancel context.CancelFunc
 
+	// DiscoveryLoop
+	discoveryLoopCtx    context.Context
+	discoveryLoopCancel context.CancelFunc
+
 	// History of entries
 	inputField          *tview.InputField
 	inputHistory        []string
@@ -132,6 +136,12 @@ func (ui *ChatUI) Run() error {
 	}
 
 	defer ui.end()
+
+	// Now we can start continuous discovery in the background.
+	fmt.Print("Starting discovery loop...")
+	ui.discoveryLoopCtx, ui.discoveryLoopCancel = context.WithCancel(context.Background())
+	go ui.p.DiscoveryLoop(context.Background())
+	fmt.Println("done.")
 
 	// The actor should just run in the background for ever.
 	// It will handle incoming messages and envelopes.

@@ -38,6 +38,5 @@ Add a connect command to connect to a specific host directly, eg:
 ### Pinning
 We should probably handle pinning. Maybe not for DID Docs, as they have timestamp, so wont be reused.
 
-
-## BUGS
-
+## Features
+En|disable discovery process
