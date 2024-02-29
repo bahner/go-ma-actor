@@ -5,11 +5,12 @@ MODULE_NAME = github.com/bahner/go-ma-actor
 export VERSION = "v0.0.2"
 
 GO ?= go
-GOOPTS ?= -ldflags="-s -w"
+BUILDFLAGS ?= -ldflags="-s -w"
 PREFIX ?= /usr/local
-KEYSET = go-ma-create-keyset
-FETCH = go-ma-fetch-document
-ALL =  $(FETCH) $(KEYSET) $(NAME)
+KEYSET = $(NAME)-create-keyset
+FETCH = $(NAME)-fetch-document
+DEBUG = $(NAME)-debug
+ALL =  $(FETCH) $(KEYSET) $(NAME) $(DEBUG)
 BIN = $(PREFIX)/bin
 
 ifneq (,$(wildcard ./.env))
@@ -25,14 +26,18 @@ $(BIN): $(ALL)
 	test -d $(BIN)
 	sudo install -m755 $(ALL) $(DESTDIR)$(BIN)
 	
+$(DEBUG): BUILDFLAGS = -tags=debug
+$(DEBUG): tidy
+	$(GO) build -o $(DEBUG) $(BUILDFLAGS) ./cmd/actor
+
 $(NAME): tidy
-	$(GO) build -o $(NAME) $(GOOPTS) ./cmd/actor
+	$(GO) build -o $(NAME) $(BUILDFLAGS) ./cmd/actor
 
 $(FETCH): tidy
-	$(GO) build -o $(FETCH) $(GOOPTS) ./cmd/fetch_document
+	$(GO) build -o $(FETCH) $(BUILDFLAGS) ./cmd/fetch_document
 	
 $(KEYSET): tidy
-	$(GO) build -o $(KEYSET) $(GOOPTS) ./cmd/create_keyset
+	$(GO) build -o $(KEYSET) $(BUILDFLAGS) ./cmd/create_keyset
 	
 init: go.mod tidy
 

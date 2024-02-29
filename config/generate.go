@@ -56,7 +56,6 @@ func generateConfigFile(actor string, node string) {
 			"discovery-timeout": defaultDiscoveryTimeout,
 		},
 		"mode": map[string]interface{}{
-			"debug": defaultDebugMode,
 			"relay": defaultRelayMode,
 			"pong": map[string]interface{}{
 				"reply":   DefaultPongReply,

@@ -11,7 +11,6 @@ const (
 
 	defaultPongMode  = false
 	defaultRelayMode = false
-	defaultDebugMode = false
 
 	defaultMode = "actor"
 )
@@ -22,9 +21,6 @@ func init() {
 
 	pflag.Bool("relay", defaultRelayMode, "Relay mode with no actor, to just listen and relay messages.")
 	viper.BindPFlag("mode.relay", pflag.Lookup("relay"))
-
-	pflag.Bool("debug", defaultDebugMode, "Enable debug mode. Adds pprof and other debug endpoints to the webserver.")
-	viper.BindPFlag("mode.debug", pflag.Lookup("debug"))
 
 }
 
@@ -49,10 +45,6 @@ func InitMode() string {
 	}
 
 	return defaultMode
-}
-
-func DebugMode() bool {
-	return viper.GetBool("mode.debug")
 }
 
 // If actor.home is set to pong, then we are in pong mode.

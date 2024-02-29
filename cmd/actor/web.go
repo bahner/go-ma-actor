@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"net/http"
-	"net/http/pprof"
 	"os"
 
 	"github.com/bahner/go-ma-actor/config"
@@ -37,11 +36,6 @@ func startWebServer(p *p2p.P2P, a *actor.Actor) {
 			Entity: a.Entity,
 		}
 		mux.HandleFunc("/", h.WebHandler)
-	}
-
-	// Add pprof handlers when debug mode is set
-	if config.DebugMode() {
-		mux.HandleFunc("/debug/pprof", pprof.Profile)
 	}
 
 	log.Infof("Listening on %s", config.GetHttpSocket())

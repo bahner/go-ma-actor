@@ -2,8 +2,10 @@ package ui
 
 func (ui *ChatUI) triggerDiscovery() {
 
-	ui.p.DiscoverPeers()
 	ui.displaySystemMessage("Discovery process started...")
+	ui.p.DiscoverPeers()
+	ui.displaySystemMessage("Discovery process complete.")
+
 }
 
 func (ui *ChatUI) handleHelpDiscoverCommand(args []string) {
