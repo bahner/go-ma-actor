@@ -27,6 +27,7 @@ func (ui *ChatUI) handleHelpCommands(args []string) {
 		ui.displaySystemMessage("/help quit")
 		ui.displaySystemMessage("/help refresh")
 		ui.displaySystemMessage("/help resolve")
+		ui.displaySystemMessage("/help set")
 		ui.displaySystemMessage("/help status")
 		ui.displaySystemMessage("/help whereis")
 		ui.displaySystemMessage("/help")
@@ -50,6 +51,8 @@ func (ui *ChatUI) handleHelpCommands(args []string) {
 			ui.handleHelpRefreshCommand(args)
 		case "resolve":
 			ui.handleHelpResolveCommand(args)
+		case "set":
+			ui.handleHelpSetCommands(args)
 		case "status":
 			ui.handleHelpStatusCommands(args)
 		case "whereis":

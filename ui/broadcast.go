@@ -158,12 +158,12 @@ func (ui *ChatUI) handleSetBroadcastCommand(args []string) {
 
 		switch toggle {
 		case "on":
-			ui.subscribeBroadcasts()
-			ui.displaySystemMessage("Broadcasts are now on")
+			go ui.subscribeBroadcasts()
+			ui.displaySystemMessage("Broadcast channel is on")
 		case "off":
 			if ui.broadcastCancel != nil {
 				ui.broadcastCancel()
-				ui.displaySystemMessage("Broadcasts are now off")
+				ui.displaySystemMessage("Broadcast channel is off")
 			}
 		default:
 			ui.handleHelpSetBroadcastCommand(args)

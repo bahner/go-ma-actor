@@ -8,12 +8,12 @@ func (ui *ChatUI) handleSetCommand(args []string) {
 			ui.handleSetBroadcastCommand(args)
 		}
 	} else {
-		ui.handleHelpSetCommand(args)
+		ui.handleHelpSetCommands(args)
 	}
 
 }
 
-func (ui *ChatUI) handleHelpSetCommand(args []string) {
+func (ui *ChatUI) handleHelpSetCommands(args []string) {
 	ui.displaySystemMessage("Usage: /set broadcast on|off")
 	ui.displaySystemMessage("For now toggles broadcast messages on and off")
 }
