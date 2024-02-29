@@ -55,11 +55,18 @@ func handleMessageEvents(ctx context.Context, a *actor.Actor) {
 
 func messageReply(ctx context.Context, a *actor.Actor, m *msg.Message) error {
 
+	var (
+		replyMsg = []byte(viper.GetString("mode.pong.reply"))
+	)
 	// Switch sender and receiver. Reply back to from :-)
 	replyFrom := m.To
 	replyTo := m.From
-	replyMsg := []byte(viper.GetString("mode.pong.reply"))
+	if string(m.Content) == string(replyMsg) {
+		replyMsg = []byte(fmt.Sprintf("I'm doing the %s here! 😤", replyMsg))
 
+	} else {
+		replyMsg = []byte(viper.GetString("mode.pong.reply"))
+	}
 	// Broadcast are sent to the topic, and the topic is the DID of the recipient
 	r, err := msg.New(replyFrom, replyTo, replyMsg, "text/plain", a.Keyset.SigningKey.PrivKey)
 	if err != nil {

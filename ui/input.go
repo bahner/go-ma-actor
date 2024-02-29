@@ -2,13 +2,27 @@ package ui
 
 import (
 	"github.com/gdamore/tcell/v2"
-
 	"github.com/rivo/tview"
 	"github.com/spf13/viper"
 )
 
-func (ui *ChatUI) setupInputField() *tview.InputField {
+func historySize() int {
+	return viper.GetInt("ui.history-size")
+}
 
+func (ui *ChatUI) pushToHistory(line string) {
+
+	historySize := historySize()
+
+	if len(ui.inputHistory) == historySize {
+		// Remove the oldest entry when we reach max size
+		copy(ui.inputHistory, ui.inputHistory[1:])
+		ui.inputHistory = ui.inputHistory[:historySize-1]
+	}
+	ui.inputHistory = append(ui.inputHistory, line)
+}
+
+func (ui *ChatUI) setupInputField() *tview.InputField {
 	inputField := tview.NewInputField().
 		SetLabel(viper.GetString("actor.nick") + ": ").
 		SetFieldWidth(0).
@@ -43,7 +57,6 @@ func (ui *ChatUI) setupInputField() *tview.InputField {
 		return event // let other keys pass through
 	})
 
-	// the done func is called when the user hits enter, or tabs out of the field
 	inputField.SetDoneFunc(func(key tcell.Key) {
 		if key != tcell.KeyEnter {
 			// we don't want to do anything if they just tabbed away
@@ -62,7 +75,7 @@ func (ui *ChatUI) setupInputField() *tview.InputField {
 			return
 		}
 
-		ui.inputHistory = append(ui.inputHistory, line)
+		ui.pushToHistory(line) // Use the pushToHistory method to handle the input history
 		ui.currentHistoryIndex = -1
 
 		// send the line onto the input chan and reset the field text
@@ -71,5 +84,6 @@ func (ui *ChatUI) setupInputField() *tview.InputField {
 	})
 
 	return inputField
-
 }
+
+// You can add other methods and types that are part of the ui package here.

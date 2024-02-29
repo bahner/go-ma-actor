@@ -28,6 +28,7 @@ const (
 
 	defaultPeerslistWidth   = 10
 	defaultPeerslistRefresh = time.Second * 3
+	defaultHistorySize      = 50
 )
 
 func init() {
@@ -38,6 +39,9 @@ func init() {
 
 	pflag.Duration("ui-refresh", defaultPeerslistRefresh, "Sets the update frequency of the peerslist pane in the UI")
 	viper.BindPFlag("ui.refresh", pflag.Lookup("ui-refresh"))
+
+	pflag.Int("ui-history-size", defaultHistorySize, "Sets the update frequency of the peerslist pane in the UI")
+	viper.BindPFlag("ui.history-size", pflag.Lookup("ui-history-size"))
 
 }
 
