@@ -31,7 +31,7 @@ func generateConfigFile(actor string, node string) {
 			"nick":     viper.GetString("actor.nick"),
 		},
 		"db": map[string]interface{}{
-			"file": DefaultDB,
+			"file": DefaultDBFile(),
 		},
 		"log": map[string]interface{}{
 			"level": defaultLogLevel,

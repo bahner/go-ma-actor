@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/adrg/xdg"
+	"github.com/bahner/go-ma"
 	"github.com/mitchellh/go-homedir"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/pflag"
@@ -17,23 +19,26 @@ const (
 	ENV_PREFIX = "GO_MA_ACTOR"
 )
 
-var configFile string = ""
+var (
+	configHome               = xdg.ConfigHome + "/" + ma.NAME + "/"
+	dataHome                 = xdg.DataHome + "/" + ma.NAME + "/"
+	configFile        string = ""
+	defaultConfigFile        = configHome + defaultActor + ".yaml"
+)
 
 func init() {
 
 	// Look in the current directory, the home directory and /etc for the config file.
 	// In that order.
-	viper.SetConfigName(NAME)
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath(".")
-	viper.AddConfigPath("$HOME/.ma")
-	viper.AddConfigPath("/etc/ma")
+	viper.AddConfigPath(configHome)
 
 	viper.SetEnvPrefix(ENV_PREFIX)
 	viper.AutomaticEnv()
 
 	// Allow to set config file via command line flag.
-	pflag.StringVarP(&configFile, "config", "c", "", "Config file to use.")
+	pflag.StringVarP(&configFile, "config", "c", defaultConfigFile, "Config file to use.")
 
 	pflag.Bool("show-config", false, "Whether to print the config.")
 	viper.BindPFlag("show-config", pflag.Lookup("show-config"))

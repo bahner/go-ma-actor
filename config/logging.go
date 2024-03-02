@@ -13,8 +13,9 @@ import (
 
 const (
 	defaultLogLevel string = "info"
-	defaultLogfile  string = "." + NAME + ".log"
 )
+
+var defaultLogfile string = dataHome + defaultActor + ".log"
 
 func init() {
 

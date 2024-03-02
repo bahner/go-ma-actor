@@ -23,9 +23,11 @@ var (
 
 func init() {
 
-	pflag.String("db-file", config.DefaultDB, "File to *write* node peers and entities to. If the file does not exist, it will be created.")
+	defaultDbFile := config.DefaultDBFile()
+
+	pflag.String("db-file", defaultDbFile, "File to *write* node peers and entities to. If the file does not exist, it will be created.")
 	viper.BindPFlag("db.file", pflag.Lookup("db-file"))
-	viper.SetDefault("db.file", config.DefaultDB)
+	viper.SetDefault("db.file", defaultDbFile)
 }
 
 // Returns expanded path to the db-file file

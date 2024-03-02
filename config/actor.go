@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	defaultNick string = "skeleton"
+	defaultActor string = "actor"
 )
 
 func init() {
@@ -27,7 +27,7 @@ func init() {
 	viper.BindPFlag("publish", pflag.Lookup("publish"))
 
 	// Nick used for keyset generation (fragment)
-	pflag.StringP("nick", "n", defaultNick, "Nickname to use in character creation")
+	pflag.StringP("nick", "n", defaultActor, "Nickname to use in character creation")
 	viper.BindPFlag("actor.nick", pflag.Lookup("nick"))
 
 	pflag.StringP("location", "l", "", "DID of the initial location.")
