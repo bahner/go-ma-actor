@@ -5,7 +5,6 @@ import (
 
 	"github.com/bahner/go-ma"
 	"github.com/bahner/go-ma/key/set"
-	"github.com/mitchellh/go-homedir"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"gopkg.in/yaml.v2"
@@ -15,11 +14,6 @@ import (
 const defaultHome = "did:ma:k2k4r8kzkhamrqz9m5yy0tihj1fso3t6znnuidu00dbtnh3plazatrfw#pong"
 
 func generateConfigFile(actor string, node string) {
-
-	logFile, err := homedir.Expand("~/.ma/" + viper.GetString("actor.nick") + ".log")
-	if err != nil {
-		log.Fatalf("generateConfigFile: %v", err)
-	}
 
 	// Get the default settings as a map
 	// Note: Viper does not have a built-in way to directly extract only the defaults
@@ -35,7 +29,7 @@ func generateConfigFile(actor string, node string) {
 		},
 		"log": map[string]interface{}{
 			"level": defaultLogLevel,
-			"file":  logFile,
+			"file":  defaultLogfile,
 		},
 		// NB! This is a cross over from go-ma
 		"api": map[string]interface{}{

@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"io"
 	"os"
 
 	"github.com/adrg/xdg"
@@ -85,22 +86,7 @@ func Init(configName string) error {
 	}
 
 	if viper.GetBool("show-config") {
-		configMap := viper.AllSettings()
-
-		// remove non-sensical values
-		delete(configMap, "version")
-		delete(configMap, "show-config")
-		delete(configMap, "show-defaults")
-		delete(configMap, "generate")
-		delete(configMap, "publish")
-
-		configYAML, err := yaml.Marshal(configMap)
-		if err != nil {
-			log.Fatalf("error: %v", err)
-		}
-
-		// Print the YAML to stdout or write it to a template file
-		fmt.Println(string(configYAML))
+		Fprint(os.Stdout)
 		os.Exit(0)
 	}
 
@@ -119,5 +105,41 @@ func Init(configName string) error {
 	}
 
 	return nil
+
+}
+
+func Fprint(output io.Writer) (int, error) {
+
+	configMap := viper.AllSettings()
+
+	// remove non-sensical values
+	delete(configMap, "version")
+	delete(configMap, "show-config")
+	delete(configMap, "show-defaults")
+	delete(configMap, "generate")
+	delete(configMap, "publish")
+
+	configYAML, err := yaml.Marshal(configMap)
+	if err != nil {
+		log.Fatalf("error: %v", err)
+	}
+
+	fmt.Println("# " + ActorKeyset().DID.Id)
+
+	return fmt.Fprint(output, string(configYAML))
+}
+
+func Save() error {
+
+	configFileName := viper.ConfigFileUsed()
+
+	fileWriter, err := os.Create(configFileName)
+	if err != nil {
+		return err
+	}
+
+	_, err = Fprint(fileWriter)
+
+	return err
 
 }

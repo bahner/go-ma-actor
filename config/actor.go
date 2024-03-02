@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 
@@ -48,10 +47,7 @@ func InitActor() {
 		os.Exit(64) // EX_USAGE
 	}
 
-	keyset, err := set.Unpack(keyset_string)
-	if err != nil {
-		log.Errorf("config.initActor: %v", err)
-	}
+	keyset := ActorKeyset()
 
 	if viper.GetBool("publish") && keyset_string != "" {
 		fmt.Print("Publishing identity to IPFS...")
@@ -61,8 +57,6 @@ func InitActor() {
 		}
 		fmt.Println("done.")
 	}
-
-	viper.Set("keyset", keyset)
 
 }
 
@@ -156,24 +150,11 @@ func publishIdentityFromKeyset(k set.Keyset) error {
 	return nil
 }
 
-func GetKeyset() set.Keyset {
-	return viper.Get("keyset").(set.Keyset)
-}
-
-func GetActorIdentity() string {
-	return viper.GetString("actor.identity")
-}
-
-func GetActorNick() string {
+func ActorNick() string {
 	return viper.GetString("actor.nick")
 }
 
-func GetPublish() bool {
-
-	return viper.GetBool("publish")
-}
-
-func GetHome() string {
+func ActorHome() string {
 	return viper.GetString("actor.home")
 }
 
@@ -188,16 +169,23 @@ func GetPublishContext() context.Context {
 	return context.Background()
 }
 
-// Returns expanded path to the peers file
-// If the expansion fails it returns an empty string
-func GetActorsDB() string {
+func ActorDid() string {
+	return viper.GetString("actor.did")
+}
 
-	path := viper.GetString("db.actors")
-	path, err := homedir.Expand(path)
-	if err != nil {
-		return ""
+func ActorKeyset() set.Keyset {
+
+	keyset_string := viper.GetString("actor.identity")
+
+	log.Debugf("config.initActor: %s", keyset_string)
+	// Create the actor keyset
+	if keyset_string == "" {
+		log.Errorf("config.initActor: You need to define actorKeyset or generate a new one.")
+		os.Exit(64) // EX_USAGE
 	}
 
-	return path
+	keyset, _ := set.Unpack(keyset_string)
+
+	return keyset
 
 }

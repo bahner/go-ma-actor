@@ -46,7 +46,7 @@ func main() {
 
 	// The actor is needed for the WebHandler.
 	fmt.Print("Creating actor from keyset...")
-	a, err := actor.NewFromKeyset(config.GetKeyset())
+	a, err := actor.NewFromKeyset(config.ActorKeyset())
 	if err != nil {
 		log.Debugf("error creating actor: %s", err)
 	}
