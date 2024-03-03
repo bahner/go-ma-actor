@@ -61,6 +61,22 @@ func InitActor() {
 
 }
 
+func ActorNick() string {
+	return viper.GetString("actor.nick")
+}
+
+func ActorHome() string {
+	return viper.GetString("actor.home")
+}
+
+func ActorDid() string {
+	return viper.GetString("actor.did")
+}
+
+func ActorKeyset() set.Keyset {
+	return keyset
+}
+
 // Genreates a libp2p and actor identity and returns the keyset and the actor identity
 // These are imperative, so failure to generate them is a fatal error.
 func handleGenerateOrExit() (string, string) {
@@ -132,49 +148,21 @@ func publishIdentityFromKeyset(k set.Keyset) error {
 
 	assertionMethod, err := d.GetAssertionMethod()
 	if err != nil {
-		return fmt.Errorf("config.publishIdentityFromKeyset: failed to get verification method: %v", err)
+		return fmt.Errorf("config.publishIdentityFromKeyset: %w", err)
 	}
 	d.Sign(k.SigningKey, assertionMethod)
 
 	// Publication options
-	opts := doc.DefaultPublishOptions()
-	opts.Force = publishFlag()
+	opts := docPublishOptions()
 
 	_, err = d.Publish(opts)
 	if err != nil {
-		return fmt.Errorf("config.publishIdentityFromKeyset: failed to publish DOC: %v", err)
+		return fmt.Errorf("config.publishIdentityFromKeyset: %w", err)
 
 	}
-	log.Debugf("config.publishIdentityFromKeyset: published DOC: %s", d.ID)
+	log.Debugf("Published identity: %s", d.ID)
 
 	return nil
-}
-
-func ActorNick() string {
-	return viper.GetString("actor.nick")
-}
-
-func ActorHome() string {
-	return viper.GetString("actor.home")
-}
-
-func GetDocPublishOptions() *doc.PublishOptions {
-	return &doc.PublishOptions{
-		Ctx:   GetPublishContext(),
-		Force: publishFlag(),
-	}
-}
-
-func GetPublishContext() context.Context {
-	return context.Background()
-}
-
-func ActorDid() string {
-	return viper.GetString("actor.did")
-}
-
-func ActorKeyset() set.Keyset {
-	return keyset
 }
 
 func initActorKeyset() {
@@ -196,4 +184,11 @@ func initActorKeyset() {
 		os.Exit(70) // EX_SOFTWARE
 	}
 
+}
+
+func docPublishOptions() *doc.PublishOptions {
+	return &doc.PublishOptions{
+		Ctx:   context.Background(),
+		Force: forceFlag(),
+	}
 }

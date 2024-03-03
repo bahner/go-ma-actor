@@ -82,19 +82,27 @@ func generateConfigFile(identity string, node string) {
 // Write the generated config to the correct file
 // NB! This fails fatally in case of an error.
 func writeGeneratedConfigFile(content []byte) {
-
 	filePath := configFile()
 	var errMsg string
 
-	// Try to open the file with flags to ensure it does not overwrite an existing file.
-	file, err := os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0666)
+	// Determine the file open flags based on the forceFlag
+	var flags int
+	if forceFlag() {
+		// Allow overwrite
+		log.Warnf("Force flag set, overwriting existing config file %s", filePath)
+		flags = os.O_WRONLY | os.O_CREATE | os.O_TRUNC
+	} else {
+		// Prevent overwrite
+		flags = os.O_WRONLY | os.O_CREATE | os.O_EXCL
+	}
+
+	file, err := os.OpenFile(filePath, flags, configFileMode)
 	if err != nil {
 		if os.IsExist(err) {
 			errMsg = fmt.Sprintf("File %s already exists.", filePath)
 		} else {
 			errMsg = fmt.Sprintf("Failed to open file: %v", err)
 		}
-		fmt.Println(content)
 		log.Fatalf(errMsg)
 	}
 	defer file.Close()
@@ -104,5 +112,5 @@ func writeGeneratedConfigFile(content []byte) {
 		log.Fatalf("Failed to write to file: %v", err)
 	}
 
-	log.Infof("Generated actor config file %s", filePath)
+	log.Printf("Generated config file %s", filePath)
 }

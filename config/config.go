@@ -19,12 +19,16 @@ const (
 	ENV_PREFIX        string = "GO_MA_ACTOR"
 	fakeActorIdentity string = "NO_DEFAULT_ACTOR_IDENITY"
 	fakeNodeIdentity  string = "NO_DEFAULT_NODE_IDENITY"
+
+	configFileMode os.FileMode = 0600
+	configDirMode  os.FileMode = 0700
+	dataHomeMode   os.FileMode = 0755
 )
 
 var (
+	config            string = ""
 	configHome        string = xdg.ConfigHome + "/" + ma.NAME + "/"
 	dataHome          string = xdg.DataHome + "/" + ma.NAME + "/"
-	config            string = ""
 	defaultConfigFile string = configHome + defaultActor + ".yaml"
 )
 
@@ -42,6 +46,7 @@ func init() {
 	// Allow to set config file via command line flag.
 	pflag.StringVarP(&config, "config", "c", defaultConfigFile, "Config file to use.")
 
+	pflag.Bool("force", false, "Whether to force any operation, eg. file overwrite")
 	pflag.Bool("show-config", false, "Whether to print the config.")
 	pflag.Bool("show-defaults", false, "Whether to print the config.")
 	pflag.BoolP("version", "v", false, "Print version and exit.")
@@ -165,12 +170,12 @@ func configFile() string {
 
 func createXDGDirectories() error {
 
-	err := os.MkdirAll(configHome, 0700)
+	err := os.MkdirAll(configHome, configDirMode)
 	if err != nil {
 		return err
 	}
 
-	err = os.MkdirAll(dataHome, 0755)
+	err = os.MkdirAll(dataHome, dataHomeMode)
 	if err != nil {
 		return err
 	}
@@ -228,4 +233,14 @@ func versionFlag() bool {
 	}
 
 	return versionFlag
+}
+
+func forceFlag() bool {
+	forceFlag, err := pflag.CommandLine.GetBool("force")
+	if err != nil {
+		log.Warnf("config.init: %v", err)
+		return false
+	}
+
+	return forceFlag
 }
