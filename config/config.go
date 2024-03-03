@@ -71,6 +71,12 @@ func Init(mode string) error {
 		os.Exit(0)
 	}
 
+	// Make sure the XDG directories exist before we start writing to them.
+	err = createXDGDirectories()
+	if err != nil {
+		log.Fatalf("config.init: %v", err)
+	}
+
 	// This will exit when done. It will also publish if applicable.
 	generateFlag, err := pflag.CommandLine.GetBool("generate")
 	if err != nil {
@@ -168,5 +174,21 @@ func configFile() string {
 	}
 
 	return filename
+
+}
+
+func createXDGDirectories() error {
+
+	err := os.MkdirAll(configHome, 0700)
+	if err != nil {
+		return err
+	}
+
+	err = os.MkdirAll(dataHome, 0755)
+	if err != nil {
+		return err
+	}
+
+	return nil
 
 }
