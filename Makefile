@@ -6,8 +6,7 @@ export VERSION = "v0.0.2"
 
 GO ?= go
 # This is required for sqlite3 cross-compilation
-export CGO_ENABLED = 1
-BUILDFLAGS ?= -ldflags="-s -w -pthread"
+BUILDFLAGS ?= -ldflags="-s -w"
 XZ ?= xz -zf
 PREFIX ?= /usr/local
 KEYSET = $(NAME)-create-keyset
@@ -19,7 +18,7 @@ FREEBSD = freebsd-amd64 freebsd-arm64
 LINUX = linux-amd64 linux-arm64 linux-mips64 linux-mips64le linux-ppc64 linux-ppc64le linux-s390x
 NETBSD = netbsd-amd64 netbsd-arm64
 OPENBSD = openbsd-amd64 openbsd-arm64
-WINDOWS =  windows-386 windows-amd64 windows-arm64
+WINDOWS =  windows-386 windows-amd64
 PLATFORMS =  $(ANDROID) $(DARWIN) $(FREEBSD) $(LINUX) $(NETBSD) $(OPENBSD) $(WINDOWS)
 ALL =  $(FETCH) $(KEYSET) $(NAME) $(DEBUG)
 BIN = $(PREFIX)/bin
@@ -71,7 +70,7 @@ distclean: clean
 
 
 release: VERSION = $(shell ./.version)
-release: clean $(RELEASES) windows darwin linux-amd64
+release: clean $(RELEASES) $(PLATFORMS)
 	git tag -a $(VERSION) -m "Release $(VERSION)"
 
 
@@ -206,15 +205,20 @@ openbsd-arm64: $(RELEASES)
 
 windows-386: GOOS=windows
 windows-386: GOARCH=386
+windows-386: CGO_ENABLED=1
+windows-386: CC=i686-w64-mingw32-gcc
 windows-386: FILENAME = actor.exe
 windows-386: BUILDDIR=$(GOOS)-$(GOARCH)
 windows-386: $(RELEASES)
 	mkdir -p $(BUILDDIR)
+	# $(GO) build -o $(BUILDDIR)/$(FILENAME) $(BUILDFLAGS) ./cmd/actor
 	$(GO) build -o $(BUILDDIR)/$(FILENAME) $(BUILDFLAGS) ./cmd/actor
 	zip -j $(RELEASES)/$(NAME)-$(GOOS)-$(GOARCH).zip $(BUILDDIR)/$(FILENAME)
 
 windows-amd64: GOOS=windows
 windows-amd64: GOARCH=amd64
+windows-amd64: CGO_ENABLED=1
+windows-amd64: CC=x86_64-w64-mingw32-gcc
 windows-amd64: FILENAME = actor.exe
 windows-amd64: BUILDDIR=$(GOOS)-$(GOARCH)
 windows-amd64: $(RELEASES)
@@ -224,6 +228,8 @@ windows-amd64: $(RELEASES)
 
 windows-arm64: GOOS=windows
 windows-arm64: GOARCH=arm64
+windows-arm64: CGO_ENABLED=1
+windows-arm64: CC=aarch64-w64-mingw32-gcc
 windows-arm64: FILENAME = actor.exe
 windows-arm64: BUILDDIR=$(GOOS)-$(GOARCH)
 windows-arm64: $(RELEASES)

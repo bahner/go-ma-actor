@@ -13,6 +13,12 @@ I suggest using [Brave Browser][brave] or [IPFS Desktop][desktop] to run and IPF
 And you can investigate the IPFS network with the built-in IPFS node.
 It provides The ability to browse IPFS properly, and to pin files and directories.*
 
+### Cros-compiling
+
+Cross-cmpiling for Windows requires gcc-mingw-w64 and gcc-multilib tools to be installed.
+
+CGO is required for sqlite to work on Windows™.
+
 ## TL;DR
 
 ```bash
