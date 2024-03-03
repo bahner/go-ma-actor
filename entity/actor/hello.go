@@ -24,8 +24,6 @@ func HelloWorld(ctx context.Context, a *Actor, b *p2ppubsub.Topic) {
 	me := a.Entity.DID.Id
 	greeting := []byte("Hello, world! " + me + " is here.")
 
-	if b != nil {
-		mesg, _ := msg.NewBroadcast(me, greeting, "text/plain", a.Keyset.SigningKey.PrivKey)
-		mesg.Broadcast(ctx, b)
-	}
+	mesg, _ := msg.NewBroadcast(me, greeting, "text/plain", a.Keyset.SigningKey.PrivKey)
+	mesg.Broadcast(ctx, b)
 }
