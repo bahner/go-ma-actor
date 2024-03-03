@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/pflag"
@@ -12,7 +13,8 @@ import (
 )
 
 const (
-	defaultLogLevel string = "info"
+	defaultLogLevel string      = "info"
+	logFilePerm     os.FileMode = 0640
 )
 
 var defaultLogfile string = dataHome + defaultActor + ".log"
@@ -37,18 +39,17 @@ func InitLogging() {
 		os.Exit(64) // EX_USAGE
 	}
 	log.SetLevel(ll)
-	logfile := viper.GetString("log.file")
+	logfile, err := getLogFile()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(73) // EX_CANTCREAT
+	}
 	if logfile == "STDERR" {
 		log.SetOutput(os.Stderr)
 	} else if logfile == "STDOUT" {
 		log.SetOutput(os.Stdout)
 	} else {
-		logfile, err = homedir.Expand(logfile)
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(73) // EX_CANTCREAT
-		}
-		file, err := os.OpenFile(logfile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+		file, err := os.OpenFile(logfile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, logFilePerm)
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(73) // EX_CANTCREAT
@@ -61,10 +62,21 @@ func InitLogging() {
 
 }
 
-func GetLogLevel() string {
-	return viper.GetString("log.level")
-}
+func getLogFile() (string, error) {
+	lf := viper.GetString("log.file")
 
-func GetLogFile() string {
-	return viper.GetString("log.file")
+	if lf == "STDERR" || lf == "STDOUT" {
+		return lf, nil
+	}
+
+	lf, err := homedir.Expand(lf)
+	if err != nil {
+		return "", err
+	}
+
+	lf, err = filepath.Abs(lf)
+	if err != nil {
+		return "", err
+	}
+	return filepath.FromSlash(filepath.Clean(lf)), nil
 }

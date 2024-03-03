@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/adrg/xdg"
 	"github.com/bahner/go-ma"
@@ -15,7 +16,7 @@ import (
 
 const (
 	NAME              string = "go-ma-actor"
-	VERSION           string = "v0.2.2"
+	VERSION           string = "v0.2.3"
 	ENV_PREFIX        string = "GO_MA_ACTOR"
 	fakeActorIdentity string = "NO_DEFAULT_ACTOR_IDENITY"
 	fakeNodeIdentity  string = "NO_DEFAULT_NODE_IDENITY"
@@ -164,7 +165,7 @@ func configFile() string {
 		filename = configHome + configName() + ".yaml"
 	}
 
-	return filename
+	return filepath.FromSlash(filepath.Clean(filename))
 
 }
 

@@ -3,6 +3,7 @@ package db
 import (
 	"database/sql"
 	"fmt"
+	"path/filepath"
 	"sync"
 
 	"github.com/bahner/go-ma-actor/config"
@@ -82,7 +83,7 @@ func dbfile() string {
 		return ""
 	}
 
-	return path
+	return filepath.FromSlash(filepath.Clean(path))
 
 }
 
