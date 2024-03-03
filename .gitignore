@@ -26,3 +26,6 @@ go-space-thumb*
 go-ma-*
 *.log
 .publish.sh
+releases
+*.tar
+go.work

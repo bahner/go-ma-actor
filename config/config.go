@@ -15,7 +15,7 @@ import (
 
 const (
 	NAME              string = "go-ma-actor"
-	VERSION           string = "v0.2.1"
+	VERSION           string = "v0.2.3"
 	ENV_PREFIX        string = "GO_MA_ACTOR"
 	fakeActorIdentity string = "NO_DEFAULT_ACTOR_IDENITY"
 	fakeNodeIdentity  string = "NO_DEFAULT_NODE_IDENITY"
