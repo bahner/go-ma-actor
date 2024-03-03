@@ -3,6 +3,7 @@
 set -eu
 
 BINDIR="${PREFIX}/bin"
+CURL_OPTS="-sO"
 
 KUBO_VERSION="${KUBO_VERSION:-v0.26.0}"
 KUBO_TARBALL="kubo_${KUBO_VERSION}_linux-arm64.tar.gz"
@@ -15,7 +16,7 @@ GO_MA_ACTOR_URL="https://github.com/bahner/go-ma-actor/releases/download/${GO_MA
 ### IPFS
 
 # Fetch
-curl -s "${KUBO_URL}" -o "${KUBO_TARBALL}"
+curl "${CURL_OPTS}" "${KUBO_URL}"
 
 # Install
 tar xf "${KUBO_TARBALL}"
@@ -33,7 +34,7 @@ ipfs daemon &> /dev/null &
 ### GO_MA_ACTOR
 
 # Fetch
-curl "${GO_MA_ACTOR_URL}" -o "${GO_MA_ACTOR}.xz"
+curl "${CURL_OPTS}" "${GO_MA_ACTOR_URL}"
 xz -d "${GO_MA_ACTOR}.xz"
 
 # Install
