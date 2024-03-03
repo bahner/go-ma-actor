@@ -7,11 +7,19 @@ export VERSION = "v0.0.2"
 GO ?= go
 BUILDFLAGS ?= -ldflags="-s -w"
 TAR ?= tar cJf
+XZ ?= xz -zf
 PREFIX ?= /usr/local
 KEYSET = $(NAME)-create-keyset
 FETCH = $(NAME)-fetch-document
 DEBUG = $(NAME)-debug
-PLATFORMS = linux-amd64 windows-amd64 windows-386 darwin-amd64 darwin-arm64
+ANDROID = android-arm64
+DARWIN = darwin-amd64 darwin-arm64
+FREEBSD = freebsd-amd64 freebsd-arm64
+LINUX = linux-amd64 linux-arm64 linux-mips64 linux-mips64le linux-ppc64 linux-ppc64le linux-s390x
+NETBSD = netbsd-amd64 netbsd-arm64
+OPENBSD = openbsd-amd64 openbsd-arm64
+WINDOWS =  windows-386 windows-amd64 windows-arm64
+PLATFORMS =  $(ANDROID) $(DARWIN) $(FREEBSD) $(LINUX) $(NETBSD) $(OPENBSD) $(WINDOWS)
 ALL =  $(FETCH) $(KEYSET) $(NAME) $(DEBUG)
 BIN = $(PREFIX)/bin
 RELEASES = releases
@@ -69,19 +77,131 @@ release: clean $(RELEASES) windows darwin linux-amd64
 $(RELEASES): 
 	mkdir -p $(RELEASES)
 
-linux-amd64: $(ALL)
-	mkdir -p linux-amd64
-	mv $(ALL) linux-amd64
-	$(TAR) $(RELEASES)/$(NAME)-linux-amd64.tar -C linux-amd64 $(ALL)
+android: $(ANDROID)
 
-windows-amd64: GOOS=windows
-windows-amd64: GOARCH=amd64
-windows-amd64: FILENAME = actor.exe
-windows-amd64: BUILDDIR=$(GOOS)-$(GOARCH)
-windows-amd64: $(RELEASES)
-	mkdir -p $(BUILDDIR)
-	$(GO) build -o $(BUILDDIR)/$(FILENAME) $(BUILDFLAGS) ./cmd/actor
-	zip -j $(RELEASES)/$(NAME)-$(GOOS)-$(GOARCH).zip $(BUILDDIR)/$(FILENAME)
+darwin: $(DARWIN)
+
+freebsd: $(FREEBSD)
+
+linux: $(LINUX)
+
+netbsd: $(NETBSD)
+
+openbsd: $(OPENBSD)
+
+windows: $(WINDOWS)
+
+android-arm64: GOOS=android
+android-arm64: GOARCH=arm64
+android-arm64: FILENAME = $(RELEASES)/$(NAME)-$(GOOS)-$(GOARCH)
+android-arm64: $(RELEASES)
+	$(GO) build -o $(FILENAME) $(BUILDFLAGS) ./cmd/actor
+	$(XZ) $(FILENAME)
+
+darwin-amd64: GOOS=darwin
+darwin-amd64: GOARCH=amd64
+darwin-amd64: FILENAME = $(RELEASES)/$(NAME)-$(GOOS)-$(GOARCH)
+darwin-amd64: $(RELEASES)
+	$(GO) build -o $(FILENAME) $(BUILDFLAGS) ./cmd/actor
+	$(XZ) $(FILENAME)
+
+darwin-arm64: GOOS=darwin
+darwin-arm64: GOARCH=arm64
+darwin-arm64: FILENAME = $(RELEASES)/$(NAME)-$(GOOS)-$(GOARCH)
+darwin-arm64: $(RELEASES)
+	$(GO) build -o $(FILENAME) $(BUILDFLAGS) ./cmd/actor
+	$(XZ) $(FILENAME)
+
+freebsd-amd64: GOOS=freebsd
+freebsd-amd64: GOARCH=amd64
+freebsd-amd64: FILENAME = $(RELEASES)/$(NAME)-$(GOOS)-$(GOARCH)
+freebsd-amd64: $(RELEASES)
+	$(GO) build -o $(FILENAME) $(BUILDFLAGS) ./cmd/actor
+	$(XZ) $(FILENAME)
+
+freebsd-arm64: GOOS=freebsd
+freebsd-arm64: GOARCH=arm64
+freebsd-arm64: FILENAME = $(RELEASES)/$(NAME)-$(GOOS)-$(GOARCH)
+freebsd-arm64: $(RELEASES)
+	$(GO) build -o $(FILENAME) $(BUILDFLAGS) ./cmd/actor
+	$(XZ) $(FILENAME)
+
+linux-amd64: GOOS=linux
+linux-amd64: GOARCH=amd64
+linux-amd64: FILENAME = $(RELEASES)/$(NAME)-$(GOOS)-$(GOARCH)
+linux-amd64: $(RELEASES)
+	$(GO) build -o $(FILENAME) $(BUILDFLAGS) ./cmd/actor
+	$(XZ) $(FILENAME)
+
+linux-arm64: GOOS=linux
+linux-arm64: GOARCH=arm64
+linux-arm64: FILENAME = $(RELEASES)/$(NAME)-$(GOOS)-$(GOARCH)
+linux-arm64: $(RELEASES)
+	$(GO) build -o $(FILENAME) $(BUILDFLAGS) ./cmd/actor
+	$(XZ) $(FILENAME)
+
+linux-mips64: GOOS=linux
+linux-mips64: GOARCH=mips64
+linux-mips64: FILENAME = $(RELEASES)/$(NAME)-$(GOOS)-$(GOARCH)
+linux-mips64: $(RELEASES)
+	$(GO) build -o $(FILENAME) $(BUILDFLAGS) ./cmd/actor
+	$(XZ) $(FILENAME)
+
+linux-mips64le: GOOS=linux
+linux-mips64le: GOARCH=mips64le
+linux-mips64le: FILENAME = $(RELEASES)/$(NAME)-$(GOOS)-$(GOARCH)
+linux-mips64le: $(RELEASES)
+	$(GO) build -o $(FILENAME) $(BUILDFLAGS) ./cmd/actor
+	$(XZ) $(FILENAME)
+
+linux-ppc64: GOOS=linux
+linux-ppc64: GOARCH=ppc64
+linux-ppc64: FILENAME = $(RELEASES)/$(NAME)-$(GOOS)-$(GOARCH)
+linux-ppc64: $(RELEASES)
+	$(GO) build -o $(FILENAME) $(BUILDFLAGS) ./cmd/actor
+	$(XZ) $(FILENAME)
+
+linux-ppc64le: GOOS=linux
+linux-ppc64le: GOARCH=ppc64le
+linux-ppc64le: FILENAME = $(RELEASES)/$(NAME)-$(GOOS)-$(GOARCH)
+linux-ppc64le: $(RELEASES)
+	$(GO) build -o $(FILENAME) $(BUILDFLAGS) ./cmd/actor
+	$(XZ) $(FILENAME)
+
+linux-s390x: GOOS=linux
+linux-s390x: GOARCH=s390x
+linux-s390x: FILENAME = $(RELEASES)/$(NAME)-$(GOOS)-$(GOARCH)
+linux-s390x: $(RELEASES)
+	$(GO) build -o $(FILENAME) $(BUILDFLAGS) ./cmd/actor
+	$(XZ) $(FILENAME)
+
+netbsd-amd64: GOOS=netbsd
+netbsd-amd64: GOARCH=amd64
+netbsd-amd64: FILENAME = $(RELEASES)/$(NAME)-$(GOOS)-$(GOARCH)
+netbsd-amd64: $(RELEASES)
+	$(GO) build -o $(FILENAME) $(BUILDFLAGS) ./cmd/actor
+	$(XZ) $(FILENAME)
+
+netbsd-arm64: GOOS=netbsd
+netbsd-arm64: GOARCH=arm64
+netbsd-arm64: FILENAME = $(RELEASES)/$(NAME)-$(GOOS)-$(GOARCH)
+netbsd-arm64: $(RELEASES)
+	$(GO) build -o $(FILENAME) $(BUILDFLAGS) ./cmd/actor
+	$(XZ) $(FILENAME)
+
+openbsd-amd64: GOOS=openbsd
+openbsd-amd64: GOARCH=amd64
+openbsd-amd64: FILENAME = $(RELEASES)/$(NAME)-$(GOOS)-$(GOARCH)
+openbsd-amd64: $(RELEASES)
+	$(GO) build -o $(FILENAME) $(BUILDFLAGS) ./cmd/actor
+	$(XZ) $(FILENAME)
+
+openbsd-arm64: GOOS=openbsd
+openbsd-arm64: GOARCH=arm64
+openbsd-arm64: FILENAME = $(RELEASES)/$(NAME)-$(GOOS)-$(GOARCH)
+openbsd-arm64: $(RELEASES)
+	$(GO) build -o $(FILENAME) $(BUILDFLAGS) ./cmd/actor
+	$(XZ) $(FILENAME)
 
 windows-386: GOOS=windows
 windows-386: GOARCH=386
@@ -92,23 +212,23 @@ windows-386: $(RELEASES)
 	$(GO) build -o $(BUILDDIR)/$(FILENAME) $(BUILDFLAGS) ./cmd/actor
 	zip -j $(RELEASES)/$(NAME)-$(GOOS)-$(GOARCH).zip $(BUILDDIR)/$(FILENAME)
 
-
-
-darwin-amd64: GOOS=darwin
-darwin-amd64: GOARCH=amd64
-darwin-amd64: BUILDDIR=$(GOOS)-$(GOARCH)
-darwin-amd64: $(RELEASES)
+windows-amd64: GOOS=windows
+windows-amd64: GOARCH=amd64
+windows-amd64: FILENAME = actor.exe
+windows-amd64: BUILDDIR=$(GOOS)-$(GOARCH)
+windows-amd64: $(RELEASES)
 	mkdir -p $(BUILDDIR)
-	$(GO) build -o $(BUILDDIR)/$(NAME) $(BUILDFLAGS) ./cmd/actor
-	$(TAR) $(RELEASES)/$(NAME)-$(GOOS)-$(GOARCH).tar -C $(BUILDDIR) $(NAME)	
+	$(GO) build -o $(BUILDDIR)/$(FILENAME) $(BUILDFLAGS) ./cmd/actor
+	zip -j $(RELEASES)/$(NAME)-$(GOOS)-$(GOARCH).zip $(BUILDDIR)/$(FILENAME)
 
-darwin-arm64: GOOS=darwin
-darwin-arm64: GOARCH=arm64
-darwin-arm64: BUILDDIR=$(GOOS)-$(GOARCH)
-darwin-arm64: $(RELEASES)
+windows-arm64: GOOS=windows
+windows-arm64: GOARCH=arm64
+windows-arm64: FILENAME = actor.exe
+windows-arm64: BUILDDIR=$(GOOS)-$(GOARCH)
+windows-arm64: $(RELEASES)
 	mkdir -p $(BUILDDIR)
-	$(GO) build -o $(BUILDDIR)/$(NAME) $(BUILDFLAGS) ./cmd/actor
-	$(TAR) $(RELEASES)/$(NAME)-$(GOOS)-$(GOARCH).tar -C $(BUILDDIR) $(NAME)	
+	$(GO) build -o $(BUILDDIR)/$(FILENAME) $(BUILDFLAGS) ./cmd/actor
+	zip -j $(RELEASES)/$(NAME)-$(GOOS)-$(GOARCH).zip $(BUILDDIR)/$(FILENAME)
 
 install: $(BIN)
 
