@@ -12,7 +12,10 @@ KUBO_URL="https://dist.ipfs.tech/kubo/${KUBO_VERSION}/${KUBO_TARBALL}"
 GO_MA_ACTOR_VERSION="${GO_MA_ACTOR_VERSION:-v0.2.3}"
 GO_MA_ACTOR="go-ma-actor-android-arm64"
 GO_MA_ACTOR_URL="https://github.com/bahner/go-ma-actor/releases/download/${GO_MA_ACTOR_VERSION}/${GO_MA_ACTOR}.xz"
-GO_MA_ACTOR_ACTOR_NICK="${GO_MA_ACTOR_ACTOR_NICK:-termux}"
+
+# These are for generating config
+export GO_MA_ACTOR_ACTOR_NICK="${GO_MA_ACTOR_ACTOR_NICK:-termux}"
+export GO_MA_ACTOR_API_MADDR="/ip4/127.0.0.1/tcp/5001"
 
 install_ipfs() {
     curl "${CURL_OPTS}" "${KUBO_URL}"
@@ -39,15 +42,11 @@ install_actor() {
 }
 
 generate_actor() {
-# If you haven't already, now run
-actor --api-maddr /ip4/127.0.0.1/tcp/5001 --generate --publish
-actor
+  actor --generate --publish || true # No --force. Idempotency, you know.
 }
-cat <<EOF
-EOF
 
 # Install ipfs if not already installed
 ipfs version &> /dev/null || install_ipfs
 run_ipfs
 install_actor
-
+actor
