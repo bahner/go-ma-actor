@@ -16,8 +16,8 @@ pkg up
 ### IPFS
 
 # Fetch
-curl  "${KUBO_URL}" -o "${TARBALL}"
-tar xf "${TARBALL}"
+curl  "${KUBO_URL}" -o "${KUBO_TARBALL}"
+tar xf "${KUBO_TARBALL}"
 
 # Install
 pushd kubo || exit
