@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/bahner/go-ma"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"gopkg.in/yaml.v2"
@@ -41,7 +40,8 @@ func generateConfigFile(identity string, node string) {
 		},
 		// NB! This is a cross over from go-ma
 		"api": map[string]interface{}{
-			"maddr": ma.DEFAULT_IPFS_API_MULTIADDR,
+			// This must be set corretly for generation to work
+			"maddr": viper.GetString("api.maddr"),
 		},
 		"http": map[string]interface{}{
 			"socket": defaultHttpSocket,
