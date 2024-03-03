@@ -3,6 +3,7 @@
 set -eu
 
 BINDIR="${PREFIX}/bin"
+CURL_OPTS="-s -O"
 
 KUBO_VERSION="${KUBO_VERSION:-v0.26.0}"
 KUBO_TARBALL="kubo_${KUBO_VERSION}_linux-arm64.tar.gz"
