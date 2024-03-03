@@ -33,7 +33,7 @@ func generateConfigFile(identity string, node string) {
 			"nick":     nick,
 		},
 		"db": map[string]interface{}{
-			"file": defaultDbFile,
+			"file": DefaultDbFile,
 		},
 		"log": map[string]interface{}{
 			"level": defaultLogLevel,

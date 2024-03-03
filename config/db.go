@@ -5,9 +5,5 @@ const (
 )
 
 var (
-	defaultDbFile = dataHome + defaultDBFilename
+	DefaultDbFile = NormalisePath(dataHome + defaultDBFilename)
 )
-
-func DefaultDBFile() string {
-	return defaultDbFile
-}

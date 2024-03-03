@@ -3,11 +3,11 @@ package db
 import (
 	"database/sql"
 	"fmt"
-	"path/filepath"
 	"sync"
 
 	"github.com/bahner/go-ma-actor/config"
 	"github.com/mitchellh/go-homedir"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
@@ -21,7 +21,7 @@ const (
 var (
 	once          sync.Once
 	db            *sql.DB
-	defaultDbFile = config.DefaultDBFile()
+	defaultDbFile = config.DefaultDbFile
 )
 
 func init() {
@@ -36,13 +36,18 @@ func init() {
 }
 
 // Initiates the database connection and creates the tables if they do not exist
-func Get() (*sql.DB, error) {
+func Init() (*sql.DB, error) {
 
 	var onceErr error
 
 	once.Do(func() {
 		var err error
-		db, err = sql.Open("sqlite3", dbfile())
+		f, err := dbfile()
+		if err != nil {
+			onceErr = fmt.Errorf("error expanding db file path: %s", err)
+			return
+		}
+		db, err = sql.Open("sqlite3", f)
 		if err != nil {
 			onceErr = fmt.Errorf("error opening database: %s", err)
 			return
@@ -64,6 +69,8 @@ func Get() (*sql.DB, error) {
 		db.SetMaxOpenConns(dbMaxConnections)
 		db.Exec("PRAGMA busy_timeout = " + fmt.Sprintf("%d", timeout()))
 
+		log.Infof("Connected to database: %s", f)
+
 	})
 
 	if onceErr != nil {
@@ -72,18 +79,22 @@ func Get() (*sql.DB, error) {
 
 	return db, nil
 }
+func Get() (*sql.DB, error) {
+
+	return Init()
+}
 
 // Returns expanded path to the db-file file
 // If the expansion fails it returns an empty string
-func dbfile() string {
+func dbfile() (string, error) {
 
-	path := viper.GetString("db.file")
-	path, err := homedir.Expand(path)
+	p := viper.GetString("db.file")
+	p, err := homedir.Expand(p)
 	if err != nil {
-		return ""
+		return "", err
 	}
 
-	return filepath.FromSlash(filepath.Clean(path))
+	return config.NormalisePath(p), nil
 
 }
 

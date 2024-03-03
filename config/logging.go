@@ -17,7 +17,7 @@ const (
 	logFilePerm     os.FileMode = 0640
 )
 
-var defaultLogfile string = dataHome + defaultActor + ".log"
+var defaultLogfile string = NormalisePath(dataHome + defaultActor + ".log")
 
 func init() {
 
@@ -78,5 +78,5 @@ func getLogFile() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return filepath.FromSlash(filepath.Clean(lf)), nil
+	return NormalisePath(lf), nil
 }

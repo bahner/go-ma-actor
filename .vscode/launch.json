@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Launch actor as tester",
+            "name": "Launch actor as bahner",
             "type": "go",
             "request": "launch",
             "mode": "auto",
@@ -13,7 +13,7 @@
             "console": "integratedTerminal",
             "args": [
                 "--nick",
-                "tester"
+                "bahner"
             ],
             "env": {
                 "GOLOG_FILE": "debug.log",

@@ -5,8 +5,9 @@ MODULE_NAME = github.com/bahner/go-ma-actor
 export VERSION = "v0.0.2"
 
 GO ?= go
+# This is required for sqlite3 cross-compilation
+export CGO_ENABLED=1
 BUILDFLAGS ?= -ldflags="-s -w"
-TAR ?= tar cJf
 XZ ?= xz -zf
 PREFIX ?= /usr/local
 KEYSET = $(NAME)-create-keyset

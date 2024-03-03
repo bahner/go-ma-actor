@@ -30,7 +30,7 @@ var (
 	config            string = ""
 	configHome        string = xdg.ConfigHome + "/" + ma.NAME + "/"
 	dataHome          string = xdg.DataHome + "/" + ma.NAME + "/"
-	defaultConfigFile string = configHome + defaultActor + ".yaml"
+	defaultConfigFile string = NormalisePath(configHome + defaultActor + ".yaml")
 )
 
 func init() {
@@ -165,7 +165,7 @@ func configFile() string {
 		filename = configHome + configName() + ".yaml"
 	}
 
-	return filepath.FromSlash(filepath.Clean(filename))
+	return filepath.Clean(filename)
 
 }
 
@@ -244,4 +244,8 @@ func forceFlag() bool {
 	}
 
 	return forceFlag
+}
+
+func NormalisePath(path string) string {
+	return filepath.ToSlash(filepath.Clean(path))
 }

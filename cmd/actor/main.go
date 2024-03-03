@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/bahner/go-ma-actor/config"
+	"github.com/bahner/go-ma-actor/config/db"
 	"github.com/bahner/go-ma-actor/entity/actor"
 	"github.com/bahner/go-ma-actor/mode/relay"
 	"github.com/bahner/go-ma-actor/p2p"
@@ -15,6 +16,11 @@ import (
 )
 
 func main() {
+
+	var (
+		err error
+		p   *p2p.P2P
+	)
 
 	// Always parse the flags first
 	pflag.Parse()
@@ -27,14 +33,17 @@ func main() {
 	config.Init(mode)
 	fmt.Printf("Starting in %s mode.\n", mode)
 
+	// DB
+	fmt.Print("Initialising DB ...")
+	_, err = db.Init()
+	if err != nil {
+		log.Fatalf("failed to initialize db: %v", err)
+	}
+	fmt.Println("done.")
 	// P2P
 
 	// Configure and start P2P
 	fmt.Print("Initialising libp2p...")
-	var (
-		p   *p2p.P2P
-		err error
-	)
 
 	if config.RelayMode() {
 		fmt.Print("Relay mode enabled.")
