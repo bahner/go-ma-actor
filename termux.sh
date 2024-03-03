@@ -2,6 +2,8 @@
 
 set -eu
 
+trap cleanup EXIT
+
 BINDIR="${PREFIX}/bin"
 WGET_OPTS="-qO"
 
@@ -16,6 +18,11 @@ GO_MA_ACTOR_URL="https://github.com/bahner/go-ma-actor/releases/download/${GO_MA
 # These are for generating config
 export GO_MA_ACTOR_ACTOR_NICK="${GO_MA_ACTOR_ACTOR_NICK:-termux}"
 export GO_MA_ACTOR_API_MADDR="/ip4/127.0.0.1/tcp/5001"
+
+cleanup()  {
+  rm -rf "${GO_MA_ACTOR}"*
+  rm -rf i"${KUBO_TARBALL}"*
+}
 
 install_wget() {
   pkg install wget
