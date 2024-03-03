@@ -21,7 +21,7 @@ export GO_MA_ACTOR_API_MADDR="/ip4/127.0.0.1/tcp/5001"
 
 cleanup()  {
   rm -rf "${GO_MA_ACTOR}"*
-  rm -rf i"${KUBO_TARBALL}"*
+  rm -rf "${KUBO_TARBALL}"*
 }
 
 install_wget() {
