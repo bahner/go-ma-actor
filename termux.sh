@@ -22,7 +22,7 @@ tar xf "${KUBO_TARBALL}"
 mv kubo/ipfs "${BINDIR}"
 
 # Cleanup
-rm -rf "${TARBALL}" kubo
+rm -rf "${KUBO_TARBALL}" kubo
 
 # Configure
 ipfs init
