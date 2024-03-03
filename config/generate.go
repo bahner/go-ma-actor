@@ -6,7 +6,6 @@ import (
 
 	"github.com/bahner/go-ma"
 	log "github.com/sirupsen/logrus"
-	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	"gopkg.in/yaml.v2"
 )
@@ -73,12 +72,7 @@ func generateConfigFile(identity string, node string) {
 		log.Fatalf("error: %v", err)
 	}
 
-	// Begin the output
-	generateFlag, err := pflag.CommandLine.GetBool("generate")
-	if err != nil {
-		log.Warnf("config.init: %v", err)
-	}
-	if generateFlag {
+	if generateFlag() {
 		writeGeneratedConfigFile(configYAML)
 	} else {
 		fmt.Println(string(configYAML))
@@ -100,6 +94,7 @@ func writeGeneratedConfigFile(content []byte) {
 		} else {
 			errMsg = fmt.Sprintf("Failed to open file: %v", err)
 		}
+		fmt.Println(content)
 		log.Fatalf(errMsg)
 	}
 	defer file.Close()

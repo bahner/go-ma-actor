@@ -5,12 +5,16 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Launch Package without args",
+            "name": "Launch actor as tester",
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "${workspaceFolder}/cmd/actor/main.go",
+            "program": "${workspaceFolder}/cmd/actor/",
             "console": "integratedTerminal",
+            "args": [
+                "--nick",
+                "tester"
+            ],
             "env": {
                 "GOLOG_FILE": "debug.log",
                 "GOLOG_LOG_LEVEL": "debug",

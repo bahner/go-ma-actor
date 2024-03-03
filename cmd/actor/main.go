@@ -16,17 +16,26 @@ import (
 
 func main() {
 
+	// Always parse the flags first
 	pflag.Parse()
 
+	// MODE
+
+	// Then init the config
+	// There's a lot of stuff going on in here.
 	mode := config.Mode()
 	config.Init(mode)
 	fmt.Printf("Starting in %s mode.\n", mode)
 
+	// P2P
+
+	// Configure and start P2P
 	fmt.Print("Initialising libp2p...")
 	var (
 		p   *p2p.P2P
 		err error
 	)
+
 	if config.RelayMode() {
 		fmt.Print("Relay mode enabled.")
 		p, err = p2p.Init(nil, relay.GetOptions()...)
@@ -44,7 +53,9 @@ func main() {
 		os.Exit(0) // This won't be reached.
 	}
 
-	// The actor is needed for the WebHandler.
+	// ACTOR
+
+	// The actor is needed for initialisation of the WebHandler.
 	fmt.Print("Creating actor from keyset...")
 	a, err := actor.NewFromKeyset(config.ActorKeyset())
 	if err != nil {
@@ -67,6 +78,8 @@ func main() {
 		log.Fatalf("%s is not a valid actor: %v", id, err)
 	}
 
+	// PEER DISCOVERY
+
 	// We need to discover peers before we can do anything else.
 	// So this is a blocking call.
 	fmt.Print("Discovering peers...")
@@ -76,6 +89,8 @@ func main() {
 	}
 	fmt.Println("done.")
 
+	// UI
+
 	// Draw the UI.
 	fmt.Print("Creating text UI...")
 	ui, err := ui.NewChatUI(p, a)
@@ -83,6 +98,8 @@ func main() {
 		log.Fatalf("error creating text UI: %s", err)
 	}
 	fmt.Println("done.")
+
+	// WEBSERVER
 
 	fmt.Print("Starting web server...")
 	go startWebServer(p, a)

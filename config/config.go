@@ -52,37 +52,24 @@ func init() {
 // The name parameter is the name of the config file to search for without the extension.
 func Init(mode string) error {
 
-	versionFlag, err := pflag.CommandLine.GetBool("version")
-	if err != nil {
-		log.Warnf("config.init: %v", err)
-	}
-	if versionFlag {
+	if versionFlag() {
 		fmt.Println(VERSION)
 		os.Exit(0)
 	}
 
-	showDefaultsFlag, err := pflag.CommandLine.GetBool("show-defaults")
-	if err != nil {
-		log.Warnf("config.init: %v", err)
-	}
-	if showDefaultsFlag {
+	if showDefaultsFlag() {
 		// Print the YAML to stdout or write it to a template file
 		generateConfigFile(fakeActorIdentity, fakeNodeIdentity)
 		os.Exit(0)
 	}
 
 	// Make sure the XDG directories exist before we start writing to them.
-	err = createXDGDirectories()
+	err := createXDGDirectories()
 	if err != nil {
 		log.Fatalf("config.init: %v", err)
 	}
 
-	// This will exit when done. It will also publish if applicable.
-	generateFlag, err := pflag.CommandLine.GetBool("generate")
-	if err != nil {
-		log.Warnf("config.init: %v", err)
-	}
-	if generateFlag {
+	if generateFlag() {
 		log.Info("Generating new keyset and node identity")
 		actor, node := handleGenerateOrExit()
 		generateConfigFile(actor, node)
@@ -96,8 +83,7 @@ func Init(mode string) error {
 		log.Fatalf("No config file found: %s", err)
 	}
 
-	showConfigFlag, _ := pflag.CommandLine.GetBool("show-config")
-	if showConfigFlag {
+	if showConfigFlag() {
 		Print()
 		os.Exit(0)
 	}
@@ -191,4 +177,55 @@ func createXDGDirectories() error {
 
 	return nil
 
+}
+
+func generateFlag() bool {
+	// This will exit when done. It will also publish if applicable.
+	generateFlag, err := pflag.CommandLine.GetBool("generate")
+	if err != nil {
+		log.Warnf("config.init: %v", err)
+		return false
+	}
+
+	return generateFlag
+}
+
+func publishFlag() bool {
+	publishFlag, err := pflag.CommandLine.GetBool("publish")
+	if err != nil {
+		log.Warnf("config.init: %v", err)
+		return false
+	}
+
+	return publishFlag
+}
+
+func showDefaultsFlag() bool {
+	showDefaultsFlag, err := pflag.CommandLine.GetBool("show-defaults")
+	if err != nil {
+		log.Warnf("config.init: %v", err)
+		return false
+	}
+
+	return showDefaultsFlag
+}
+
+func showConfigFlag() bool {
+	showConfigFlag, err := pflag.CommandLine.GetBool("show-config")
+	if err != nil {
+		log.Warnf("config.init: %v", err)
+		return false
+	}
+
+	return showConfigFlag
+}
+
+func versionFlag() bool {
+	versionFlag, err := pflag.CommandLine.GetBool("version")
+	if err != nil {
+		log.Warnf("config.init: %v", err)
+		return false
+	}
+
+	return versionFlag
 }

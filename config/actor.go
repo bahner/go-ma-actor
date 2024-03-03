@@ -17,6 +17,8 @@ const (
 	defaultActor string = "actor"
 )
 
+var keyset set.Keyset
+
 func init() {
 	// Keyset
 	pflag.BoolP("generate", "g", false, "Generates a new keyset")
@@ -45,13 +47,10 @@ func InitActor() {
 		os.Exit(64) // EX_USAGE
 	}
 
-	keyset := ActorKeyset()
+	// This function fails fatally, so no return value
+	initActorKeyset()
 
-	publishFlag, err := pflag.CommandLine.GetBool("publish")
-	if err != nil {
-		log.Warnf("config.initActor: %v", err)
-	}
-	if publishFlag && keyset_string != "" {
+	if publishFlag() && keyset_string != "" {
 		fmt.Print("Publishing identity to IPFS...")
 		err := publishIdentityFromKeyset(keyset)
 		if err != nil {
@@ -81,15 +80,10 @@ func handleGenerateOrExit() (string, string) {
 		os.Exit(70) // EX_SOFTWARE
 	}
 
-	publishFlag, err := pflag.CommandLine.GetBool("publish")
-	if err != nil {
-		log.Warnf("config.handleGenerateOrExit: %v", err)
-	}
-	if publishFlag {
+	if publishFlag() {
 		err = publishActorIdentityFromString(keyset_string)
 		if err != nil {
-			log.Errorf("config.handleGenerateOrExit: %v", err)
-			os.Exit(75) // EX_TEMPFAIL
+			log.Warnf("config.handleGenerateOrExit: %v", err)
 		}
 	}
 
@@ -144,7 +138,7 @@ func publishIdentityFromKeyset(k set.Keyset) error {
 
 	// Publication options
 	opts := doc.DefaultPublishOptions()
-	opts.Force = viper.GetBool("publish")
+	opts.Force = publishFlag()
 
 	_, err = d.Publish(opts)
 	if err != nil {
@@ -167,7 +161,7 @@ func ActorHome() string {
 func GetDocPublishOptions() *doc.PublishOptions {
 	return &doc.PublishOptions{
 		Ctx:   GetPublishContext(),
-		Force: viper.GetBool("publish"),
+		Force: publishFlag(),
 	}
 }
 
@@ -180,6 +174,10 @@ func ActorDid() string {
 }
 
 func ActorKeyset() set.Keyset {
+	return keyset
+}
+
+func initActorKeyset() {
 
 	keyset_string := viper.GetString("actor.identity")
 
@@ -190,8 +188,12 @@ func ActorKeyset() set.Keyset {
 		os.Exit(64) // EX_USAGE
 	}
 
-	keyset, _ := set.Unpack(keyset_string)
+	var err error
 
-	return keyset
+	keyset, err = set.Unpack(keyset_string)
+	if err != nil {
+		log.Errorf("config.initActor: %v", err)
+		os.Exit(70) // EX_SOFTWARE
+	}
 
 }
