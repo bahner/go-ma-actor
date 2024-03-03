@@ -27,20 +27,20 @@ var (
 func init() {
 
 	pflag.String("db-file", defaultDbFile, "File to *write* node peers and entities to. If the file does not exist, it will be created.")
-	viper.BindPFlag("db.file", pflag.Lookup("db-file"))
-	viper.SetDefault("db.file", defaultDbFile)
 
 	pflag.Int("db-timeout", defaultDbTimeout, "Timeout for serialized access to the database in milliseconds.")
-	viper.BindPFlag("db.timeout", pflag.Lookup("db-timeout"))
-	viper.SetDefault("db.timeout", defaultDbTimeout)
 }
 
 // Initiates the database connection and creates the tables if they do not exist
 func Init() (*sql.DB, error) {
 
+	viper.BindPFlag("db.file", pflag.Lookup("db-file"))
+	viper.BindPFlag("db.timeout", pflag.Lookup("db-timeout"))
+
 	var onceErr error
 
 	once.Do(func() {
+
 		var err error
 		f, err := dbfile()
 		if err != nil {

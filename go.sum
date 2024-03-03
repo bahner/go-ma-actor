@@ -55,8 +55,8 @@ github.com/alibabacloud-go/tea-utils v1.3.5/go.mod h1:EI/o33aBfj3hETm4RLiAxF/ThQ
 github.com/aliyun/credentials-go v1.1.0/go.mod h1:ZXrrxv386Mj6z8NpihLKpexQE550m7j3LlyCvYub9aE=
 github.com/aliyun/credentials-go v1.1.2/go.mod h1:ozcZaMR5kLM7pwtCMEpVmQ242suV6qTJya2bDq4X1Tw=
 github.com/anmitsu/go-shlex v0.0.0-20161002113705-648efa622239/go.mod h1:2FmKhYUyUczH0OGQWaF5ceTx0UBShxjsH6f8oGKYe2c=
-github.com/bahner/go-ma v0.7.3 h1:BH+rC+j9S6ULYaYu+y6Ac1L1Vf6qDTm5VMjd9z4pgLc=
-github.com/bahner/go-ma v0.7.3/go.mod h1:MK6SyD3/UobUdO/MKAXahkGfEr4kDTrUfAcIIw+SOZs=
+github.com/bahner/go-ma v0.7.4-0.20240303134656-5982fbd68ef5 h1:1GdMZv6fiFyJcvQi0WaOv+MPo7mKfQq0ocDjzB0FjfE=
+github.com/bahner/go-ma v0.7.4-0.20240303134656-5982fbd68ef5/go.mod h1:MK6SyD3/UobUdO/MKAXahkGfEr4kDTrUfAcIIw+SOZs=
 github.com/benbjohnson/clock v1.1.0/go.mod h1:J11/hYXuz8f4ySSvYwY0FKfm+ezbsZBKZxNJlLklBHA=
 github.com/benbjohnson/clock v1.3.0/go.mod h1:J11/hYXuz8f4ySSvYwY0FKfm+ezbsZBKZxNJlLklBHA=
 github.com/benbjohnson/clock v1.3.5 h1:VvXlSJBzZpA/zum6Sj74hxwYI2DIxRWuNIoXAzHZz5o=

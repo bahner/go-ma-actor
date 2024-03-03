@@ -15,13 +15,13 @@ func Init(opts ...p2pConnmgr.Option) (*p2pConnmgr.BasicConnMgr, error) {
 		return connmgr, nil
 	}
 
-	lowWaterMark := config.GetLowWatermark()
+	lowWaterMark := config.P2PConnmgrLowWatermark()
 	log.Infof("Connection manager low water mark: %v", lowWaterMark)
 
-	highWaterMark := config.GetHighWatermark()
+	highWaterMark := config.P2PConnmgrHighWatermark()
 	log.Infof("Connection manager high water mark: %v", highWaterMark)
 
-	gracePeriod := config.GetConnMgrGracePeriod()
+	gracePeriod := config.P2PConnMgrGracePeriod()
 	opts = append(opts, p2pConnmgr.WithGracePeriod(gracePeriod))
 	log.Infof("Connection manager grace period: %v", gracePeriod)
 

@@ -20,7 +20,7 @@ import (
 // You might want to pass a DHT instance in Server mode here, for long running processes.
 func (p *P2P) DiscoverPeers() error {
 
-	ctx, cancel := config.GetDiscoveryContext()
+	ctx, cancel := config.P2PDiscoveryContext()
 	defer cancel()
 
 	err := p.DHT.DiscoverPeers(ctx)
@@ -44,14 +44,14 @@ func (p *P2P) DiscoverPeers() error {
 // Each iteration will have a timeout of its own.
 
 func (p *P2P) DiscoveryLoop(ctx context.Context) {
-	log.Infof("Starting discovery with retry interval %s", config.GetDiscoveryRetryIntervalString())
+	log.Infof("Starting discovery with retry interval %s", config.P2PDiscoveryRetryIntervalString())
 	for {
 		select {
 		case <-ctx.Done():
 			return
 		default:
 			p.DHT.DiscoverPeers(ctx)
-			sleepTime := config.GetDiscoveryRetryInterval()
+			sleepTime := config.P2PDiscoveryRetryInterval()
 			log.Debugf("Discovery sleeping for %s", sleepTime.String())
 			time.Sleep(sleepTime)
 		}

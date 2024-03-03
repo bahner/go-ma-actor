@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 
+	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -22,16 +23,16 @@ var defaultLogfile string = NormalisePath(dataHome + defaultActor + ".log")
 func init() {
 
 	pflag.String("log-level", defaultLogLevel, "Loglevel to use for application.")
-	viper.SetDefault("log.level", defaultLogLevel)
-	viper.BindPFlag("log.level", pflag.Lookup("log-level"))
-
 	pflag.String("log-file", defaultLogfile, "Logfile to use for application. Accepts 'STDERR' and 'STDOUT' as such.")
-	viper.SetDefault("log.file", defaultLogfile)
-	viper.BindPFlag("log.file", pflag.Lookup("log-file"))
 }
 
 func InitLogging() {
 
+	viper.BindPFlag("log.level", pflag.Lookup("log-level"))
+	viper.BindPFlag("log.file", pflag.Lookup("log-file"))
+
+	viper.SetDefault("log.level", defaultLogLevel)
+	viper.SetDefault("log.file", defaultLogfile)
 	// Init logger
 	ll, err := log.ParseLevel(viper.GetString("log.level"))
 	if err != nil {
@@ -57,6 +58,10 @@ func InitLogging() {
 		log.SetOutput(file)
 
 	}
+	log.SetFormatter(&logrus.TextFormatter{
+		ForceColors:   true,
+		FullTimestamp: true,
+	})
 
 	log.Info("Logger initialized with loglevel ", viper.GetString("log.level"), " and logfile ", viper.GetString("log.file"))
 
@@ -79,4 +84,12 @@ func getLogFile() (string, error) {
 		return "", err
 	}
 	return NormalisePath(lf), nil
+}
+
+func LogLevel() string {
+	return viper.GetString("log.level")
+}
+
+func LogFile() string {
+	return viper.GetString("log.file")
 }

@@ -45,7 +45,7 @@ func Init(d *dht.DHT, p2pOpts ...libp2p.Option) (*P2P, error) {
 	p2pOpts = append(p2pOpts, libp2p.ConnectionManager(cm))
 
 	// Create a new libp2p Host that listens on a random TCP port
-	n, err := node.New(config.GetNodeIdentity(), p2pOpts...)
+	n, err := node.New(config.NodeIdentity(), p2pOpts...)
 	if err != nil {
 		return nil, fmt.Errorf("p2p.Init: failed to create libp2p node: %w", err)
 	}

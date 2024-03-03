@@ -151,13 +151,13 @@ func (ui *ChatUI) Run() error {
 	fmt.Println("Actor started.")
 
 	// We must wait for this to finish.
-	fmt.Print("Entering home...")
-	err := ui.enterEntity(config.ActorHome(), true)
+	fmt.Printf("Entering %s ...", config.ActorLocation())
+	err := ui.enterEntity(config.ActorLocation(), true)
 	if err != nil {
 		ui.displayStatusMessage(err.Error())
 	}
 	fmt.Println("done.")
-	fmt.Printf("Entered %s\n", config.ActorHome())
+	fmt.Printf("Entered %s\n", config.ActorLocation())
 
 	fmt.Print("Starting event loop...")
 	go ui.handleEvents()

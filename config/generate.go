@@ -9,17 +9,14 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-// Well, actually find a nice one for this!
-const defaultHome = "did:ma:k2k4r8kzkhamrqz9m5yy0tihj1fso3t6znnuidu00dbtnh3plazatrfw#pong"
-
-func generateConfigFile(identity string, node string) {
+func generateActorConfigFile(identity string, node string) {
 
 	var nick string
 
 	if identity == fakeActorIdentity {
 		nick = defaultActor
 	} else {
-		nick = viper.GetString("actor.nick")
+		nick = ActorNick()
 	}
 
 	// Get the default settings as a map
@@ -28,12 +25,13 @@ func generateConfigFile(identity string, node string) {
 	config := map[string]interface{}{
 		"actor": map[string]interface{}{
 			"identity": identity,
-			"home":     defaultHome,
+			"location": ActorLocation(),
 			"nick":     nick,
 		},
 		"db": map[string]interface{}{
 			"file": DefaultDbFile,
 		},
+		// Use default log settings, so as not to pick up debug log settings
 		"log": map[string]interface{}{
 			"level": defaultLogLevel,
 			"file":  defaultLogfile,
@@ -44,25 +42,18 @@ func generateConfigFile(identity string, node string) {
 			"maddr": viper.GetString("api.maddr"),
 		},
 		"http": map[string]interface{}{
-			"socket": defaultHttpSocket,
+			"socket": HttpSocket(),
 		},
 		"p2p": map[string]interface{}{
 			"identity": node,
-			"port":     defaultListenPort,
+			"port":     P2PPort(),
 			"connmgr": map[string]interface{}{
-				"low-watermark":  defaultConnmgrLowWatermark,
-				"high-watermark": defaultConnmgrHighWatermark,
-				"grace-period":   defaultConnmgrGracePeriod,
+				"low-watermark":  P2PConnmgrLowWatermark(),
+				"high-watermark": P2PConnmgrHighWatermark(),
+				"grace-period":   P2PConnMgrGracePeriod(),
 			},
-			"discovery-retry":   defaultDiscoveryRetryInterval,
-			"discovery-timeout": defaultDiscoveryTimeout,
-		},
-		"mode": map[string]interface{}{
-			"relay": defaultRelayMode,
-			"pong": map[string]interface{}{
-				"reply":   DefaultPongReply,
-				"enabled": defaultPongMode,
-			},
+			"discovery-retry":   P2PDiscoveryRetryInterval(),
+			"discovery-timeout": P2PDiscoveryTimeout(),
 		},
 	}
 
@@ -113,4 +104,102 @@ func writeGeneratedConfigFile(content []byte) {
 	}
 
 	log.Printf("Generated config file %s", filePath)
+}
+
+func generatePongConfigFile(identity string, node string) {
+
+	// Get the default settings as a map
+	// Note: Viper does not have a built-in way to directly extract only the config
+	// so we manually recreate the structure based on the config we have set.
+	config := map[string]interface{}{
+		"actor": map[string]interface{}{
+			"identity": identity,
+			"nick":     "pong",
+		},
+		"db": map[string]interface{}{
+			"file": DefaultDbFile,
+		},
+		"log": map[string]interface{}{
+			"level": LogLevel(),
+			"file":  LogFile(),
+		},
+		// NB! This is a cross over from go-ma
+		"api": map[string]interface{}{
+			// This must be set corretly for generation to work
+			"maddr": viper.GetString("api.maddr"),
+		},
+		"http": map[string]interface{}{
+			"socket": HttpSocket(),
+		},
+		"p2p": map[string]interface{}{
+			"identity": node,
+			"port":     P2PPort(),
+			"connmgr": map[string]interface{}{
+				"low-watermark":  P2PConnmgrLowWatermark(),
+				"high-watermark": P2PConnmgrHighWatermark(),
+				"grace-period":   P2PConnMgrGracePeriod(),
+			},
+			"discovery-retry":   P2PDiscoveryRetryInterval(),
+			"discovery-timeout": P2PDiscoveryTimeout(),
+		},
+		"mode": map[string]interface{}{
+			"pong": map[string]interface{}{
+				"reply": DefaultPongReply,
+			},
+		},
+	}
+
+	// Convert the map of defaults to YAML
+	configYAML, err := yaml.Marshal(config)
+	if err != nil {
+		log.Fatalf("error: %v", err)
+	}
+
+	if generateFlag() {
+		writeGeneratedConfigFile(configYAML)
+	} else {
+		fmt.Println(string(configYAML))
+	}
+}
+
+func generateRelayConfigFile(node string) {
+
+	// Get the default settings as a map
+	// Note: Viper does not have a built-in way to directly extract only the config
+	// so we manually recreate the structure based on the config we have set.
+	config := map[string]interface{}{
+		"db": map[string]interface{}{
+			"file": DefaultDbFile,
+		},
+		"log": map[string]interface{}{
+			"level": LogLevel(),
+			"file":  LogFile(),
+		},
+		"http": map[string]interface{}{
+			"socket": HttpSocket(),
+		},
+		"p2p": map[string]interface{}{
+			"identity": node,
+			"port":     P2PPort(),
+			"connmgr": map[string]interface{}{
+				"low-watermark":  P2PConnmgrLowWatermark(),
+				"high-watermark": P2PConnmgrHighWatermark(),
+				"grace-period":   P2PConnMgrGracePeriod(),
+			},
+			"discovery-retry":   P2PDiscoveryRetryInterval(),
+			"discovery-timeout": P2PDiscoveryTimeout(),
+		},
+	}
+
+	// Convert the map of defaults to YAML
+	configYAML, err := yaml.Marshal(config)
+	if err != nil {
+		log.Fatalf("error: %v", err)
+	}
+
+	if generateFlag() {
+		writeGeneratedConfigFile(configYAML)
+	} else {
+		fmt.Println(string(configYAML))
+	}
 }

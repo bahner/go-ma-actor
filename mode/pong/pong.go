@@ -15,11 +15,13 @@ import (
 
 func init() {
 	pflag.String("pong-reply", config.DefaultPongReply, "The message to send back to the sender")
-	viper.BindPFlag("mode.pong.reply", pflag.Lookup("pong-reply"))
 }
 
 // Run the pong actor. Cancel it from outside to stop it.
 func Run(ctx context.Context, a *actor.Actor, b *p2ppubsub.Topic, n *p2p.P2P) {
+
+	viper.BindPFlag("mode.pong.reply", pflag.Lookup("pong-reply"))
+	viper.SetDefault("mode.pong.reply", config.DefaultPongReply)
 
 	log.Infof("Starting pong mode as %s", a.Entity.DID.Id)
 	go a.Subscribe(ctx, a.Entity)

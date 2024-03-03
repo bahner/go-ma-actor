@@ -38,11 +38,11 @@ func startWebServer(p *p2p.P2P, a *actor.Actor) {
 		mux.HandleFunc("/", h.WebHandler)
 	}
 
-	log.Infof("Listening on %s", config.GetHttpSocket())
+	log.Infof("Listening on %s", config.HttpSocket())
 
 	// IN relay mode we want to stop here.
-	fmt.Print("Web server starting on http://" + config.GetHttpSocket() + "/")
-	err := http.ListenAndServe(config.GetHttpSocket(), mux)
+	fmt.Print("Web server starting on http://" + config.HttpSocket() + "/")
+	err := http.ListenAndServe(config.HttpSocket(), mux)
 	if err != nil {
 		log.Fatalf("Web server failed: %v", err)
 	}

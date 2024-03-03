@@ -97,10 +97,10 @@ func (d *DHT) DiscoverPeers(ctx context.Context, discoveryOpts ...discovery.Opti
 
 	log.Debugf("Number of open connections: %d", len(d.h.Network().Conns()))
 	//  Trim connections
-	log.Debugf("Trimming open connections to %d", config.GetLowWatermark())
+	log.Debugf("Trimming open connections to %d", config.P2PConnmgrLowWatermark())
 	d.h.ConnManager().TrimOpenConns(ctx)
 
-	log.Debugf("Peer discovery timeout: %v", config.GetDiscoveryTimeout())
+	log.Debugf("Peer discovery timeout: %v", config.P2PDiscoveryTimeout())
 	log.Debugf("Peer discovery context %v", ctx)
 
 	routingDiscovery := drouting.NewRoutingDiscovery(d.IpfsDHT)

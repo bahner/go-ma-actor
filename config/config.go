@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/adrg/xdg"
 	"github.com/bahner/go-ma"
@@ -15,11 +16,9 @@ import (
 )
 
 const (
-	NAME              string = "go-ma-actor"
-	VERSION           string = "v0.2.3"
-	ENV_PREFIX        string = "GO_MA_ACTOR"
-	fakeActorIdentity string = "NO_DEFAULT_ACTOR_IDENITY"
-	fakeNodeIdentity  string = "NO_DEFAULT_NODE_IDENITY"
+	NAME       string = "go-ma-actor"
+	VERSION    string = "v0.2.3"
+	ENV_PREFIX string = "GO_MA_ACTOR"
 
 	configFileMode os.FileMode = 0600
 	configDirMode  os.FileMode = 0700
@@ -35,15 +34,6 @@ var (
 
 func init() {
 
-	// Look in the current directory, the home directory and /etc for the config file.
-	// In that order.
-	viper.SetConfigType("yaml")
-	viper.AddConfigPath(".")
-	viper.AddConfigPath(configHome)
-
-	viper.SetEnvPrefix(ENV_PREFIX)
-	viper.AutomaticEnv()
-
 	// Allow to set config file via command line flag.
 	pflag.StringVarP(&config, "config", "c", defaultConfigFile, "Config file to use.")
 
@@ -58,6 +48,18 @@ func init() {
 // The name parameter is the name of the config file to search for without the extension.
 func Init(mode string) error {
 
+	// Read the config file and environment variables.
+	viper.SetEnvPrefix(ENV_PREFIX)
+	viper.AutomaticEnv()
+
+	// Handle nested values in environment variables.
+	replacer := strings.NewReplacer(".", "_")
+	viper.SetEnvKeyReplacer(replacer)
+
+	// We need the nick to be set before we can generate the config file correctly.
+	viper.BindPFlag("actor.nick", pflag.Lookup("nick"))
+
+	// Handle the easy flags first.
 	if versionFlag() {
 		fmt.Println(VERSION)
 		os.Exit(0)
@@ -65,9 +67,12 @@ func Init(mode string) error {
 
 	if showDefaultsFlag() {
 		// Print the YAML to stdout or write it to a template file
-		generateConfigFile(fakeActorIdentity, fakeNodeIdentity)
+		generateActorConfigFile(fakeActorIdentity, fakeP2PIdentity)
 		os.Exit(0)
 	}
+
+	// Now we need logging to be set up, so we can see what's going on.
+	InitLogging()
 
 	// Make sure the XDG directories exist before we start writing to them.
 	err := createXDGDirectories()
@@ -75,32 +80,58 @@ func Init(mode string) error {
 		log.Fatalf("config.init: %v", err)
 	}
 
+	// These values initialised here are required for the generation of the config file.
+	InitP2P()
+	InitHttp()
+
 	if generateFlag() {
-		log.Info("Generating new keyset and node identity")
-		actor, node := handleGenerateOrExit()
-		generateConfigFile(actor, node)
+
+		// Reinit logging to STDOUT
+		viper.Set("log.file", "STDOUT")
+		InitLogging()
+
+		switch Mode() {
+		case "actor":
+			log.Info("Generating new actor and node identity")
+			actor, node := handleGenerateOrExit()
+			generateActorConfigFile(actor, node)
+		case "pong":
+			viper.Set("actor.nick", "pong")
+			log.Info("Generating new pong actor and node identity")
+			actor, node := handleGenerateOrExit()
+			generatePongConfigFile(actor, node)
+		case "relay":
+			viper.Set("actor.nick", "relay")
+			log.Info("Generating new relay node identity")
+			_, node := handleGenerateOrExit()
+			generateRelayConfigFile(node)
+		}
 		os.Exit(0)
 	}
 
+	// Look in the current directory, the home directory and /etc for the config file.
+	// In that order.
+	viper.SetConfigType("yaml")
+	viper.AddConfigPath(".")
+	viper.AddConfigPath(configHome)
+
+	// We *must* read the config file after we have generated the identity.
+	// Otherwise: Unforeseen consequences.
 	log.Infof("Using config file: %s", configFile())
 	viper.SetConfigFile(configFile())
 	err = viper.ReadInConfig()
 	if err != nil {
-		log.Fatalf("No config file found: %s", err)
+		log.Warnf("No config file found: %s", err)
+	}
+
+	if !RelayMode() {
+		InitActor()
 	}
 
 	if showConfigFlag() {
 		Print()
 		os.Exit(0)
 	}
-
-	InitLogging()
-	InitP2P()
-
-	if !RelayMode() {
-		InitActor()
-	}
-
 	return nil
 
 }

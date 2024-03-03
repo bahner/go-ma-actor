@@ -27,7 +27,7 @@
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "${workspaceFolder}/cmd/actor/main.go",
+            "program": "${workspaceFolder}/cmd/actor/",
             "console": "integratedTerminal",
             "env": {
                 "GOLOG_FILE": "debug.log",
@@ -38,8 +38,7 @@
             "args": [
                 "--generate",
                 "--nick",
-                "bahner",
-                "--publish"
+                "FUBAR",
             ]
         },
         {
@@ -47,7 +46,7 @@
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "${workspaceFolder}/cmd/actor/main.go",
+            "program": "${workspaceFolder}/cmd/actor/",
             "args": [
                 "-c",
                 "~/.ma/foo.yaml"
@@ -55,15 +54,23 @@
             "console": "integratedTerminal"
         },
         {
-            "name": "Show config",
+            "name": "show-config",
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "${workspaceFolder}/cmd/actor/main.go",
+            "program": "${workspaceFolder}/cmd/actor/",
+            "console": "integratedTerminal",
             "args": [
-                "--show_config",
+                "--show-config"
             ],
-            "console": "integratedTerminal"
+            "env": {
+                "GO_MA_ACTOR_ACTOR_NICK": "jonatan",
+                "GO_MA_ACTOR_LOG_FILE": "/dev/null",
+                "GOLOG_FILE": "debug.log",
+                "GOLOG_LOG_LEVEL": "debug",
+                "GOLOG_STDOUT": "false",
+                "GOLOG_OUTPUT": "file"
+            }
         }
     
     ]

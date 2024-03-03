@@ -14,23 +14,22 @@ import (
 )
 
 const (
-	defaultActor string = "actor"
+	defaultActor      string = "actor"
+	defaultLocation   string = "did:ma:k2k4r8kzkhamrqz9m5yy0tihj1fso3t6znnuidu00dbtnh3plazatrfw#pong"
+	fakeActorIdentity string = "NO_DEFAULT_ACTOR_IDENITY"
 )
 
-var keyset set.Keyset
+var (
+	keyset           set.Keyset
+	ErrEmptyIdentity = fmt.Errorf("config: Identity is empty")
+	ErrFakeIdentity  = fmt.Errorf("config: Your identity is fake. You need to define actorKeyset or generate a new one")
+)
 
 func init() {
-	// Keyset
 	pflag.BoolP("generate", "g", false, "Generates a new keyset")
-
 	pflag.BoolP("publish", "p", false, "Publishes keyset to IPFS")
-
-	// Nick used for keyset generation (fragment)
 	pflag.StringP("nick", "n", defaultActor, "Nickname to use in character creation")
-	viper.BindPFlag("actor.nick", pflag.Lookup("nick"))
-
-	pflag.StringP("location", "l", "", "DID of the initial location.")
-	viper.BindPFlag("actor.home", pflag.Lookup("home"))
+	pflag.StringP("location", "l", defaultLocation, "DID of the location to visit")
 
 }
 
@@ -38,13 +37,18 @@ func init() {
 // This is optional, but if you want to use the actor package, you need to call this.
 func InitActor() {
 
-	keyset_string := viper.GetString("actor.identity")
+	viper.BindPFlag("actor.location", pflag.Lookup("location"))
+	viper.SetDefault("actor.location", defaultLocation)
+
+	keyset_string := ActorIdentity()
+	if keyset_string == fakeActorIdentity {
+		log.Fatalf(ErrFakeIdentity.Error())
+	}
 
 	log.Debugf("config.initActor: %s", keyset_string)
 	// Create the actor keyset
 	if keyset_string == "" {
-		log.Errorf("config.initActor: You need to define actorKeyset or generate a new one.")
-		os.Exit(64) // EX_USAGE
+		log.Fatalf(ErrEmptyIdentity.Error())
 	}
 
 	// This function fails fatally, so no return value
@@ -61,16 +65,52 @@ func InitActor() {
 
 }
 
+// Fetches the actor nick from the config or the command line
+// NB! This is a little more complex than the other config functions, as it
+// needs to fetch the nick from the command line if it's not in the config.
+// Due to being a required parameter when generating a new keyset.
 func ActorNick() string {
-	return viper.GetString("actor.nick")
+
+	var err error
+	nick := viper.GetString("actor.nick")
+
+	if nick == "" {
+		nick, err = pflag.CommandLine.GetString("nick")
+		if err != nil {
+			log.Warnf("config.ActorNick: %v", err)
+			return defaultActor
+		}
+	}
+
+	return nick
 }
 
-func ActorHome() string {
-	return viper.GetString("actor.home")
+func ActorLocation() string {
+
+	var err error
+	e := viper.GetString("actor.location")
+
+	if e == "" {
+		e, err = pflag.CommandLine.GetString("location")
+		if err != nil {
+			log.Warnf("config.ActorEntity: %v", err)
+			return defaultActor
+		}
+	}
+
+	return e
 }
 
-func ActorDid() string {
-	return viper.GetString("actor.did")
+func ActorIdentity() string {
+
+	e := viper.GetString("actor.identity")
+
+	if e == "" {
+		log.Warnf("config.ActorIdentity: No identity set.")
+		return fakeActorIdentity
+	}
+
+	return e
 }
 
 func ActorKeyset() set.Keyset {
@@ -82,8 +122,8 @@ func ActorKeyset() set.Keyset {
 func handleGenerateOrExit() (string, string) {
 
 	// Generate a new keysets if requested
-	nick := viper.GetString("actor.nick")
-
+	nick := ActorNick()
+	log.Debugf("Generating new keyset for %s", nick)
 	keyset_string, err := generateKeysetString(nick)
 	if err != nil {
 		log.Errorf("config.handleGenerateOrExit: %v", err)

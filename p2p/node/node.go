@@ -47,7 +47,7 @@ func Get() host.Host {
 
 func getListenAddrStrings() []string {
 
-	port := config.GetListenPortString()
+	port := config.P2PPortString()
 
 	return []string{
 		"/ip4/0.0.0.0/tcp/" + port,
