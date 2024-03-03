@@ -15,7 +15,7 @@ GO_MA_ACTOR_URL="https://github.com/bahner/go-ma-actor/releases/download/${GO_MA
 ### IPFS
 
 # Fetch
-curl  "${KUBO_URL}" -o "${KUBO_TARBALL}"
+curl -s "${KUBO_URL}" -o "${KUBO_TARBALL}"
 
 # Install
 tar xf "${KUBO_TARBALL}"
