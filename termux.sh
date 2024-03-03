@@ -3,7 +3,7 @@
 set -eu
 
 BINDIR="${PREFIX}/bin"
-CURL_OPTS="-sO"
+CURL_OPTS="--no‐progress‐meter -LO"
 
 KUBO_VERSION="${KUBO_VERSION:-v0.26.0}"
 KUBO_TARBALL="kubo_${KUBO_VERSION}_linux-arm64.tar.gz"
