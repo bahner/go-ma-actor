@@ -3,7 +3,6 @@
 set -eu
 
 BINDIR="${PREFIX}/bin"
-CURL_OPTS="--no‐progress‐meter -LO"
 
 KUBO_VERSION="${KUBO_VERSION:-v0.26.0}"
 KUBO_TARBALL="kubo_${KUBO_VERSION}_linux-arm64.tar.gz"
@@ -16,6 +15,10 @@ GO_MA_ACTOR_URL="https://github.com/bahner/go-ma-actor/releases/download/${GO_MA
 # These are for generating config
 export GO_MA_ACTOR_ACTOR_NICK="${GO_MA_ACTOR_ACTOR_NICK:-termux}"
 export GO_MA_ACTOR_API_MADDR="/ip4/127.0.0.1/tcp/5001"
+
+install_wget() {
+  pkg install wget
+}
 
 install_ipfs() {
     curl "${CURL_OPTS}" "${KUBO_URL}"
@@ -34,7 +37,7 @@ run_ipfs() {
 }
 
 install_actor() {
-    curl "${CURL_OPTS}" "${GO_MA_ACTOR_URL}"
+    wget -o "${GO_MA_ACTOR}.xz" "${GO_MA_ACTOR_URL}"
     xz -d "${GO_MA_ACTOR}.xz"
 
     chmod +x "${GO_MA_ACTOR}"
@@ -48,5 +51,6 @@ generate_actor() {
 # Install ipfs if not already installed
 ipfs version &> /dev/null || install_ipfs
 run_ipfs
+test -x "${BINDIR}/wget" || install_wget
 install_actor
 actor
