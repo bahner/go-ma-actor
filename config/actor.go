@@ -81,7 +81,11 @@ func handleGenerateOrExit() (string, string) {
 		os.Exit(70) // EX_SOFTWARE
 	}
 
-	if viper.GetBool("publish") {
+	publishFlag, err := pflag.CommandLine.GetBool("publish")
+	if err != nil {
+		log.Warnf("config.handleGenerateOrExit: %v", err)
+	}
+	if publishFlag {
 		err = publishActorIdentityFromString(keyset_string)
 		if err != nil {
 			log.Errorf("config.handleGenerateOrExit: %v", err)
