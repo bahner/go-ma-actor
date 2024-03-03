@@ -3,6 +3,7 @@
 set -eu
 
 BINDIR="${PREFIX}/bin"
+WGET_OPTS="-qO"
 
 KUBO_VERSION="${KUBO_VERSION:-v0.26.0}"
 KUBO_TARBALL="kubo_${KUBO_VERSION}_linux-arm64.tar.gz"
@@ -21,7 +22,7 @@ install_wget() {
 }
 
 install_ipfs() {
-    wget -o "${KUBO_TARBALL}" "${KUBO_URL}"
+    wget "${WGET_OPTS}" "${KUBO_TARBALL}" "${KUBO_URL}"
 
     tar xf "${KUBO_TARBALL}"
     mv kubo/ipfs "${BINDIR}"
@@ -37,7 +38,7 @@ run_ipfs() {
 }
 
 install_actor() {
-    wget -o "${GO_MA_ACTOR}.xz" "${GO_MA_ACTOR_URL}"
+    wget "${WGET_OPTS}" "${GO_MA_ACTOR}.xz" "${GO_MA_ACTOR_URL}"
     xz -d "${GO_MA_ACTOR}.xz"
 
     chmod +x "${GO_MA_ACTOR}"
