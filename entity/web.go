@@ -36,7 +36,7 @@ func (data *WebHandlerData) WebHandler(w http.ResponseWriter, r *http.Request) {
 	webHandler(w, r, data.P2P, data.Entity)
 }
 
-func webHandler(w http.ResponseWriter, r *http.Request, p *p2p.P2P, e *Entity) {
+func webHandler(w http.ResponseWriter, _ *http.Request, p *p2p.P2P, e *Entity) {
 
 	doc := NewWebHandlerDocument()
 

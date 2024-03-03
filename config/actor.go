@@ -20,10 +20,8 @@ const (
 func init() {
 	// Keyset
 	pflag.BoolP("generate", "g", false, "Generates a new keyset")
-	viper.BindPFlag("generate", pflag.Lookup("generate"))
 
 	pflag.BoolP("publish", "p", false, "Publishes keyset to IPFS")
-	viper.BindPFlag("publish", pflag.Lookup("publish"))
 
 	// Nick used for keyset generation (fragment)
 	pflag.StringP("nick", "n", defaultActor, "Nickname to use in character creation")
@@ -49,7 +47,11 @@ func InitActor() {
 
 	keyset := ActorKeyset()
 
-	if viper.GetBool("publish") && keyset_string != "" {
+	publishFlag, err := pflag.CommandLine.GetBool("publish")
+	if err != nil {
+		log.Warnf("config.initActor: %v", err)
+	}
+	if publishFlag && keyset_string != "" {
 		fmt.Print("Publishing identity to IPFS...")
 		err := publishIdentityFromKeyset(keyset)
 		if err != nil {

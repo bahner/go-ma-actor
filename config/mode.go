@@ -24,8 +24,27 @@ func init() {
 
 }
 
+// If actor.home is set to pong, then we are in pong mode.
+// THIs means that we don't render the ui and reply automatically to messages.
+func PongMode() bool {
+
+	// if GetHome() == pongTriggerHomeName {
+	// 	return true
+	// }
+
+	return viper.GetBool("mode.pong.enabled")
+}
+
+func PongReply() string {
+	return viper.GetString("mode.pong.reply")
+}
+
+func RelayMode() bool {
+	return viper.GetBool("mode.relay")
+}
+
 // Returns the mode of the actor as as a string, eg. "actor", "pong", "relay".
-func InitMode() string {
+func Mode() string {
 
 	if PongMode() && RelayMode() {
 		log.Fatal("Can't have both pong and relay mode enabled at the same time.")
@@ -45,23 +64,4 @@ func InitMode() string {
 	}
 
 	return defaultMode
-}
-
-// If actor.home is set to pong, then we are in pong mode.
-// THIs means that we don't render the ui and reply automatically to messages.
-func PongMode() bool {
-
-	// if GetHome() == pongTriggerHomeName {
-	// 	return true
-	// }
-
-	return viper.GetBool("mode.pong.enabled")
-}
-
-func PongReply() string {
-	return viper.GetString("mode.pong.reply")
-}
-
-func RelayMode() bool {
-	return viper.GetBool("mode.relay")
 }

@@ -95,10 +95,6 @@ func RemoveNick(id string) error {
 		return err
 	}
 
-	if err != nil {
-		return err
-	}
-
 	return nil
 }
 

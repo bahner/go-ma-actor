@@ -2,7 +2,6 @@ package config
 
 import (
 	"fmt"
-	"io"
 	"os"
 
 	"github.com/adrg/xdg"
@@ -15,16 +14,18 @@ import (
 )
 
 const (
-	NAME       = "go-ma-actor"
-	VERSION    = "v0.2.1"
-	ENV_PREFIX = "GO_MA_ACTOR"
+	NAME              string = "go-ma-actor"
+	VERSION           string = "v0.2.1"
+	ENV_PREFIX        string = "GO_MA_ACTOR"
+	fakeActorIdentity string = "NO_DEFAULT_ACTOR_IDENITY"
+	fakeNodeIdentity  string = "NO_DEFAULT_NODE_IDENITY"
 )
 
 var (
-	configHome               = xdg.ConfigHome + "/" + ma.NAME + "/"
-	dataHome                 = xdg.DataHome + "/" + ma.NAME + "/"
-	configFile        string = ""
-	defaultConfigFile        = configHome + defaultActor + ".yaml"
+	configHome        string = xdg.ConfigHome + "/" + ma.NAME + "/"
+	dataHome          string = xdg.DataHome + "/" + ma.NAME + "/"
+	config            string = ""
+	defaultConfigFile string = configHome + defaultActor + ".yaml"
 )
 
 func init() {
@@ -39,61 +40,59 @@ func init() {
 	viper.AutomaticEnv()
 
 	// Allow to set config file via command line flag.
-	pflag.StringVarP(&configFile, "config", "c", defaultConfigFile, "Config file to use.")
+	pflag.StringVarP(&config, "config", "c", defaultConfigFile, "Config file to use.")
 
 	pflag.Bool("show-config", false, "Whether to print the config.")
-	viper.BindPFlag("show-config", pflag.Lookup("show-config"))
-
 	pflag.Bool("show-defaults", false, "Whether to print the config.")
-	viper.BindPFlag("show-defaults", pflag.Lookup("show-defaults"))
-
 	pflag.BoolP("version", "v", false, "Print version and exit.")
-	viper.BindPFlag("version", pflag.Lookup("version"))
 
 }
 
 // This should be called after pflag.Parse() in main.
 // The name parameter is the name of the config file to search for without the extension.
-func Init(configName string) error {
+func Init(mode string) error {
 
-	if configFile != "" {
-		configFile, err := homedir.Expand(configFile)
-		if err != nil {
-			log.Fatalf("error: %v", err)
-		}
-		log.Infof("Using config file: %s", configFile)
-		viper.SetConfigFile(configFile)
-	} else if configName != "" {
-		viper.SetConfigName(configName)
-	}
-
-	err := viper.ReadInConfig()
+	versionFlag, err := pflag.CommandLine.GetBool("version")
 	if err != nil {
-		log.Fatalf("No config file found: %s", err)
+		log.Warnf("config.init: %v", err)
 	}
-
-	if viper.GetBool("version") {
+	if versionFlag {
 		fmt.Println(VERSION)
 		os.Exit(0)
 	}
 
+	showDefaultsFlag, err := pflag.CommandLine.GetBool("show-defaults")
+	if err != nil {
+		log.Warnf("config.init: %v", err)
+	}
+	if showDefaultsFlag {
+		// Print the YAML to stdout or write it to a template file
+		generateConfigFile(fakeActorIdentity, fakeNodeIdentity)
+		os.Exit(0)
+	}
+
 	// This will exit when done. It will also publish if applicable.
-	if viper.GetBool("generate") {
+	generateFlag, err := pflag.CommandLine.GetBool("generate")
+	if err != nil {
+		log.Warnf("config.init: %v", err)
+	}
+	if generateFlag {
 		log.Info("Generating new keyset and node identity")
 		actor, node := handleGenerateOrExit()
 		generateConfigFile(actor, node)
 		os.Exit(0)
 	}
 
-	if viper.GetBool("show-config") {
-		Fprint(os.Stdout)
-		os.Exit(0)
+	log.Infof("Using config file: %s", configFile())
+	viper.SetConfigFile(configFile())
+	err = viper.ReadInConfig()
+	if err != nil {
+		log.Fatalf("No config file found: %s", err)
 	}
 
-	if viper.GetBool("show-defaults") {
-
-		// Print the YAML to stdout or write it to a template file
-		generateConfigFile("zNO_DEFAULT_ACTOR_IDENITY", "zNO_DEFAULT_NODE_IDENITY")
+	showConfigFlag, _ := pflag.CommandLine.GetBool("show-config")
+	if showConfigFlag {
+		Print()
 		os.Exit(0)
 	}
 
@@ -108,16 +107,9 @@ func Init(configName string) error {
 
 }
 
-func Fprint(output io.Writer) (int, error) {
+func Print() (int, error) {
 
 	configMap := viper.AllSettings()
-
-	// remove non-sensical values
-	delete(configMap, "version")
-	delete(configMap, "show-config")
-	delete(configMap, "show-defaults")
-	delete(configMap, "generate")
-	delete(configMap, "publish")
 
 	configYAML, err := yaml.Marshal(configMap)
 	if err != nil {
@@ -126,20 +118,55 @@ func Fprint(output io.Writer) (int, error) {
 
 	fmt.Println("# " + ActorKeyset().DID.Id)
 
-	return fmt.Fprint(output, string(configYAML))
+	return fmt.Print(string(configYAML))
 }
 
 func Save() error {
 
-	configFileName := viper.ConfigFileUsed()
+	return viper.SafeWriteConfig()
 
-	fileWriter, err := os.Create(configFileName)
-	if err != nil {
-		return err
+}
+
+func DataHome() string {
+	return dataHome
+}
+
+func ConfigHome() string {
+	return configHome
+}
+
+// Return the configName to use. If the mode is not the default, return the mode.
+// If the mode is the default, return the actor nick.
+func configName() string {
+
+	if Mode() != defaultMode {
+		return Mode()
 	}
 
-	_, err = Fprint(fileWriter)
+	return ActorNick()
 
-	return err
+}
+
+// Returns the configfile name to use.
+// The preferred value is the explcitily requested config file on the command line.
+// Else it uses the nick of the actor or the mode.
+func configFile() string {
+
+	var (
+		filename string
+		err      error
+	)
+
+	// Prefer explcitly requested config. If not, use the name of the actor or mode.
+	if config != defaultConfigFile {
+		filename, err = homedir.Expand(config)
+		if err != nil {
+			log.Fatalf("error: %v", err)
+		}
+	} else {
+		filename = configHome + configName() + ".yaml"
+	}
+
+	return filename
 
 }

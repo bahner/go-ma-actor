@@ -5,7 +5,7 @@ const (
 )
 
 var (
-	defaultDbFile = dataHome + "/" + defaultDBFilename
+	defaultDbFile = dataHome + defaultDBFilename
 )
 
 func DefaultDBFile() string {

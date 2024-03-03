@@ -18,7 +18,7 @@ func main() {
 
 	pflag.Parse()
 
-	mode := config.InitMode()
+	mode := config.Mode()
 	config.Init(mode)
 	fmt.Printf("Starting in %s mode.\n", mode)
 

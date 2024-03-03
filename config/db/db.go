@@ -12,36 +12,26 @@ import (
 )
 
 const (
-	dbMaxConnections = 1
-	dbTimeout        = 100
+	dbMaxConnections  = 1 // Required for serialized access to the database
+	defaultDBFilename = "ma.db"
+	defaultDbTimeout  = 100
 )
 
 var (
-	once sync.Once
-	db   *sql.DB
+	once          sync.Once
+	db            *sql.DB
+	defaultDbFile = config.DefaultDBFile()
 )
 
 func init() {
 
-	defaultDbFile := config.DefaultDBFile()
-
 	pflag.String("db-file", defaultDbFile, "File to *write* node peers and entities to. If the file does not exist, it will be created.")
 	viper.BindPFlag("db.file", pflag.Lookup("db-file"))
 	viper.SetDefault("db.file", defaultDbFile)
-}
 
-// Returns expanded path to the db-file file
-// If the expansion fails it returns an empty string
-func DBFile() string {
-
-	path := viper.GetString("db.file")
-	path, err := homedir.Expand(path)
-	if err != nil {
-		return ""
-	}
-
-	return path
-
+	pflag.Int("db-timeout", defaultDbTimeout, "Timeout for serialized access to the database in milliseconds.")
+	viper.BindPFlag("db.timeout", pflag.Lookup("db-timeout"))
+	viper.SetDefault("db.timeout", defaultDbTimeout)
 }
 
 // Initiates the database connection and creates the tables if they do not exist
@@ -51,7 +41,7 @@ func Get() (*sql.DB, error) {
 
 	once.Do(func() {
 		var err error
-		db, err = sql.Open("sqlite3", DBFile())
+		db, err = sql.Open("sqlite3", dbfile())
 		if err != nil {
 			onceErr = fmt.Errorf("error opening database: %s", err)
 			return
@@ -71,7 +61,7 @@ func Get() (*sql.DB, error) {
 
 		// Force serialized access to the database with a 100 millisecond timeout. This should be amble time.
 		db.SetMaxOpenConns(dbMaxConnections)
-		db.Exec("PRAGMA busy_timeout = " + fmt.Sprintf("%d", dbTimeout))
+		db.Exec("PRAGMA busy_timeout = " + fmt.Sprintf("%d", timeout()))
 
 	})
 
@@ -80,4 +70,22 @@ func Get() (*sql.DB, error) {
 	}
 
 	return db, nil
+}
+
+// Returns expanded path to the db-file file
+// If the expansion fails it returns an empty string
+func dbfile() string {
+
+	path := viper.GetString("db.file")
+	path, err := homedir.Expand(path)
+	if err != nil {
+		return ""
+	}
+
+	return path
+
+}
+
+func timeout() int {
+	return viper.GetInt("db.timeout")
 }
