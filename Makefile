@@ -6,8 +6,8 @@ export VERSION = "v0.0.2"
 
 GO ?= go
 # This is required for sqlite3 cross-compilation
-export CGO_ENABLED=1
-BUILDFLAGS ?= -ldflags="-s -w"
+export CGO_ENABLED = 1
+BUILDFLAGS ?= -ldflags="-s -w -pthread"
 XZ ?= xz -zf
 PREFIX ?= /usr/local
 KEYSET = $(NAME)-create-keyset
