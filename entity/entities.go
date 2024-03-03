@@ -19,7 +19,3 @@ func load(id string) *Entity {
 	}
 	return nil
 }
-
-// func Entities() *sync.Map {
-// 	return &entities
-// }

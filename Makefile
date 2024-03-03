@@ -10,8 +10,10 @@ PREFIX ?= /usr/local
 KEYSET = $(NAME)-create-keyset
 FETCH = $(NAME)-fetch-document
 DEBUG = $(NAME)-debug
+PLATFORMS = linux-amd64 windows darwin
 ALL =  $(FETCH) $(KEYSET) $(NAME) $(DEBUG)
 BIN = $(PREFIX)/bin
+RELEASES = releases
 
 ifneq (,$(wildcard ./.env))
     include .env
@@ -48,38 +50,57 @@ tidy: go.mod
 	$(GO) mod tidy
 
 clean:
-	rm -f $(ALL)
-
-console:
-	docker-compose up -d
-	docker attach go-space-pubsub_space_1
+	rm -f $(ALL) 
+	rm -rf $(PLATFORMS)
+	rm -rf release
 
 distclean: clean
 	rm -f $(shell git ls-files --exclude-standard --others)
 
-down:
-	docker-compose down
 
-image:
-	docker build \
-		-t $(IMAGE) \
-		--build-arg "BUILD_IMAGE=$(BUILD_IMAGE)" \
-		.
+release: clean $(RELEASES) $(PLATFORMS)
+
+$(RELEASES): 
+	mkdir -p $(RELEASES)
+
+linux-amd64: $(ALL)	
+	tar cJf $(RELEASES)/$(NAME)-linux-amd64.tar $(ALL)
+
+windows: GOOS=windows
+windows: windows-amd64 windows-386
+
+windows-amd64: GOARCH=amd64
+windows-amd64: BUILDDIR=$(GOOS)-$(GOARCH)
+windows-amd64: $(RELEASES)
+	go build -o $(BUILDDIR)/actor.exe ./cmd/actor
+	zip $(RELEASES)/$(NAME)-$(GOOS)-$(GOARCH).zip $(BUILDDIR)/actor.exe
+
+windows-386: GOARCH=386
+windows-386: BUILDDIR=$(GOOS)-$(GOARCH)
+windows-386: $(RELEASES)
+	go build -o $(BUILDDIR)/actor.exe ./cmd/actor
+	zip $(RELEASES)/$(NAME)-$(GOOS)-$(GOARCH).zip $(BUILDDIR)/actor.exe
+
+darwin: GOOS=darwin
+darwin: darwin-amd64 darwin-arm64
+
+darwin-amd64: GOARCH=amd64
+darwin-amd64: BUILDDIR=$(GOOS)-$(GOARCH)
+darwin-amd64: $(RELEASES)
+	mkdir -p $(BUILDDIR)
+	go build -o $(BUILDDIR)/$(NAME) ./cmd/actor
+	tar cJf $(NAME)-$(GOOS)-$(GOARCH).tar -C $(BUILDDIR) $(NAME)	
+
+darwin-arm64: GOARCH=arm64
+darwin-arm64: BUILDDIR=$(GOOS)-$(GOARCH)
+darwin-arm64: $(RELEASES)
+	mkdir -p $(BUILDDIR)
+	go build -o $(BUILDDIR)/$(NAME) ./cmd/actor
+	tar cJf $(NAME)-$(GOOS)-$(GOARCH).tar -C $(BUILDDIR) $(NAME)	
 
 install: $(BIN)
 
 lint:
 	find -name "*.yaml" -exec yamllint -c .yamllintrc {} \;
 
-webui:
-
-run: clean $(NAME)
-	./$(NAME)
-
-up:
-	docker-compose up -d --remove-orphans
-
-vault:
-	docker-compose up -d vault
-
-.PHONY: default init tidy build client serve install clean distclean
+.PHONY: default init tidy build client serve install clean distclean $(PLATFORMS) $(RELEASES) $(BIN) $(ALL) $(NAME) $(FETCH) $(KEYSET) $(DEBUG) lint
