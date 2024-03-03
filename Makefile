@@ -6,7 +6,7 @@ export VERSION = "v0.0.2"
 
 GO ?= go
 BUILDFLAGS ?= -ldflags="-s -w"
-TAR ?= tar cf
+TAR ?= tar cJf
 PREFIX ?= /usr/local
 KEYSET = $(NAME)-create-keyset
 FETCH = $(NAME)-fetch-document
@@ -23,7 +23,7 @@ endif
 
 default: clean tidy $(NAME)
 
-all: tidy $(ALL)
+all: tidy releases $(PLATFORMS)
 
 $(BIN): $(ALL)
 	test -d $(BIN)
@@ -51,18 +51,17 @@ tidy: go.mod
 	$(GO) mod tidy
 
 clean:
-	rm -f $(ALL) 
 	rm -rf $(PLATFORMS)
-	rm -f $(NAME)-*.tar
-	find -type f -name "*.log" -delete
-	rm -f actor.exe
+	# rm -f $(NAME)-*.tar
+	# find -type f -name "*.log" -delete
+	# rm -f actor.exe
 
 distclean: clean
 	rm -rf releases
-	rm -f $(shell git ls-files--others)
+	rm -f $(shell git ls-files --others)
 
 
-release: VERSION = $(shell grep VERSION config/config.go | tr '"' ' ' | awk -r '{print $4}')
+release: VERSION = $(shell ./.version)
 release: clean $(RELEASES) windows darwin linux-amd64
 	git tag -a $(VERSION) -m "Release $(VERSION)"
 
@@ -70,21 +69,23 @@ release: clean $(RELEASES) windows darwin linux-amd64
 $(RELEASES): 
 	mkdir -p $(RELEASES)
 
-linux-amd64: $(ALL)	
-	$(TAR) $(RELEASES)/$(NAME)-linux-amd64.tar $(ALL)
+linux-amd64: $(ALL)
+	mkdir -p linux-amd64
+	mv $(ALL) linux-amd64
+	$(TAR) $(RELEASES)/$(NAME)-linux-amd64.tar -C linux-amd64 $(ALL)
 
-windows: GOOS=windows
-windows: FILENAME = actor.exe
-windows: windows-amd64 windows-386
-
+windows-amd64: GOOS=windows
 windows-amd64: GOARCH=amd64
+windows-amd64: FILENAME = actor.exe
 windows-amd64: BUILDDIR=$(GOOS)-$(GOARCH)
 windows-amd64: $(RELEASES)
 	mkdir -p $(BUILDDIR)
 	$(GO) build -o $(BUILDDIR)/$(FILENAME) $(BUILDFLAGS) ./cmd/actor
 	zip -j $(RELEASES)/$(NAME)-$(GOOS)-$(GOARCH).zip $(BUILDDIR)/$(FILENAME)
 
+windows-386: GOOS=windows
 windows-386: GOARCH=386
+windows-386: FILENAME = actor.exe
 windows-386: BUILDDIR=$(GOOS)-$(GOARCH)
 windows-386: $(RELEASES)
 	mkdir -p $(BUILDDIR)
@@ -92,9 +93,8 @@ windows-386: $(RELEASES)
 	zip -j $(RELEASES)/$(NAME)-$(GOOS)-$(GOARCH).zip $(BUILDDIR)/$(FILENAME)
 
 
-darwin: GOOS=darwin
-darwin: darwin-amd64 darwin-arm64
 
+darwin-amd64: GOOS=darwin
 darwin-amd64: GOARCH=amd64
 darwin-amd64: BUILDDIR=$(GOOS)-$(GOARCH)
 darwin-amd64: $(RELEASES)
@@ -102,6 +102,7 @@ darwin-amd64: $(RELEASES)
 	$(GO) build -o $(BUILDDIR)/$(NAME) $(BUILDFLAGS) ./cmd/actor
 	$(TAR) $(RELEASES)/$(NAME)-$(GOOS)-$(GOARCH).tar -C $(BUILDDIR) $(NAME)	
 
+darwin-arm64: GOOS=darwin
 darwin-arm64: GOARCH=arm64
 darwin-arm64: BUILDDIR=$(GOOS)-$(GOARCH)
 darwin-arm64: $(RELEASES)
@@ -114,4 +115,4 @@ install: $(BIN)
 lint:
 	find -name "*.yaml" -exec yamllint -c .yamllintrc {} \;
 
-.PHONY: default init tidy build client serve install clean distclean $(PLATFORMS) lint
+.PHONY: default init tidy build client serve install clean distclean lint

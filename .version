@@ -1,0 +1,3 @@
+#!/bin/bash
+
+grep -E "VERSION.*string" config/config.go | tr '"' ' ' | awk -r '{print $4}'
