@@ -1,8 +1,8 @@
 #!/bin/bash
 
-cd || exit
+set -eu
 
-export PATH="${PATH}:.local/bin"
+BINDIR="${PREFIX}/bin"
 
 KUBO_VERSION="${KUBO_VERSION:-v0.26.0}"
 KUBO_TARBALL="kubo_${KUBO_VERSION}_linux-arm64.tar.gz"
@@ -11,18 +11,18 @@ KUBO_URL="https://dist.ipfs.tech/kubo/${KUBO_VERSION}/${KUBO_TARBALL}"
 GO_MA_ACTOR_VERSION="${GO_MA_ACTOR_VERSION:-v0.2.3}"
 GO_MA_ACTOR="go-ma-actor-android-arm64"
 GO_MA_ACTOR_URL="https://github.com/bahner/go-ma-actor/releases/download/${GO_MA_ACTOR_VERSION}/${GO_MA_ACTOR}.xz"
-pkg up
 
 ### IPFS
 
 # Fetch
 curl  "${KUBO_URL}" -o "${KUBO_TARBALL}"
-tar xf "${KUBO_TARBALL}"
 
 # Install
-pushd kubo || exit
-./install.sh
-popd || exit
+tar xf "${KUBO_TARBALL}"
+mv kubo/ipfs "${BINDIR}"
+
+# Cleanup
+rm -rf "${TARBALL}" kubo
 
 # Configure
 ipfs init
@@ -38,7 +38,7 @@ xz -d "${GO_MA_ACTOR}.xz"
 
 # Install
 chmod +x "${GO_MA_ACTOR}"
-mv "${GO_MA_ACTOR}" .local/bin/actor
+mv "${GO_MA_ACTOR}" "${BINDIR}/actor"
 
 cat <<EOF
 # If you haven't already, now run
