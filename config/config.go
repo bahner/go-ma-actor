@@ -165,14 +165,16 @@ func ConfigHome() string {
 }
 
 // Return the configName to use. If the mode is not the default, return the mode.
-// If the mode is the default, return the actor nick.
+// If the mode is the default, return the actor nick provided on the command line.
+// This is to avoid confusion for the user, so they don't have to use a nick
+// to know which config file to use.
 func configName() string {
 
 	if Mode() != defaultMode {
 		return Mode()
 	}
 
-	return ActorNick()
+	return pflag.CommandLine.Lookup("nick").Value.String()
 
 }
 
