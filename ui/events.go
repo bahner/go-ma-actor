@@ -38,6 +38,9 @@ func (ui *ChatUI) handleEvents() {
 	for {
 		select {
 		case input := <-ui.chInput:
+
+			input = strings.TrimSpace(input)
+
 			if strings.HasPrefix(input, "/") {
 				log.Debug("hadleEvents got command: ", input)
 				ui.handleCommands(input)

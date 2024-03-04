@@ -2,7 +2,6 @@ package ui
 
 import (
 	"encoding/csv"
-	"slices"
 	"strings"
 )
 
@@ -55,8 +54,6 @@ func (ui *ChatUI) handleCommands(input string) {
 // into a command and its arguments. Where "The Bar™" is considered a single argument,
 func parseCommandsInput(input string) ([]string, error) {
 
-	input = strings.TrimSpace(input) // Clear the cruft, if any
-
 	reader := csv.NewReader(strings.NewReader(input))
 	// Set the delimiter to space
 	reader.Comma = commandSeparator
@@ -67,5 +64,16 @@ func parseCommandsInput(input string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	return slices.Compact(commands), nil
+
+	return deleteEmpties(commands), nil
+}
+
+func deleteEmpties(s []string) []string {
+	var r []string
+	for _, str := range s {
+		if str != "" {
+			r = append(r, str)
+		}
+	}
+	return r
 }
