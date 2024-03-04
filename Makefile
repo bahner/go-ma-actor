@@ -20,6 +20,7 @@ NETBSD = netbsd-amd64 netbsd-arm64
 OPENBSD = openbsd-amd64 openbsd-arm64
 WINDOWS =  windows-386 windows-amd64
 PLATFORMS =  $(ANDROID) $(DARWIN) $(FREEBSD) $(LINUX) $(NETBSD) $(OPENBSD) $(WINDOWS)
+ARM64=android-arm64 darwin-arm64 netbsd-arm64 openbsd-arm64 
 ALL =  $(FETCH) $(KEYSET) $(NAME) $(DEBUG)
 BIN = $(PREFIX)/bin
 RELEASES = releases
@@ -91,6 +92,9 @@ openbsd: $(OPENBSD)
 
 windows: $(WINDOWS)
 
+# I need to build these on another computer, so they get their own targets
+arm64: $(ARM64)
+
 android-arm64: GOOS=android
 android-arm64: GOARCH=arm64
 android-arm64: FILENAME = $(RELEASES)/$(NAME)-$(GOOS)-$(GOARCH)
@@ -135,6 +139,10 @@ linux-amd64: $(RELEASES)
 
 linux-arm64: GOOS=linux
 linux-arm64: GOARCH=arm64
+linux-arm64: CGO_ENABLED=1
+linux-arm64: CC=aarch64-linux-musl-gcc
+linux-arm64: CGO_CFLAGS="-fPIC"
+linux-arm64: CGO_LDFLAGS="-static"
 linux-arm64: FILENAME = $(RELEASES)/$(NAME)-$(GOOS)-$(GOARCH)
 linux-arm64: $(RELEASES)
 	$(GO) build -o $(FILENAME) $(BUILDFLAGS) ./cmd/actor

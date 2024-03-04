@@ -10,12 +10,12 @@ func (ui *ChatUI) handleSetCommand(args []string) {
 			ui.handleSetDiscoveryCommand(args)
 		}
 	} else {
-		ui.handleHelpSetCommands(args)
+		ui.handleHelpSetCommands()
 	}
 
 }
 
-func (ui *ChatUI) handleHelpSetCommands(args []string) {
+func (ui *ChatUI) handleHelpSetCommands() {
 	ui.displayHelpUsage("/set broadcast|discovery on|off")
 	ui.displayHelpText("Toggles broadcast and peer discovery on and off")
 }

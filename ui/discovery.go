@@ -23,14 +23,14 @@ func (ui *ChatUI) handleSetDiscoveryCommand(args []string) {
 				ui.displaySystemMessage("Discovery is off")
 			}
 		default:
-			ui.handleHelpSetDiscoveryCommand(args)
+			ui.handleHelpSetDiscoveryCommand()
 		}
 	} else {
-		ui.handleHelpSetDiscoveryCommand(args)
+		ui.handleHelpSetDiscoveryCommand()
 	}
 }
 
-func (ui *ChatUI) handleHelpSetDiscoveryCommand(args []string) {
+func (ui *ChatUI) handleHelpSetDiscoveryCommand() {
 	ui.displayHelpUsage("/set discovery on|off")
 	ui.displayHelpText("Toggles the discovery loop on and off")
 }

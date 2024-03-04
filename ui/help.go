@@ -34,38 +34,38 @@ func (ui *ChatUI) handleHelpCommands(args []string) {
 	} else {
 		switch args[1] {
 		case "broadcast":
-			ui.handleHelpBroadcastCommand(args)
+			ui.handleHelpBroadcastCommand()
 		case "discover":
-			ui.handleHelpDiscoverCommand(args)
+			ui.handleHelpDiscoverCommand()
 		case "enter":
-			ui.handleHelpEnterCommand(args)
+			ui.handleHelpEnterCommand()
 		case "entity":
-			ui.handleHelpEntityCommands(args)
+			ui.handleHelpEntityCommands()
 		case "me":
-			ui.handleHelpMeCommands(args)
+			ui.handleHelpMeCommands()
 		case "msg":
-			ui.handleHelpMsgCommand(args)
+			ui.handleHelpMsgCommand()
 		case "peer":
-			ui.handleHelpPeerCommands(args)
+			ui.handleHelpPeerCommands()
 		case "refresh":
-			ui.handleHelpRefreshCommand(args)
+			ui.handleHelpRefreshCommand()
 		case "resolve":
-			ui.handleHelpResolveCommand(args)
+			ui.handleHelpResolveCommand()
 		case "set":
-			ui.handleHelpSetCommands(args)
+			ui.handleHelpSetCommands()
 		case "status":
-			ui.handleHelpStatusCommands(args)
+			ui.handleHelpStatusCommands()
 		case "whereis":
-			ui.handleHelpWhereisCommand(args)
+			ui.handleHelpWhereisCommand()
 		case "quit":
-			ui.handleHelpQuitCommand(args)
+			ui.handleHelpQuitCommand()
 		default:
 			ui.handleHelpUnknownCommand(args)
 		}
 	}
 }
 
-func (ui *ChatUI) handleHelpQuitCommand(args []string) {
+func (ui *ChatUI) handleHelpQuitCommand() {
 	ui.displaySystemMessage("Usage: /quit")
 	ui.displaySystemMessage("Quits the chat client")
 }

@@ -8,7 +8,7 @@ import (
 )
 
 // PEER
-func (ui *ChatUI) handleHelpPeerCommands(args []string) {
+func (ui *ChatUI) handleHelpPeerCommands() {
 	ui.displaySystemMessage("Usage: /peer show|nick")
 	ui.displaySystemMessage("Manages peer info")
 }
@@ -29,7 +29,7 @@ func (ui *ChatUI) handlePeerCommand(args []string) {
 		}
 	}
 
-	ui.handleHelpPeerCommands(args)
+	ui.handleHelpPeerCommands()
 }
 
 // SHOW
@@ -49,17 +49,17 @@ func (ui *ChatUI) handlePeerShowCommand(args []string) {
 			ui.displaySystemMessage(maddr.String())
 		}
 	} else {
-		ui.handleHelpPeerShowCommand(args)
+		ui.handleHelpPeerShowCommand()
 	}
 }
 
-func (ui *ChatUI) handleHelpPeerShowCommand(args []string) {
+func (ui *ChatUI) handleHelpPeerShowCommand() {
 	ui.displaySystemMessage("Usage: /peer show <id|nick>")
 	ui.displaySystemMessage("       Shows the peer info")
 }
 
 // NICK
-func (ui *ChatUI) handleHelpPeerNickCommand(args []string) {
+func (ui *ChatUI) handleHelpPeerNickCommand() {
 	ui.displaySystemMessage("Usage: /peer nick list|set|show")
 	ui.displaySystemMessage("       Manages peer nicks")
 }
@@ -83,7 +83,7 @@ func (ui *ChatUI) handlePeerNickCommand(args []string) {
 		}
 	}
 
-	ui.handleHelpPeerNickCommand(args)
+	ui.handleHelpPeerNickCommand()
 }
 
 // LIST
@@ -107,11 +107,11 @@ func (ui *ChatUI) handlePeerNickListCommand(args []string) {
 			ui.displaySystemMessage("No peers found")
 		}
 	} else {
-		ui.handleHelpPeerNickListCommand(args)
+		ui.handleHelpPeerNickListCommand()
 	}
 }
 
-func (ui *ChatUI) handleHelpPeerNickListCommand(args []string) {
+func (ui *ChatUI) handleHelpPeerNickListCommand() {
 	ui.displaySystemMessage("Usage: /peer nick list")
 	ui.displaySystemMessage("List peer DID and nicks")
 }
@@ -128,18 +128,19 @@ func (ui ChatUI) handlePeerNickSetCommand(args []string) {
 			return
 		}
 		p.Nick = nick
-		peer.Set(p)
+		err = peer.Set(p)
 		if err != nil {
 			ui.displaySystemMessage("Error setting peer nick: " + err.Error())
 			return
 		}
 		ui.displaySystemMessage(p.ID + " is now known as " + p.Nick)
 	} else {
-		ui.handleHelpPeerNickSetCommand(args)
+		ui.handleHelpPeerNickSetCommand()
+		return
 	}
 }
 
-func (ui *ChatUI) handleHelpPeerNickSetCommand(args []string) {
+func (ui *ChatUI) handleHelpPeerNickSetCommand() {
 	ui.displaySystemMessage("Usage: /peer nick set <id|nick> <nick>")
 	ui.displaySystemMessage("       Sets a nick for an peer")
 }
@@ -157,11 +158,11 @@ func (ui *ChatUI) handlePeerNickShowCommand(args []string) {
 		peerInfo := fmt.Sprintf(p.ID + " is also known as " + p.Nick)
 		ui.displaySystemMessage(peerInfo)
 	} else {
-		ui.handleHelpPeerNickShowCommand(args)
+		ui.handleHelpPeerNickShowCommand()
 	}
 }
 
-func (ui *ChatUI) handleHelpPeerNickShowCommand(args []string) {
+func (ui *ChatUI) handleHelpPeerNickShowCommand() {
 	ui.displaySystemMessage("Usage: /peer nick show <id|nick>")
 	ui.displaySystemMessage("       Shows the peer info")
 }

@@ -103,7 +103,7 @@ func (ui *ChatUI) enterEntity(d string, force bool) error {
 	return nil
 }
 
-func (ui *ChatUI) handleHelpEnterCommand(args []string) {
+func (ui *ChatUI) handleHelpEnterCommand() {
 	ui.displaySystemMessage("Usage: /enter <DID>")
 	ui.displaySystemMessage("Enters an entity with the specified DID.")
 	ui.displaySystemMessage("What this means is that messages will be sent to this entity.")

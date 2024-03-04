@@ -42,12 +42,12 @@ func (ui *ChatUI) handleBroadcastCommand(args []string) {
 
 		log.Debugf("Message broadcasted to topic: %s", ui.b)
 	} else {
-		ui.handleHelpBroadcastCommand(args)
+		ui.handleHelpBroadcastCommand()
 	}
 
 }
 
-func (ui *ChatUI) handleHelpBroadcastCommand(args []string) {
+func (ui *ChatUI) handleHelpBroadcastCommand() {
 	ui.displaySystemMessage("Usage: /broadcast <message>")
 	ui.displaySystemMessage("Sends a public announcement to the current entity")
 }
@@ -166,14 +166,14 @@ func (ui *ChatUI) handleSetBroadcastCommand(args []string) {
 				ui.displaySystemMessage("Broadcast channel is off")
 			}
 		default:
-			ui.handleHelpSetBroadcastCommand(args)
+			ui.handleHelpSetBroadcastCommand()
 		}
 	} else {
-		ui.handleHelpSetBroadcastCommand(args)
+		ui.handleHelpSetBroadcastCommand()
 	}
 }
 
-func (ui *ChatUI) handleHelpSetBroadcastCommand(args []string) {
+func (ui *ChatUI) handleHelpSetBroadcastCommand() {
 	ui.displayHelpUsage("/set broadcast on|off")
 	ui.displayHelpText("Toggles broadcast messages on and off")
 }

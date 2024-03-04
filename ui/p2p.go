@@ -8,7 +8,7 @@ func (ui *ChatUI) triggerDiscovery() {
 
 }
 
-func (ui *ChatUI) handleHelpDiscoverCommand(args []string) {
+func (ui *ChatUI) handleHelpDiscoverCommand() {
 	ui.displaySystemMessage("Usage: /discover")
 	ui.displaySystemMessage("Triggers a discovery of peers")
 }

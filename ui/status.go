@@ -26,7 +26,7 @@ func (ui *ChatUI) handleStatusCommand(args []string) {
 		return
 	}
 
-	ui.handleHelpStatusCommands(args)
+	ui.handleHelpStatusCommands()
 }
 
 // displayStatusMessage writes a status message to the message window.
@@ -62,7 +62,7 @@ func (ui *ChatUI) getStatusHost() string {
 	return result
 }
 
-func (ui *ChatUI) handleHelpStatusCommands(args []string) {
+func (ui *ChatUI) handleHelpStatusCommands() {
 	ui.displaySystemMessage("Usage: /status topics|host")
 	ui.displaySystemMessage("Displays the current status of the chat client")
 }

@@ -20,7 +20,7 @@ func (ui *ChatUI) handleCommands(input string) {
 	case "/set":
 		ui.handleSetCommand(args)
 	case "/edit":
-		ui.handleEditCommand(args)
+		ui.handleEditCommand()
 	case "/resolve":
 		go ui.handleResolveCommand(args) // This make take some time. No need to block the UI
 	case "/discover":

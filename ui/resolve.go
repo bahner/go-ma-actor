@@ -33,12 +33,12 @@ func (ui *ChatUI) handleResolveCommand(args []string) {
 		e.Doc = d
 
 	} else {
-		ui.handleHelpResolveCommand(args)
+		ui.handleHelpResolveCommand()
 	}
 
 }
 
-func (ui *ChatUI) handleHelpResolveCommand(args []string) {
+func (ui *ChatUI) handleHelpResolveCommand() {
 	ui.displaySystemMessage("Usage: /resolve <DID|NICK>")
 	ui.displaySystemMessage("Tries to resolve the most recent version of the DID Document for the given DID or NICK.")
 }

@@ -34,7 +34,7 @@ func (ui *ChatUI) handleWhoAmICommand(args []string) {
 	if len(args) == 2 {
 		ui.displaySystemMessage(ui.a.Entity.DID.Id)
 	} else {
-		ui.handleHelpMeCommands(args)
+		ui.handleHelpMeCommands()
 	}
 
 }
@@ -43,12 +43,12 @@ func (ui *ChatUI) handleWhereAmICommand(args []string) {
 	if len(args) == 2 {
 		ui.displaySystemMessage(ui.e.DID.Id)
 	} else {
-		ui.handleHelpMeCommands(args)
+		ui.handleHelpMeCommands()
 	}
 
 }
 
-func (ui *ChatUI) handleHelpMeCommands(args []string) {
+func (ui *ChatUI) handleHelpMeCommands() {
 	ui.displaySystemMessage("Usage: /me who|where")
 	ui.displaySystemMessage("Shows your own DID or the last known location of your DID")
 }

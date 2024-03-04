@@ -49,7 +49,7 @@ func (ui *ChatUI) invokeEditor() ([]byte, error) {
 	return contents, nil
 }
 
-func (ui *ChatUI) handleEditCommand(args []string) {
+func (ui *ChatUI) handleEditCommand() {
 
 	m, err := ui.invokeEditor()
 	if err != nil {
