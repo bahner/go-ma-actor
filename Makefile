@@ -22,7 +22,7 @@ WINDOWS =  windows-386 windows-amd64
 PLATFORMS =  $(ANDROID) $(DARWIN) $(FREEBSD) $(LINUX) $(NETBSD) $(OPENBSD) $(WINDOWS)
 ARM64=android-arm64 darwin-arm64 netbsd-arm64 openbsd-arm64 
 ALL =  $(FETCH) $(KEYSET) $(NAME) $(DEBUG)
-BIN = $(PREFIX)/bin
+BINDIR = $(PREFIX)/bin
 RELEASES = releases
 
 ifneq (,$(wildcard ./.env))
@@ -34,9 +34,12 @@ default: clean tidy $(NAME)
 
 all: tidy releases $(PLATFORMS)
 
-$(BIN): $(ALL)
-	test -d $(BIN)
-	sudo install -m755 $(ALL) $(DESTDIR)$(BIN)
+$(BINDIR): $(ALL)
+	test -d $(BINDIR)
+
+install: $(BINDIR)
+	sudo install -m755 $(FETCH) $(KEYSET) $(NAME) $(DEBUG) $(DESTDIR)$(BINDIR)
+	sudo install -m755 -T $(NAME) $(DESTDIR)$(BINDIR)/ma
 	
 $(DEBUG): BUILDFLAGS = -tags=debug
 $(DEBUG): tidy
