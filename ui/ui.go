@@ -29,6 +29,8 @@ const (
 	defaultPeerslistWidth   = 10
 	defaultPeerslistRefresh = time.Second * 3
 	defaultHistorySize      = 50
+
+	separator = " "
 )
 
 func init() {

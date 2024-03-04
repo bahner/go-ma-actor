@@ -22,7 +22,10 @@ func (ui *ChatUI) displayHelpText(msg string) {
 
 const (
 	helpUsage = "/help [command]"
-	helpText  = "Displays help for the given command, or a list of available commands if no command is given"
+	helpText  = `Displays help for the given command, or a list of available commands if no command is given
+NB! The input parser removes duplicate consecutive spaces and args.
+    SO /entity nick set set FOO will be parsed as /entity nick set FOO
+`
 	quitUsage = "/quit"
 	quitText  = "Quits the chat client"
 )

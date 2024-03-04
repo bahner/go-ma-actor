@@ -31,6 +31,8 @@ func (ui *ChatUI) setupInputField() *tview.InputField {
 
 	inputField.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Key() {
+		case tcell.KeyCtrlC:
+			ui.displaySystemMessage("Ctrl-C is disabled. Use /quit to exit.")
 		case tcell.KeyEscape:
 			ui.app.QueueUpdateDraw(func() {
 				ui.app.SetFocus(ui.inputField)

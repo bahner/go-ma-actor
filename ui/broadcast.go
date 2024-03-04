@@ -30,7 +30,7 @@ func (ui *ChatUI) handleBroadcastCommand(args []string) {
 
 		var message string
 		if len(args) > 2 {
-			message = strings.Join(args[1:], " ")
+			message = strings.Join(args[1:], separator)
 		} else {
 			message = args[1]
 		}

@@ -32,7 +32,7 @@ func (ui *ChatUI) handleMsgCommand(args []string) {
 
 		var message string
 		if len(args) > 3 {
-			message = strings.Join(args[2:], " ")
+			message = strings.Join(args[2:], separator)
 		} else {
 			message = args[2]
 		}

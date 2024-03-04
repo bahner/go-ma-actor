@@ -106,9 +106,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("error creating text UI: %s", err)
 	}
-	fmt.Println("done.")
-
-	// WEBSERVER
 
 	fmt.Print("Starting web server...")
 	go startWebServer(p, a)

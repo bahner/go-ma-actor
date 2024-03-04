@@ -42,7 +42,7 @@ func (ui *ChatUI) invokeEditor() ([]byte, error) {
 	// Trim right to remove trailing newlines
 	contents = bytes.TrimRight(contents, "\n")
 	// Replace all newlines with spaces (or another character if preferred)
-	contents = bytes.ReplaceAll(contents, []byte("\n"), []byte(" "))
+	contents = bytes.ReplaceAll(contents, []byte("\n"), []byte(separator))
 	// Append a single newline at the end if desired
 	contents = append(contents, '\n')
 
