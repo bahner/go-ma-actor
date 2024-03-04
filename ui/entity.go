@@ -7,11 +7,21 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func (ui *ChatUI) handleHelpEntityCommands() {
-	ui.displayHelpUsage("/entity nick list|remove|show|nick")
-	ui.displayHelpText("Manages entity info")
-	ui.displayHelpText("At this point only nick are handled")
-}
+const (
+	entityUsage = "/entity nick|show"
+	entityHelp  = `Manages info on seen entities
+At this point only nicks are handled`
+	entityNickUsage       = "/entity nick list|set|remove|show"
+	entityNickHelp        = "Manages nicks for entities"
+	entityNickListUsage   = "/entity nick list"
+	entityNickListHelp    = "Lists nicks for entities"
+	entityNickSetUsage    = "/entity nick set <id|nick> <nick>"
+	entityNickSetHelp     = "Sets a nick for an entity"
+	entityNickRemoveUsage = "/entity nick remove <id|nick>"
+	entityNickRemoveHelp  = "Removes a nick for an entity"
+	entityNickShowUsage   = "/entity nick show <id|nick>"
+	entityNickShowHelp    = "Shows the entity info"
+)
 
 func (ui *ChatUI) handleEntityCommand(args []string) {
 
@@ -29,7 +39,7 @@ func (ui *ChatUI) handleEntityCommand(args []string) {
 		}
 	}
 
-	ui.handleHelpEntityCommands()
+	ui.handleHelpCommand(entityUsage, entityHelp)
 
 }
 
@@ -49,22 +59,9 @@ func (ui *ChatUI) handleEntityNickListCommand(args []string) {
 			ui.displaySystemMessage("No entities found")
 		}
 	} else {
-		ui.handleHelpEntityListCommand()
+		ui.handleHelpCommand(entityNickListUsage, entityNickListHelp)
 	}
 
-}
-
-func (ui *ChatUI) handleHelpEntityListCommand() {
-	ui.displayHelpUsage("/entity list")
-	ui.displayHelpText("List entity DID and nicks")
-}
-
-func (ui *ChatUI) handleHelpEntityNickCommand(args []string) {
-	ui.displayHelpUsage("/entity nick set|remove|show")
-	ui.displayHelpText("Set a nick for a entity")
-	ui.handleEntityNickSetCommand(args)
-	ui.handleEntityNickRemoveCommand(args)
-	ui.handleEntityNickShowCommand(args)
 }
 
 // case "remove":
@@ -93,7 +90,7 @@ func (ui *ChatUI) handleEntityNickCommand(args []string) {
 		}
 	}
 
-	ui.handleHelpEntityNickCommand(args)
+	ui.handleHelpCommand(entityNickUsage, entityNickHelp)
 }
 
 // SET
@@ -114,14 +111,9 @@ func (ui ChatUI) handleEntityNickSetCommand(args []string) {
 		}
 		ui.displaySystemMessage(e.DID.Id + " is now known as " + e.Nick)
 	} else {
-		ui.handleHelpEntityNickSetCommand()
+		ui.handleHelpCommand(entityNickSetUsage, entityNickSetHelp)
 	}
 
-}
-
-func (ui *ChatUI) handleHelpEntityNickSetCommand() {
-	ui.displayHelpUsage("/entity nick set <id|nick> <nick>")
-	ui.displayHelpText("Sets a nick for an entity")
 }
 
 // SHOW
@@ -137,14 +129,9 @@ func (ui *ChatUI) handleEntityNickShowCommand(args []string) {
 		entityInfo := fmt.Sprintf(e.DID.Id + " is also known as " + e.Nick)
 		ui.displaySystemMessage(entityInfo)
 	} else {
-		ui.handleHelpEntityShowCommand()
+		ui.handleHelpCommand(entityNickShowUsage, entityNickShowHelp)
 	}
 
-}
-
-func (ui *ChatUI) handleHelpEntityShowCommand() {
-	ui.displayHelpUsage("/entity nick show <id|nick>")
-	ui.displayHelpText("Shows the entity info")
 }
 
 // REMOVE
@@ -155,12 +142,7 @@ func (ui *ChatUI) handleEntityNickRemoveCommand(args []string) {
 		entity.RemoveNick(id)
 		ui.displaySystemMessage("Nick removed for " + id + " if it existed")
 	} else {
-		ui.handleHelpEntityNickRemoveCommand()
+		ui.handleHelpCommand(entityNickRemoveUsage, entityNickRemoveHelp)
 	}
 
-}
-
-func (ui *ChatUI) handleHelpEntityNickRemoveCommand() {
-	ui.displayHelpUsage("/entity nick remove <id|nick>")
-	ui.displayHelpText("Removes a nick for an entity")
 }

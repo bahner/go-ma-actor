@@ -16,7 +16,6 @@ import (
 //		prompt := withColor("yellow", fmt.Sprintf("<%s>:", ui.e.Nick))
 //		fmt.Fprintf(ui.msgW, "%s %s\n", prompt, msg)
 //	}
-const indent = "    "
 
 // withColor wraps a string with color tags for display in the messages text box.
 func withColor(color, msg string) string {

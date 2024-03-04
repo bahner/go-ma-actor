@@ -4,6 +4,11 @@ import (
 	"context"
 )
 
+const (
+	setDiscoveryUsage = "/set discovery on|off"
+	setDiscoveryHelp  = "Toggles the discovery loop on and off"
+)
+
 func (ui *ChatUI) handleSetDiscoveryCommand(args []string) {
 
 	if len(args) == 3 {
@@ -31,6 +36,6 @@ func (ui *ChatUI) handleSetDiscoveryCommand(args []string) {
 }
 
 func (ui *ChatUI) handleHelpSetDiscoveryCommand() {
-	ui.displayHelpUsage("/set discovery on|off")
-	ui.displayHelpText("Toggles the discovery loop on and off")
+	ui.displayHelpUsage(setDiscoveryUsage)
+	ui.displayHelpText(setDiscoveryHelp)
 }

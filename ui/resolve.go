@@ -6,6 +6,11 @@ import (
 	"github.com/bahner/go-ma/did/doc"
 )
 
+const (
+	resolveUsage = "/resolve <DID|NICK>"
+	resolveHelp  = "Tries to resolve the most recent version of the DID Document for the given DID or NICK."
+)
+
 func (ui *ChatUI) handleResolveCommand(args []string) {
 
 	if len(args) == 2 {
@@ -33,12 +38,7 @@ func (ui *ChatUI) handleResolveCommand(args []string) {
 		e.Doc = d
 
 	} else {
-		ui.handleHelpResolveCommand()
+		ui.handleHelpCommand(resolveUsage, resolveHelp)
 	}
 
-}
-
-func (ui *ChatUI) handleHelpResolveCommand() {
-	ui.displaySystemMessage("Usage: /resolve <DID|NICK>")
-	ui.displaySystemMessage("Tries to resolve the most recent version of the DID Document for the given DID or NICK.")
 }

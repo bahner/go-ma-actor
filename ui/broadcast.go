@@ -13,6 +13,15 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+const (
+	setBroadcastUsage = "/set broadcast on|off"
+	setBroadcastHelp  = "Toggles broadcast messages on and off"
+	broadcastUsage    = "/broadcast message"
+	broadcastHelp     = "Broadcasts a message to all peers"
+	broadcastOnText   = "Broadcast channel is on"
+	broadcastOffText  = "Broadcast channel is off"
+)
+
 func (ui *ChatUI) handleBroadcastCommand(args []string) {
 
 	if len(args) > 1 {
@@ -42,14 +51,9 @@ func (ui *ChatUI) handleBroadcastCommand(args []string) {
 
 		log.Debugf("Message broadcasted to topic: %s", ui.b)
 	} else {
-		ui.handleHelpBroadcastCommand()
+		ui.displayHelpUsage(broadcastUsage)
 	}
 
-}
-
-func (ui *ChatUI) handleHelpBroadcastCommand() {
-	ui.displaySystemMessage("Usage: /broadcast <message>")
-	ui.displaySystemMessage("Sends a public announcement to the current entity")
 }
 
 // This is *the* function that changes the entity. Do Everything™ here.
@@ -159,21 +163,19 @@ func (ui *ChatUI) handleSetBroadcastCommand(args []string) {
 		switch toggle {
 		case "on":
 			go ui.subscribeBroadcasts()
-			ui.displaySystemMessage("Broadcast channel is on")
+			ui.displaySystemMessage(broadcastOnText)
+			return
 		case "off":
 			if ui.broadcastCancel != nil {
 				ui.broadcastCancel()
-				ui.displaySystemMessage("Broadcast channel is off")
+				ui.displaySystemMessage(broadcastOffText)
+				return
 			}
 		default:
-			ui.handleHelpSetBroadcastCommand()
+			ui.displayHelpUsage(setBroadcastUsage)
+			return
 		}
-	} else {
-		ui.handleHelpSetBroadcastCommand()
 	}
-}
 
-func (ui *ChatUI) handleHelpSetBroadcastCommand() {
-	ui.displayHelpUsage("/set broadcast on|off")
-	ui.displayHelpText("Toggles broadcast messages on and off")
+	ui.handleHelpCommand(setBroadcastUsage, setBroadcastHelp)
 }

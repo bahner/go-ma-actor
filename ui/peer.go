@@ -7,11 +7,22 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// PEER
-func (ui *ChatUI) handleHelpPeerCommands() {
-	ui.displaySystemMessage("Usage: /peer show|nick")
-	ui.displaySystemMessage("Manages peer info")
-}
+const (
+	peerUsage           = "/peer show|nick"
+	peerHelp            = "Manages peer info"
+	peerShowUsage       = "/peer show <id|nick>"
+	peerShowHelp        = "Shows the peer info"
+	peerNickUsage       = "/peer nick list|set|show"
+	peerNickHelp        = "Manages peer nicks"
+	peerNickListUsage   = "/peer nick list"
+	peerNickListHelp    = "List peer DID and nicks"
+	peerNickSetUsage    = "/peer nick set <id|nick> <nick>"
+	peerNickSetHelp     = "Sets a nick for an peer"
+	peerNickShowUsage   = "/peer nick show <id|nick>"
+	peerNickShowHelp    = "Shows the peer info"
+	peerNickRemoveUsage = "/peer nick remove <id|nick>"
+	peerNickRemoveHelp  = "Removes a nick for an peer"
+)
 
 func (ui *ChatUI) handlePeerCommand(args []string) {
 
@@ -29,7 +40,7 @@ func (ui *ChatUI) handlePeerCommand(args []string) {
 		}
 	}
 
-	ui.handleHelpPeerCommands()
+	ui.handleHelpCommand(peerUsage, peerHelp)
 }
 
 // SHOW
@@ -54,14 +65,14 @@ func (ui *ChatUI) handlePeerShowCommand(args []string) {
 }
 
 func (ui *ChatUI) handleHelpPeerShowCommand() {
-	ui.displaySystemMessage("Usage: /peer show <id|nick>")
-	ui.displaySystemMessage("       Shows the peer info")
+	ui.displayHelpUsage(peerShowUsage)
+	ui.displayHelpText(peerShowHelp)
 }
 
 // NICK
 func (ui *ChatUI) handleHelpPeerNickCommand() {
-	ui.displaySystemMessage("Usage: /peer nick list|set|show")
-	ui.displaySystemMessage("       Manages peer nicks")
+	ui.displayHelpUsage(peerNickUsage)
+	ui.displayHelpText(peerNickHelp)
 }
 
 func (ui *ChatUI) handlePeerNickCommand(args []string) {
@@ -112,8 +123,8 @@ func (ui *ChatUI) handlePeerNickListCommand(args []string) {
 }
 
 func (ui *ChatUI) handleHelpPeerNickListCommand() {
-	ui.displaySystemMessage("Usage: /peer nick list")
-	ui.displaySystemMessage("List peer DID and nicks")
+	ui.displayHelpUsage(peerNickListUsage)
+	ui.displayHelpText(peerNickListHelp)
 }
 
 // SET

@@ -11,6 +11,11 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+const (
+	msgUsage = "/msg <DID|NICK> <message>"
+	msgHelp  = "Sends a private message to the specified DID"
+)
+
 func (ui *ChatUI) handleMsgCommand(args []string) {
 
 	if len(args) >= 3 {
@@ -70,11 +75,6 @@ func (ui *ChatUI) handleMsgCommand(args []string) {
 		}
 		log.Debugf("Message published to topic: %s", medium.String())
 	} else {
-		ui.handleHelpMsgCommand()
+		ui.handleHelpCommand(msgUsage, msgHelp)
 	}
-}
-
-func (ui *ChatUI) handleHelpMsgCommand() {
-	ui.displaySystemMessage("Usage: /msg <DID|NICK> <message>")
-	ui.displaySystemMessage("Sends a private message to the specified DID")
 }

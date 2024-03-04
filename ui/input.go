@@ -65,25 +65,20 @@ func (ui *ChatUI) setupInputField() *tview.InputField {
 
 		line := inputField.GetText()
 		if len(line) == 0 {
-			// ignore blank lines
 			return
 		}
 
-		// bail if requested
 		if line == "/quit" {
 			ui.app.Stop()
 			return
 		}
 
-		ui.pushToHistory(line) // Use the pushToHistory method to handle the input history
+		ui.pushToHistory(line)
 		ui.currentHistoryIndex = -1
 
-		// send the line onto the input chan and reset the field text
 		ui.chInput <- line
 		inputField.SetText("")
 	})
 
 	return inputField
 }
-
-// You can add other methods and types that are part of the ui package here.

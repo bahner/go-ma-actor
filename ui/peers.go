@@ -3,8 +3,15 @@ package ui
 import (
 	"fmt"
 	"sort"
+	"time"
 
 	"github.com/bahner/go-ma-actor/p2p/peer"
+	"github.com/spf13/viper"
+)
+
+const (
+	refreshUsage = "/refresh"
+	refreshHelp  = "Refreshes the list of peers"
 )
 
 // refreshPeers pulls the list of peers currently in the chat room and
@@ -37,7 +44,9 @@ func (ui *ChatUI) refreshPeers() {
 	ui.app.Draw()
 }
 
-func (ui *ChatUI) handleHelpRefreshCommand() {
-	ui.displaySystemMessage("Usage: /refresh")
-	ui.displaySystemMessage("Refreshes the list of peers")
+func getUIPeerslistWidth() int {
+	return viper.GetInt("ui.peerslist-width")
+}
+func getUIPeersRefreshInterval() time.Duration {
+	return viper.GetDuration("ui.refresh")
 }

@@ -7,6 +7,14 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+const (
+	enterUsage = "/enter <DID>"
+	enterHelp  = `Enters an entity with the specified DID
+What this means is that messages will be sent to this entity.
+Everybody 'in' the entity will be able to read the messages.
+NB! use /msg to send encrypted messages to any recipient.`
+)
+
 func (ui *ChatUI) handleEnterCommand(args []string) {
 
 	if len(args) == 2 {
@@ -21,7 +29,7 @@ func (ui *ChatUI) handleEnterCommand(args []string) {
 		}
 
 	} else {
-		ui.displaySystemMessage("Usage: /enter <DID>")
+		ui.displayHelpUsage(enterUsage)
 	}
 }
 
@@ -56,7 +64,7 @@ func (ui *ChatUI) enterEntity(d string, force bool) error {
 	// If this is not the same as the last known location, then
 	// update the last known location
 	if ui.e != nil && d == ui.e.DID.Id && !force {
-		return ErrAlreadyHereWarning
+		return errAlreadyHereWarning
 	}
 
 	// Here we go. This is the real deal.
@@ -101,12 +109,4 @@ func (ui *ChatUI) enterEntity(d string, force bool) error {
 	go ui.a.UpdateLastKnowLocation(e.DID.Id)
 
 	return nil
-}
-
-func (ui *ChatUI) handleHelpEnterCommand() {
-	ui.displaySystemMessage("Usage: /enter <DID>")
-	ui.displaySystemMessage("Enters an entity with the specified DID.")
-	ui.displaySystemMessage("What this means is that messages will be sent to this entity.")
-	ui.displaySystemMessage("Everybody 'in' the entity will be able to read the messages.")
-	ui.displaySystemMessage("NB! use /msg to send encrypted messages to any recipient.")
 }

@@ -59,13 +59,13 @@ func (ui *ChatUI) handleChatMessage(input string) error {
 	ctx := context.Background()
 
 	if ui.a == nil {
-		ui.displaySystemMessage(ErrYouDontExist.Error())
-		return ErrYouDontExist
+		ui.displaySystemMessage(errYouDontExist.Error())
+		return errYouDontExist
 	}
 
 	if ui.e == nil {
-		ui.displaySystemMessage(ErrNoEntitySelected.Error())
-		return ErrNoEntitySelected
+		ui.displaySystemMessage(errNoEntitySelected.Error())
+		return errNoEntitySelected
 	}
 
 	from := ui.a.Entity.DID.Id

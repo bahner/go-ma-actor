@@ -5,6 +5,11 @@ import (
 	"github.com/bahner/go-ma/did/doc"
 )
 
+const (
+	whereisUsage = "/whereis <DID>"
+	whereisHelp  = "Shows the last known location of a DID"
+)
+
 // handleAliasCommand handles the /alias command
 func (ui *ChatUI) handleWhereisCommand(args []string) {
 
@@ -31,9 +36,4 @@ func (ui *ChatUI) handleWhereisCommand(args []string) {
 		ui.displaySystemMessage("Usage: /whereis <DID>")
 	}
 
-}
-
-func (ui *ChatUI) handleHelpWhereisCommand() {
-	ui.displaySystemMessage("Usage: /whereis <DID>")
-	ui.displaySystemMessage("Shows the last known location of a DID")
 }

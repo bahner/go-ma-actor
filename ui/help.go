@@ -1,20 +1,37 @@
 package ui
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
+
+const helpIndent = "       "
 
 func (ui *ChatUI) displayHelpUsage(msg string) {
 	out := withColor("purple", msg)
 	fmt.Fprintf(ui.msgW, "Usage: %s\n", out)
 }
 func (ui *ChatUI) displayHelpText(msg string) {
-	out := withColor("purple", msg)
-	fmt.Fprintf(ui.msgW, indent+"%s\n", out)
+	lines := strings.Split(msg, "\n")
+	fmt.Fprintln(ui.msgW)
+	for _, line := range lines {
+		out := withColor("purple", line)
+		fmt.Fprintf(ui.msgW, helpIndent+"%s\n", out)
+	}
 }
+
+const (
+	helpUsage = "/help [command]"
+	helpText  = "Displays help for the given command, or a list of available commands if no command is given"
+	quitUsage = "/quit"
+	quitText  = "Quits the chat client"
+)
 
 func (ui *ChatUI) handleHelpCommands(args []string) {
 
 	if len(args) == 1 {
-		ui.displaySystemMessage("Usage: /help [command]")
+		ui.displayHelpUsage(helpUsage)
+		ui.displayHelpText(helpText)
 		ui.displaySystemMessage("")
 		ui.displaySystemMessage("Available commands:")
 		ui.displaySystemMessage("/help broadcast")
@@ -34,42 +51,42 @@ func (ui *ChatUI) handleHelpCommands(args []string) {
 	} else {
 		switch args[1] {
 		case "broadcast":
-			ui.handleHelpBroadcastCommand()
+			ui.handleHelpCommand(broadcastUsage, broadcastHelp)
 		case "discover":
-			ui.handleHelpDiscoverCommand()
+			ui.handleHelpCommand(discoverUsage, discoverHelp)
 		case "enter":
-			ui.handleHelpEnterCommand()
+			ui.handleHelpCommand(enterUsage, enterHelp)
 		case "entity":
-			ui.handleHelpEntityCommands()
+			ui.handleHelpCommand(entityUsage, entityHelp)
 		case "me":
-			ui.handleHelpMeCommands()
+			ui.handleHelpCommand(meUsage, meHelp)
 		case "msg":
-			ui.handleHelpMsgCommand()
+			ui.handleHelpCommand(msgUsage, msgHelp)
 		case "peer":
-			ui.handleHelpPeerCommands()
+			ui.handleHelpCommand(peerUsage, peerHelp)
 		case "refresh":
-			ui.handleHelpRefreshCommand()
+			ui.handleHelpCommand(refreshUsage, refreshHelp)
 		case "resolve":
-			ui.handleHelpResolveCommand()
+			ui.handleHelpCommand(resolveUsage, resolveHelp)
 		case "set":
-			ui.handleHelpSetCommands()
+			ui.handleHelpCommand(setUsage, setHelp)
 		case "status":
-			ui.handleHelpStatusCommands()
+			ui.handleHelpCommand(statusUsage, statusHelp)
 		case "whereis":
-			ui.handleHelpWhereisCommand()
+			ui.handleHelpCommand(whereisUsage, whereisHelp)
 		case "quit":
-			ui.handleHelpQuitCommand()
+			ui.handleHelpCommand(quitUsage, quitText)
 		default:
 			ui.handleHelpUnknownCommand(args)
 		}
 	}
 }
 
-func (ui *ChatUI) handleHelpQuitCommand() {
-	ui.displaySystemMessage("Usage: /quit")
-	ui.displaySystemMessage("Quits the chat client")
-}
-
 func (ui *ChatUI) handleHelpUnknownCommand(args []string) {
 	ui.displaySystemMessage("Unknown command: " + args[1])
+}
+
+func (ui *ChatUI) handleHelpCommand(usage string, help string) {
+	ui.displayHelpUsage(usage)
+	ui.displayHelpText(help)
 }

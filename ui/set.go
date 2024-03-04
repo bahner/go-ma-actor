@@ -1,5 +1,10 @@
 package ui
 
+const (
+	setUsage = "/set broadcast|discovery"
+	setHelp  = "Toggles broadcast and peer discovery on and off"
+)
+
 func (ui *ChatUI) handleSetCommand(args []string) {
 
 	if len(args) == 3 {
@@ -10,12 +15,7 @@ func (ui *ChatUI) handleSetCommand(args []string) {
 			ui.handleSetDiscoveryCommand(args)
 		}
 	} else {
-		ui.handleHelpSetCommands()
+		ui.handleHelpCommand(setUsage, setHelp)
 	}
 
-}
-
-func (ui *ChatUI) handleHelpSetCommands() {
-	ui.displayHelpUsage("/set broadcast|discovery on|off")
-	ui.displayHelpText("Toggles broadcast and peer discovery on and off")
 }
