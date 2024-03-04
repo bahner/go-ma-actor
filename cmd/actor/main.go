@@ -37,7 +37,7 @@ func main() {
 	fmt.Print("Initialising DB ...")
 	_, err = db.Init()
 	if err != nil {
-		log.Fatalf("failed to initialize db: %v", err)
+		panic(fmt.Sprintf("failed to initialize db: %v", err))
 	}
 	fmt.Println("done.")
 	// P2P
@@ -52,7 +52,7 @@ func main() {
 		p, err = p2p.Init(nil)
 	}
 	if err != nil {
-		log.Fatalf("failed to initialize p2p: %v", err)
+		panic(fmt.Sprintf("failed to initialize p2p: %v", err))
 	}
 	fmt.Println("done.")
 
@@ -77,14 +77,14 @@ func main() {
 	fmt.Print("Creating and setting DID Document for actor...")
 	err = a.CreateAndSetDocument(id)
 	if err != nil {
-		log.Fatalf("error creating document: %s", err)
+		panic(fmt.Sprintf("error creating document: %s", err))
 	}
 	fmt.Println("done.")
 
 	// Better safe than sorry.
 	// Without a valid actor, we can't do anything.
 	if a == nil || a.Verify() != nil {
-		log.Fatalf("%s is not a valid actor: %v", id, err)
+		panic(fmt.Sprintf("%s is not a valid actor: %v", id, err))
 	}
 
 	// PEER DISCOVERY
@@ -92,9 +92,9 @@ func main() {
 	// We need to discover peers before we can do anything else.
 	// So this is a blocking call.
 	fmt.Print("Discovering peers...")
-	p.DiscoverPeers()
+	err = p.DiscoverPeers()
 	if err != nil {
-		log.Fatalf("failed to initialize p2p: %v", err)
+		panic(fmt.Sprintf("failed to initialize p2p: %v", err))
 	}
 	fmt.Println("done.")
 
@@ -104,7 +104,7 @@ func main() {
 	fmt.Print("Creating text UI...")
 	ui, err := ui.NewChatUI(p, a)
 	if err != nil {
-		log.Fatalf("error creating text UI: %s", err)
+		panic(fmt.Sprintf("error creating text UI: %s", err))
 	}
 
 	fmt.Print("Starting web server...")

@@ -11,13 +11,13 @@ import (
 )
 
 const (
-	defaultConnmgrLowWatermark  int = 10
-	defaultConnmgrHighWatermark int = 30
+	defaultConnmgrLowWatermark  int = 100
+	defaultConnmgrHighWatermark int = 300
 	defaultListenPort           int = 0
 
 	defaultDiscoveryTimeout       time.Duration = time.Second * 30
 	defaultConnmgrGracePeriod     time.Duration = time.Minute * 1
-	defaultDiscoveryRetryInterval time.Duration = time.Second * 10
+	defaultDiscoveryRetryInterval time.Duration = time.Second * 60
 
 	fakeP2PIdentity string = "NO_DEFAULT_NODE_IDENITY"
 )

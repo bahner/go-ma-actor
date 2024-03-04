@@ -77,7 +77,7 @@ func Init(mode string) error {
 	// Make sure the XDG directories exist before we start writing to them.
 	err := createXDGDirectories()
 	if err != nil {
-		log.Fatalf("config.init: %v", err)
+		panic(err)
 	}
 
 	// These values initialised here are required for the generation of the config file.
@@ -142,7 +142,7 @@ func Print() (int, error) {
 
 	configYAML, err := yaml.Marshal(configMap)
 	if err != nil {
-		log.Fatalf("error: %v", err)
+		panic(err)
 	}
 
 	fmt.Println("# " + ActorKeyset().DID.Id)
@@ -192,7 +192,7 @@ func configFile() string {
 	if config != defaultConfigFile {
 		filename, err = homedir.Expand(config)
 		if err != nil {
-			log.Fatalf("error: %v", err)
+			panic(err)
 		}
 	} else {
 		filename = configHome + configName() + ".yaml"

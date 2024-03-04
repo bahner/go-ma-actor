@@ -42,13 +42,13 @@ func InitActor() {
 
 	keyset_string := ActorIdentity()
 	if keyset_string == fakeActorIdentity {
-		log.Fatalf(ErrFakeIdentity.Error())
+		panic(ErrFakeIdentity)
 	}
 
 	log.Debugf("config.initActor: %s", keyset_string)
 	// Create the actor keyset
 	if keyset_string == "" {
-		log.Fatalf(ErrEmptyIdentity.Error())
+		panic(ErrEmptyIdentity)
 	}
 
 	// This function fails fatally, so no return value

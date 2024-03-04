@@ -60,7 +60,7 @@ func generateActorConfigFile(identity string, node string) {
 	// Convert the map of defaults to YAML
 	configYAML, err := yaml.Marshal(config)
 	if err != nil {
-		log.Fatalf("error: %v", err)
+		panic(err)
 	}
 
 	if generateFlag() {
@@ -94,13 +94,13 @@ func writeGeneratedConfigFile(content []byte) {
 		} else {
 			errMsg = fmt.Sprintf("Failed to open file: %v", err)
 		}
-		log.Fatalf(errMsg)
+		panic(errMsg)
 	}
 	defer file.Close()
 
 	// Write content to file.
 	if _, err := file.Write(content); err != nil {
-		log.Fatalf("Failed to write to file: %v", err)
+		panic(fmt.Sprintf("Failed to write to file: %v", err))
 	}
 
 	log.Printf("Generated config file %s", filePath)
@@ -152,7 +152,7 @@ func generatePongConfigFile(identity string, node string) {
 	// Convert the map of defaults to YAML
 	configYAML, err := yaml.Marshal(config)
 	if err != nil {
-		log.Fatalf("error: %v", err)
+		panic(err)
 	}
 
 	if generateFlag() {
@@ -194,7 +194,7 @@ func generateRelayConfigFile(node string) {
 	// Convert the map of defaults to YAML
 	configYAML, err := yaml.Marshal(config)
 	if err != nil {
-		log.Fatalf("error: %v", err)
+		panic(err)
 	}
 
 	if generateFlag() {

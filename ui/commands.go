@@ -15,36 +15,36 @@ func (ui *ChatUI) handleCommands(input string) {
 	}
 
 	switch args[0] {
-	case "/help":
-		ui.handleHelpCommands(args)
-	case "/status":
-		ui.handleStatusCommand(args)
-	case "/msg":
-		ui.handleMsgCommand(args)
 	case "/broadcast":
 		ui.handleBroadcastCommand(args)
-	case "/set":
-		ui.handleSetCommand(args)
-	case "/edit":
-		ui.handleEditCommand()
-	case "/resolve":
-		go ui.handleResolveCommand(args) // This make take some time. No need to block the UI
 	case "/discover":
 		ui.triggerDiscovery()
+	case "/edit":
+		ui.handleEditCommand()
 	case "/enter":
 		ui.handleEnterCommand(args)
-	case "/peer":
-		ui.handlePeerCommand(args)
 	case "/entity":
 		ui.handleEntityCommand(args)
-	case "/whereis":
-		ui.handleWhereisCommand(args)
+	case "/help":
+		ui.handleHelpCommands(args)
 	case "/me":
 		ui.handleMeCommands(args)
+	case "/resolve":
+		go ui.handleResolveCommand(args) // This make take some time. No need to block the UI
+	case "/peer":
+		ui.handlePeerCommand(args)
 	case "/refresh":
 		ui.refreshPeers()
 		ui.msgBox.Clear()
 		ui.app.Draw()
+	case "/save":
+		ui.handleSaveCommand(args)
+	case "/set":
+		ui.handleSetCommand(args)
+	case "/status":
+		ui.handleStatusCommand(args)
+	case "/whereis":
+		ui.handleWhereisCommand(args)
 	default:
 		ui.displaySystemMessage("Unknown command: " + args[0])
 	}

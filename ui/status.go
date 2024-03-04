@@ -5,15 +5,15 @@ import (
 )
 
 const (
-	statusUsage = "/status [sub|topics|host]"
+	statusUsage = "/status [sub|topics|host|peers]"
 	statusHelp  = "Displays the current status of elements"
 )
 
 func (ui *ChatUI) handleStatusCommand(args []string) {
 
 	if len(args) == 1 {
-		ui.displaySystemMessage(ui.getStatusHost())
-		ui.displaySystemMessage(ui.getStatusTopic())
+		ui.displaySystemMessage(ui.statusHost())
+		ui.displaySystemMessage(ui.statusTopics())
 		return
 	}
 
@@ -22,9 +22,11 @@ func (ui *ChatUI) handleStatusCommand(args []string) {
 		case "sub":
 			ui.displayStatusMessage(ui.getStatusSub())
 		case "topics":
-			ui.displayStatusMessage(ui.getStatusTopic())
+			ui.displayStatusMessage(ui.statusTopics())
 		case "host":
-			ui.displayStatusMessage(ui.getStatusHost())
+			ui.displayStatusMessage(ui.statusHost())
+		case "peers":
+			ui.displayStatusMessage(ui.statusPeers())
 		default:
 			ui.displaySystemMessage("Unknown status type: " + args[1])
 		}
@@ -44,7 +46,7 @@ func (ui *ChatUI) getStatusSub() string {
 	return "not implemented yet"
 }
 
-func (ui *ChatUI) getStatusTopic() string {
+func (ui *ChatUI) statusTopics() string {
 	// Return whatever status you'd like about the topic.
 	// Fetching peers as an example below:
 	// peers := ui.keyAgreement.ListPeers()
@@ -58,11 +60,21 @@ func (ui *ChatUI) getStatusTopic() string {
 	)
 }
 
-func (ui *ChatUI) getStatusHost() string {
+func (ui *ChatUI) statusHost() string {
 	// Return whatever status you'd like about the host.
 	// Just an example below:
 	var result string
 	result += "Peer ID: " + ui.p.Node.ID().String() + "\n"
 	result += fmt.Sprintf("Peers no# %d\n", len(ui.p.Node.Network().Peers()))
+	return result
+}
+
+func (ui *ChatUI) statusPeers() string {
+	// Return whatever status you'd like about the host.
+	// Just an example below:
+	var result string
+	for _, peer := range ui.p.GetConnectedProctectedPeersShortStrings() {
+		result += fmt.Sprintf("Peer: %s\n", peer)
+	}
 	return result
 }

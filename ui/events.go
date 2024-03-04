@@ -42,11 +42,16 @@ func (ui *ChatUI) handleEvents() {
 			input = strings.TrimSpace(input)
 
 			if strings.HasPrefix(input, "/") {
-				log.Debug("hadleEvents got command: ", input)
+				log.Debug("handleEvents got command: ", input)
 				ui.handleCommands(input)
-			} else {
-				ui.handleChatMessage(input)
+				continue
 			}
+			if strings.HasPrefix(input, "@") {
+				log.Debug("handleEvents got command: ", input)
+				ui.handleMsgCommand(input)
+				continue
+			}
+			ui.handleChatMessage(input)
 
 		case m := <-ui.chMessage:
 			if m.Type == ma.BROADCAST_MESSAGE_TYPE {

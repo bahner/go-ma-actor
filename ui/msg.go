@@ -12,31 +12,27 @@ import (
 )
 
 const (
-	msgUsage = "/msg <DID|NICK> <message>"
-	msgHelp  = "Sends a private message to the specified DID"
+	msgUsage = "/@<DID|NICK> <message>"
+	msgHelp  = "Sends a private message directly the specified DID"
 )
 
-func (ui *ChatUI) handleMsgCommand(args []string) {
+func (ui *ChatUI) handleMsgCommand(input string) {
 
-	if len(args) >= 3 {
+	parts := strings.SplitN(input, " ", 2)
 
-		recipient := args[1]
+	if len(parts) == 2 {
+
+		recipient := parts[0][1:] // The recipient is the first argument, without the leading @
 		if !did.IsValid(recipient) {
 			recipient = entity.GetDID(recipient)
 		}
 
 		if recipient == "" {
-			ui.displaySystemMessage(fmt.Sprintf("Invalid DID: %s", args[1]))
+			ui.displaySystemMessage(fmt.Sprintf("Invalid DID: %s", recipient))
 			return
 		}
 
-		var message string
-		if len(args) > 3 {
-			message = strings.Join(args[2:], separator)
-		} else {
-			message = args[2]
-		}
-
+		message := parts[1]
 		msgBytes := []byte(message)
 		if log.GetLevel() == log.DebugLevel {
 			ui.displaySystemMessage(fmt.Sprintf("Sending message to %s: %s", recipient, message))

@@ -44,6 +44,6 @@ func startWebServer(p *p2p.P2P, a *actor.Actor) {
 	fmt.Print("Web server starting on http://" + config.HttpSocket() + "/")
 	err := http.ListenAndServe(config.HttpSocket(), mux)
 	if err != nil {
-		log.Fatalf("Web server failed: %v", err)
+		panic(fmt.Sprintf("Web server failed: %v", err))
 	}
 }
