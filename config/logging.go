@@ -27,11 +27,12 @@ func init() {
 
 func InitLogging() {
 
-	viper.BindPFlag("log.level", pflag.Lookup("log-level"))
 	viper.BindPFlag("log.file", pflag.Lookup("log-file"))
+	viper.SetDefault("log.file", genDefaultLogfile(profile))
 
+	viper.BindPFlag("log.level", pflag.Lookup("log-level"))
 	viper.SetDefault("log.level", defaultLogLevel)
-	viper.SetDefault("log.file", defaultLogfile)
+
 	// Init logger
 	ll, err := log.ParseLevel(viper.GetString("log.level"))
 	if err != nil {
@@ -62,6 +63,8 @@ func InitLogging() {
 		FullTimestamp: true,
 	})
 
+	log := log.WithField("prefix", actorNick())
+
 	log.Info("Logger initialized with loglevel ", viper.GetString("log.level"), " and logfile ", viper.GetString("log.file"))
 
 }
@@ -91,4 +94,8 @@ func LogLevel() string {
 
 func LogFile() string {
 	return viper.GetString("log.file")
+}
+
+func genDefaultLogfile(nick string) string {
+	return NormalisePath(dataHome + nick + ".log")
 }

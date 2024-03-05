@@ -11,14 +11,6 @@ import (
 
 func generateActorConfigFile(identity string, node string) {
 
-	var nick string
-
-	if identity == fakeActorIdentity {
-		nick = defaultActor
-	} else {
-		nick = ActorNick()
-	}
-
 	// Get the default settings as a map
 	// Note: Viper does not have a built-in way to directly extract only the config
 	// so we manually recreate the structure based on the config we have set.
@@ -26,15 +18,15 @@ func generateActorConfigFile(identity string, node string) {
 		"actor": map[string]interface{}{
 			"identity": identity,
 			"location": ActorLocation(),
-			"nick":     nick,
+			"nick":     actorNick(),
 		},
 		"db": map[string]interface{}{
 			"file": DefaultDbFile,
 		},
 		// Use default log settings, so as not to pick up debug log settings
 		"log": map[string]interface{}{
-			"level": defaultLogLevel,
-			"file":  defaultLogfile,
+			"level": viper.GetString("log.level"),
+			"file":  viper.GetString("log.file"),
 		},
 		// NB! This is a cross over from go-ma
 		"api": map[string]interface{}{
@@ -114,7 +106,7 @@ func generatePongConfigFile(identity string, node string) {
 	config := map[string]interface{}{
 		"actor": map[string]interface{}{
 			"identity": identity,
-			"nick":     "pong",
+			"nick":     pong,
 		},
 		"db": map[string]interface{}{
 			"file": DefaultDbFile,

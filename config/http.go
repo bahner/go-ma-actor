@@ -17,7 +17,7 @@ func init() {
 
 }
 
-func InitHttp() {
+func initHttp() {
 	viper.BindPFlag("http.socket", pflag.Lookup("http-socket"))
 	viper.BindPFlag("http.refresh", pflag.Lookup("http-refresh"))
 

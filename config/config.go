@@ -30,16 +30,18 @@ var (
 	configHome        string = xdg.ConfigHome + "/" + ma.NAME + "/"
 	dataHome          string = xdg.DataHome + "/" + ma.NAME + "/"
 	defaultConfigFile string = NormalisePath(configHome + defaultActor + ".yaml")
+	profile           string = defaultActor
 )
 
 func init() {
 
 	// Allow to set config file via command line flag.
 	pflag.StringVarP(&config, "config", "c", defaultConfigFile, "Config file to use.")
+	pflag.StringVarP(&profile, "profile", "p", defaultActor, "Config profile (name) to use.")
 
-	pflag.Bool("force", false, "Whether to force any operation, eg. file overwrite")
 	pflag.Bool("show-config", false, "Whether to print the config.")
 	pflag.Bool("show-defaults", false, "Whether to print the config.")
+
 	pflag.BoolP("version", "v", false, "Print version and exit.")
 
 }
@@ -56,8 +58,12 @@ func Init(mode string) error {
 	replacer := strings.NewReplacer(".", "_")
 	viper.SetEnvKeyReplacer(replacer)
 
-	// We need the nick to be set before we can generate the config file correctly.
+	// Settings required for config file generation.
 	viper.BindPFlag("actor.nick", pflag.Lookup("nick"))
+	viper.SetDefault("actor.nick", defaultActor)
+
+	viper.BindPFlag("actor.location", pflag.Lookup("location"))
+	viper.SetDefault("actor.location", defaultLocation)
 
 	// Handle the easy flags first.
 	if versionFlag() {
@@ -82,14 +88,14 @@ func Init(mode string) error {
 
 	// These values initialised here are required for the generation of the config file.
 	InitP2P()
-	InitHttp()
+	initHttp()
 
 	if generateFlag() {
 
-		// Reinit logging to STDOUT
-		viper.Set("log.file", "STDOUT")
 		InitLogging()
 
+		// Reinit logging to STDOUT
+		log.SetOutput(os.Stdout)
 		switch Mode() {
 		case "actor":
 			log.Info("Generating new actor and node identity")
@@ -174,7 +180,7 @@ func configName() string {
 		return Mode()
 	}
 
-	return pflag.CommandLine.Lookup("nick").Value.String()
+	return pflag.CommandLine.Lookup("profile").Value.String()
 
 }
 

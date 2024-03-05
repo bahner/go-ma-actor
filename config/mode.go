@@ -12,6 +12,9 @@ const (
 	defaultPongMode  = false
 	defaultRelayMode = false
 
+	pong  = "pong"
+	relay = "relay"
+
 	defaultMode = "actor"
 )
 
@@ -57,11 +60,11 @@ func Mode() string {
 	}
 
 	if PongMode() {
-		return "pong"
+		return pong
 	}
 
 	if RelayMode() {
-		return "relay"
+		return relay
 	}
 
 	return defaultMode
