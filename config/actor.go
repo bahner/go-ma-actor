@@ -19,18 +19,18 @@ const (
 )
 
 var (
-	defaultActor     string = os.Getenv("USER")
+	defaultNick      string = os.Getenv("USER")
 	keyset           set.Keyset
-	ErrEmptyIdentity = fmt.Errorf("config: Identity is empty")
-	ErrFakeIdentity  = fmt.Errorf("config: Your identity is fake. You need to define actorKeyset or generate a new one")
-	ErrEmptyNick     = fmt.Errorf("config: Nick is empty")
+	ErrEmptyIdentity = fmt.Errorf("identity is empty")
+	ErrFakeIdentity  = fmt.Errorf("your identity is fake. You need to define actorKeyset or generate a new one")
+	ErrEmptyNick     = fmt.Errorf("nick is empty")
 )
 
 func init() {
 	pflag.Bool("generate", false, "Generates a new keyset")
 	pflag.Bool("publish", false, "Publishes keyset to IPFS")
 	pflag.Bool("force", false, "Forces regneration of config keyset and publishing")
-	pflag.StringP("nick", "n", defaultActor, "Nickname to use in character creation")
+	pflag.StringP("nick", "n", defaultNick, "Nickname to use in character creation")
 	pflag.StringP("location", "l", defaultLocation, "DID of the location to visit")
 
 }

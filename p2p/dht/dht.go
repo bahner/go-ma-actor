@@ -7,6 +7,7 @@ import (
 
 	"github.com/bahner/go-ma"
 	"github.com/bahner/go-ma-actor/config"
+	"github.com/bahner/go-ma-actor/p2p/connmgr"
 	p2pDHT "github.com/libp2p/go-libp2p-kad-dht"
 	"github.com/libp2p/go-libp2p/core/discovery"
 	"github.com/libp2p/go-libp2p/core/host"
@@ -111,6 +112,8 @@ func (d *DHT) DiscoverPeers(ctx context.Context, discoveryOpts ...discovery.Opti
 	dutil.Advertise(ctx, routingDiscovery, ma.RENDEZVOUS, discoveryOpts...)
 	log.Debugf("Advertising rendezvous string: %s", ma.RENDEZVOUS)
 
+	cg := connmgr.NewConnectionGater()
+
 	peerChan, err := routingDiscovery.FindPeers(ctx, ma.RENDEZVOUS, discoveryOpts...)
 	if err != nil {
 		return fmt.Errorf("dht:discovery: peer discovery error: %w", err)
@@ -121,11 +124,14 @@ func (d *DHT) DiscoverPeers(ctx context.Context, discoveryOpts ...discovery.Opti
 			continue // Skip self connection
 		}
 
+		cg.AddPeer(p.ID)
+
 		err := d.h.Connect(ctx, p)
 		if err != nil {
 			log.Debugf("Failed connecting to %s, error: %v", p.ID.String(), err)
-			// d.h.ConnManager().UntagPeer(p.ID, ma.RENDEZVOUS)
-			// d.h.ConnManager().Unprotect(p.ID, ma.RENDEZVOUS)
+			d.h.ConnManager().UntagPeer(p.ID, ma.RENDEZVOUS)
+			d.h.ConnManager().Unprotect(p.ID, ma.RENDEZVOUS)
+			cg.RemovePeer(p.ID)
 			continue
 		}
 

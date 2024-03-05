@@ -23,21 +23,23 @@ const (
 	configFileMode os.FileMode = 0600
 	configDirMode  os.FileMode = 0700
 	dataHomeMode   os.FileMode = 0755
+
+	defaultProfile string = "actor"
 )
 
 var (
 	config            string = ""
 	configHome        string = xdg.ConfigHome + "/" + ma.NAME + "/"
 	dataHome          string = xdg.DataHome + "/" + ma.NAME + "/"
-	defaultConfigFile string = NormalisePath(configHome + defaultActor + ".yaml")
-	profile           string = defaultActor
+	defaultConfigFile string = NormalisePath(configHome + defaultNick + ".yaml")
+	profile           string = defaultProfile
 )
 
 func init() {
 
 	// Allow to set config file via command line flag.
 	pflag.StringVarP(&config, "config", "c", defaultConfigFile, "Config file to use.")
-	pflag.StringVarP(&profile, "profile", "p", defaultActor, "Config profile (name) to use.")
+	pflag.StringVarP(&profile, "profile", "p", defaultProfile, "Config profile (name) to use.")
 
 	pflag.Bool("show-config", false, "Whether to print the config.")
 	pflag.Bool("show-defaults", false, "Whether to print the config.")
@@ -60,7 +62,7 @@ func Init(mode string) error {
 
 	// Settings required for config file generation.
 	viper.BindPFlag("actor.nick", pflag.Lookup("nick"))
-	viper.SetDefault("actor.nick", defaultActor)
+	viper.SetDefault("actor.nick", defaultNick)
 
 	viper.BindPFlag("actor.location", pflag.Lookup("location"))
 	viper.SetDefault("actor.location", defaultLocation)
