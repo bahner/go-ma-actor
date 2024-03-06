@@ -1,29 +1,51 @@
 package connmgr
 
 import (
-	"sync"
-
+	"github.com/bahner/go-ma"
+	"github.com/bahner/go-ma-actor/p2p/peer"
 	"github.com/libp2p/go-libp2p/core/control"
 	"github.com/libp2p/go-libp2p/core/network"
-	"github.com/libp2p/go-libp2p/core/peer"
+	p2peer "github.com/libp2p/go-libp2p/core/peer"
+	p2pConnmgr "github.com/libp2p/go-libp2p/p2p/net/connmgr"
 	"github.com/multiformats/go-multiaddr"
 )
+
+const defaultAllowAll = false
 
 // ConnectionGater is a struct that implements the network.ConnectionGater interface.
 // It uses a sync.Map to store valid peer IDs that have been discovered using the correct rendezvous string.
 type ConnectionGater struct {
-	validPeers sync.Map // Stores peer.ID as key
+	AllowAll bool
+	ConnMgr  *p2pConnmgr.BasicConnMgr
 }
 
 // New creates a new CustomConnectionGater instance.
-func NewConnectionGater() *ConnectionGater {
-	return &ConnectionGater{}
+func NewConnectionGater(connMgr *p2pConnmgr.BasicConnMgr) *ConnectionGater {
+	return &ConnectionGater{
+		AllowAll: defaultAllowAll,
+		ConnMgr:  connMgr,
+	}
 }
 
 // InterceptPeerDial checks if we should allow dialing the specified peer.
-func (cg *ConnectionGater) InterceptPeerDial(p peer.ID) (allow bool) {
-	_, found := cg.validPeers.Load(p)
-	return found
+func (cg *ConnectionGater) InterceptPeerDial(p p2peer.ID) (allow bool) {
+
+	// // Allow to call all sometimes, allowed hosts and known hosts. This is just dialing.
+	// allow = cg.AllowAll || cg.IsAllowed(p)
+
+	// // If the host is known, but for some reason denied, we should not allow dialing.
+	// if peer.IsKnown(p.String()) && !peer.IsAllowed(p.String()) {
+	// 	allow = false
+	// }
+
+	// if allow {
+	// 	log.Debugf("InterceptPeerDial: Allow dialing to %s", p)
+	// } else {
+	// 	log.Debugf("InterceptPeerDial: Block dialing to %s", p)
+	// }
+	// return allow
+
+	return true
 }
 
 // InterceptAccept checks if an incoming connection from the specified network address should be allowed.
@@ -33,14 +55,38 @@ func (cg *ConnectionGater) InterceptAccept(conn network.ConnMultiaddrs) (allow b
 
 // InterceptSecured, InterceptUpgraded, and other methods can be implemented as needed.
 // For simplicity, they are set to allow all connections in this example.
-func (cg *ConnectionGater) InterceptSecured(_ network.Direction, p peer.ID, _ network.ConnMultiaddrs) (allow bool) {
-	_, found := cg.validPeers.Load(p)
+func (cg *ConnectionGater) InterceptSecured(nd network.Direction, p p2peer.ID, _ network.ConnMultiaddrs) (allow bool) {
 
-	return found
+	if nd == network.DirOutbound {
+		return true
+	}
 
+	allow = cg.IsAllowed(p)
+
+	// if allow {
+	// 	log.Debugf("InterceptSecured: Allow dialing to %s", p)
+	// } else {
+	// 	log.Debugf("InterceptSecured: Block dialing to %s", p)
+	// }
+	return allow
 }
 
-func (cg *ConnectionGater) InterceptAddrDial(_ peer.ID, _ multiaddr.Multiaddr) (allow bool) {
+func (cg *ConnectionGater) InterceptAddrDial(p p2peer.ID, _ multiaddr.Multiaddr) (allow bool) {
+	// // Allow to call all sometimes, allowed hosts and known hosts. This is just dialing.
+	// allow = cg.AllowAll || cg.IsAllowed(p)
+
+	// // If the host is known, but for some reason denied, we should not allow dialing.
+	// if peer.IsKnown(p.String()) && !peer.IsAllowed(p.String()) {
+	// 	allow = false
+	// }
+
+	// if allow {
+	// 	log.Debugf("InterceptAddrDial: Allow dialing to %s", p)
+	// } else {
+	// 	log.Debugf("InterceptAddrDial: Block dialing to %s", p)
+	// }
+	// return allow
+
 	return true
 }
 
@@ -48,45 +94,13 @@ func (cg *ConnectionGater) InterceptUpgraded(_ network.Conn) (allow bool, reason
 	return true, 0
 }
 
-func (cg *ConnectionGater) AddPeer(p peer.ID) {
-	cg.validPeers.Store(p, struct{}{})
-}
+func (cg *ConnectionGater) IsAllowed(p p2peer.ID) bool {
 
-func (cg *ConnectionGater) RemovePeer(p peer.ID) {
-	cg.validPeers.Delete(p)
-}
+	// NB! Check peer.IsAllowed first. Because it might be explicitly denied and we want to adhere to that.
+	// So if it's explicitly denied, we don't need to check the other conditions.
+	if !peer.IsAllowed(p.String()) {
+		return false
+	}
 
-func (cg *ConnectionGater) ListPeers() []peer.ID {
-	var peers []peer.ID
-	cg.validPeers.Range(func(k, v interface{}) bool {
-		peers = append(peers, k.(peer.ID))
-		return true
-	})
-	return peers
-}
-
-func (cg *ConnectionGater) Clear() {
-	cg.validPeers = sync.Map{}
-}
-
-func (cg *ConnectionGater) Count() int {
-	var count int
-	cg.validPeers.Range(func(k, v interface{}) bool {
-		count++
-		return true
-	})
-	return count
-}
-
-func (cg *ConnectionGater) HasPeer(p peer.ID) bool {
-	_, found := cg.validPeers.Load(p)
-	return found
-}
-
-func (cg *ConnectionGater) Close() {
-	cg.Clear()
-}
-
-func (cg *ConnectionGater) IsEmpty() bool {
-	return cg.Count() == 0
+	return cg.AllowAll || cg.ConnMgr.IsProtected(p, ma.RENDEZVOUS)
 }

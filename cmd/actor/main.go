@@ -92,7 +92,9 @@ func main() {
 	// We need to discover peers before we can do anything else.
 	// So this is a blocking call.
 	fmt.Print("Discovering peers...")
+	p.DHT.ConnectionGater.AllowAll = true
 	err = p.DiscoverPeers()
+	p.DHT.ConnectionGater.AllowAll = true
 	if err != nil {
 		panic(fmt.Sprintf("failed to initialize p2p: %v", err))
 	}

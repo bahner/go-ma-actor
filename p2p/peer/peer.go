@@ -7,6 +7,9 @@ import (
 	p2peer "github.com/libp2p/go-libp2p/core/peer"
 )
 
+// This is for discovered peers, not for any peer.
+var defaultAllowed = true
+
 type Peer struct {
 	// ID is the peer's ID
 	ID string
@@ -14,17 +17,21 @@ type Peer struct {
 	Nick string
 	// AddrInfo
 	AddrInfo *p2peer.AddrInfo
+	// Allowed
+	Allowed bool
 }
 
 // Create a new aliased addrinfo peer
-func New(addrInfo *p2peer.AddrInfo, nick string) Peer {
+// Always creates an alias of the last 8 characters of the ID initially
+func New(addrInfo *p2peer.AddrInfo) Peer {
 
 	addrInfo.MarshalJSON()
 	id := addrInfo.ID.String()
 	return Peer{
 		ID:       id,
-		Nick:     nick,
+		Nick:     createNodeAlias(id),
 		AddrInfo: addrInfo,
+		Allowed:  defaultAllowed,
 	}
 }
 
@@ -37,7 +44,7 @@ func GetOrCreate(addrInfo *p2peer.AddrInfo) (Peer, error) {
 		return p, err
 	}
 
-	p = New(addrInfo, createNodeAlias(id))
+	p = New(addrInfo)
 	err = Set(p)
 	if err != nil {
 		return Peer{}, err

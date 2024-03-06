@@ -83,10 +83,6 @@ func Remove(id string) error {
 		return err
 	}
 
-	if err != nil {
-		return err
-	}
-
 	return nil
 }
 
@@ -164,4 +160,28 @@ func Peers() ([]Peer, error) {
 	}
 
 	return peers, nil
+}
+
+func Exists(id string) bool {
+	_, err := Get(id)
+	return err == nil
+}
+
+func IsAllowed(id string) bool {
+	p, err := Get(id)
+	if err != nil {
+		return defaultAllowed
+	}
+
+	return p.Allowed
+}
+
+func SetAllowed(id string, allowed bool) error {
+	p, err := Get(id)
+	if err != nil {
+		return err
+	}
+
+	p.Allowed = allowed
+	return Set(p)
 }

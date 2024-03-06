@@ -18,10 +18,9 @@ import (
 // It contains a libp2p node, a pubsub service and a DHT instance.
 // It also contains a list of connected peers.
 type P2P struct {
-	Node            host.Host
-	PubSub          *p2ppubsub.PubSub
-	DHT             *dht.DHT
-	ConnectionGater *connmgr.ConnectionGater
+	Node   host.Host
+	PubSub *p2ppubsub.PubSub
+	DHT    *dht.DHT
 }
 
 // Initialise everything needed for p2p communication. The function forces use of a specific IPNS key.
@@ -46,7 +45,7 @@ func Init(d *dht.DHT, p2pOpts ...libp2p.Option) (*P2P, error) {
 	}
 	p2pOpts = append(p2pOpts, libp2p.ConnectionManager(cm))
 
-	cg := connmgr.NewConnectionGater()
+	cg := connmgr.NewConnectionGater(cm)
 	p2pOpts = append(p2pOpts, libp2p.ConnectionGater(cg))
 
 	// Create a new libp2p Host that listens on a random TCP port
@@ -57,7 +56,7 @@ func Init(d *dht.DHT, p2pOpts ...libp2p.Option) (*P2P, error) {
 
 	if d == nil {
 
-		d, err = dht.New(n)
+		d, err = dht.New(n, cg)
 		if err != nil {
 			return nil, fmt.Errorf("p2p.Init: failed to create DHT: %w", err)
 		}
@@ -69,10 +68,9 @@ func Init(d *dht.DHT, p2pOpts ...libp2p.Option) (*P2P, error) {
 	}
 
 	myP2P := &P2P{
-		DHT:             d,
-		Node:            n,
-		PubSub:          ps,
-		ConnectionGater: cg,
+		DHT:    d,
+		Node:   n,
+		PubSub: ps,
 	}
 
 	return myP2P, nil
