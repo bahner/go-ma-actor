@@ -52,7 +52,10 @@ func (d *DHT) DiscoverPeers(ctx context.Context, discoveryOpts ...discovery.Opti
 	}
 
 	sem := make(chan struct{}, config.P2PDiscoveryLimit()) // Semaphore for controlling concurrency
-	var successCount int32                                 // Atomic counter for tracking successful connections
+	var successCount int32
+
+	// Make sure we have set the allowAll flag to it's to it's allowed state
+	d.ConnectionGater.AllowAll = config.P2PDiscoveryAllowAll()
 
 	for p := range peerChan {
 		sem <- struct{}{} // Acquire a token
@@ -105,7 +108,7 @@ func (d *DHT) handleDiscoveredPeer(ctx context.Context, pai p2peer.AddrInfo) err
 	if len(pai.Addrs) > 0 {
 		log.Debugf("Peer %s discovered with addresses, attempting to connect", id)
 		p := peer.New(&pai)
-		err := d.peerConnectAndUpdateIfSuccessful(ctx, p)
+		err := d.PeerConnectAndUpdateIfSuccessful(ctx, p)
 		if err == nil {
 			log.Infof("Successfully discovered peer %s", id)
 			return nil
@@ -117,7 +120,7 @@ func (d *DHT) handleDiscoveredPeer(ctx context.Context, pai p2peer.AddrInfo) err
 	// Fetch it from the backend, if it exists.
 	p, err := peer.Get(id)
 	if err == nil {
-		err = d.peerConnectAndUpdateIfSuccessful(ctx, p)
+		err = d.PeerConnectAndUpdateIfSuccessful(ctx, p)
 		if err == nil {
 			log.Infof("Successfully discovered peer %s", id)
 			return nil
@@ -132,7 +135,7 @@ func (d *DHT) handleDiscoveredPeer(ctx context.Context, pai p2peer.AddrInfo) err
 		return err
 	}
 
-	err = d.peerConnectAndUpdateIfSuccessful(ctx, peer.New(&a))
+	err = d.PeerConnectAndUpdateIfSuccessful(ctx, peer.New(&a))
 	if err != nil {
 		log.Debugf("Failed to connect to peer %s: %v", id, err)
 	}
@@ -140,7 +143,7 @@ func (d *DHT) handleDiscoveredPeer(ctx context.Context, pai p2peer.AddrInfo) err
 	return err
 }
 
-func (d *DHT) peerConnectAndUpdateIfSuccessful(ctx context.Context, p peer.Peer) error {
+func (d *DHT) PeerConnectAndUpdateIfSuccessful(ctx context.Context, p peer.Peer) error {
 
 	if len(p.AddrInfo.Addrs) == 0 {
 		return ErrAddrInfoAddrsEmpty

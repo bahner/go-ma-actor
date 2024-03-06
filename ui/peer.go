@@ -1,8 +1,10 @@
 package ui
 
 import (
+	"context"
 	"fmt"
 
+	"github.com/bahner/go-ma-actor/p2p"
 	"github.com/bahner/go-ma-actor/p2p/peer"
 	log "github.com/sirupsen/logrus"
 )
@@ -12,6 +14,8 @@ const (
 	peerHelp            = "Manages peer info"
 	peerShowUsage       = "/peer show <id|nick>"
 	peerShowHelp        = "Shows the peer info"
+	peerConnectUsage    = "/peer connect <id|nick>"
+	peerConnectHelp     = "Connects to a peer"
 	peerNickUsage       = "/peer nick list|set|show"
 	peerNickHelp        = "Manages peer nicks"
 	peerNickListUsage   = "/peer nick list"
@@ -34,6 +38,9 @@ func (ui *ChatUI) handlePeerCommand(args []string) {
 			return
 		case "show":
 			ui.handlePeerShowCommand(args)
+			return
+		case "connect":
+			ui.handlePeerConnectCommand(args)
 			return
 		default:
 			ui.displaySystemMessage("Unknown peer command: " + command)
@@ -176,4 +183,25 @@ func (ui *ChatUI) handlePeerNickShowCommand(args []string) {
 func (ui *ChatUI) handleHelpPeerNickShowCommand() {
 	ui.displaySystemMessage("Usage: /peer nick show <id|nick>")
 	ui.displaySystemMessage("       Shows the peer info")
+}
+
+func (ui *ChatUI) handlePeerConnectCommand(args []string) {
+
+	if len(args) == 3 {
+		id := args[2]
+		p, err := peer.Lookup(id)
+		if err != nil {
+			ui.displaySystemMessage("Error: " + err.Error())
+			return
+		}
+		_p2p := p2p.Get()
+		err = _p2p.DHT.PeerConnectAndUpdateIfSuccessful(context.Background(), p)
+		if err != nil {
+			ui.displaySystemMessage("Error connecting to peer: " + err.Error())
+			return
+		}
+		ui.displaySystemMessage("Connected to " + p.ID)
+	} else {
+		ui.handleHelpPeerShowCommand()
+	}
 }

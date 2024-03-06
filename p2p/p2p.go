@@ -15,6 +15,8 @@ import (
 	p2peer "github.com/libp2p/go-libp2p/core/peer"
 )
 
+var _p2p *P2P
+
 // This is not a normal libp2p node, it's a wrapper around it. And it is specific to this project.
 // It contains a libp2p node, a pubsub service and a DHT instance.
 // It also contains a list of connected peers.
@@ -74,12 +76,17 @@ func Init(d *dht.DHT, p2pOpts ...libp2p.Option) (*P2P, error) {
 		Addrs: n.Addrs(),
 	}
 
-	myP2P := &P2P{
+	_p2p = &P2P{
 		AddrInfo: &ai,
 		DHT:      d,
 		Node:     n,
 		PubSub:   ps,
 	}
 
-	return myP2P, nil
+	return _p2p, nil
+}
+
+// Get the P2P instance. This is a singleton.
+func Get() *P2P {
+	return _p2p
 }

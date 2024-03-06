@@ -2,12 +2,14 @@ package connmgr
 
 import (
 	"github.com/bahner/go-ma"
+	"github.com/bahner/go-ma-actor/config"
 	"github.com/bahner/go-ma-actor/p2p/peer"
 	"github.com/libp2p/go-libp2p/core/control"
 	"github.com/libp2p/go-libp2p/core/network"
 	p2peer "github.com/libp2p/go-libp2p/core/peer"
 	p2pConnmgr "github.com/libp2p/go-libp2p/p2p/net/connmgr"
 	"github.com/multiformats/go-multiaddr"
+	log "github.com/sirupsen/logrus"
 )
 
 const defaultAllowAll = false
@@ -57,6 +59,10 @@ func (cg *ConnectionGater) InterceptAccept(conn network.ConnMultiaddrs) (allow b
 // For simplicity, they are set to allow all connections in this example.
 func (cg *ConnectionGater) InterceptSecured(nd network.Direction, p p2peer.ID, _ network.ConnMultiaddrs) (allow bool) {
 
+	if config.P2PDiscoveryAllowAll() {
+		return true
+	}
+
 	if nd == network.DirOutbound {
 		return true
 	}
@@ -96,9 +102,13 @@ func (cg *ConnectionGater) InterceptUpgraded(_ network.Conn) (allow bool, reason
 
 func (cg *ConnectionGater) IsAllowed(p p2peer.ID) bool {
 
+	if config.P2PDiscoveryAllowAll() {
+		return true
+	}
 	// NB! Check peer.IsAllowed first. Because it might be explicitly denied and we want to adhere to that.
 	// So if it's explicitly denied, we don't need to check the other conditions.
 	if !peer.IsAllowed(p.String()) {
+		log.Warnf("Peer %s is explicitly denied", p)
 		return false
 	}
 
