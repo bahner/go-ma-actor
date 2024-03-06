@@ -15,14 +15,12 @@ func init() {
 	pflag.String("http-socket", defaultHttpSocket, "Address for webserver to listen on")
 	pflag.Int("http-refresh", defaultHttpRefresh, "Number of seconds for webpages to wait before refresh")
 
-}
-
-func initHttp() {
 	viper.BindPFlag("http.socket", pflag.Lookup("http-socket"))
 	viper.BindPFlag("http.refresh", pflag.Lookup("http-refresh"))
 
 	viper.SetDefault("http.socket", defaultHttpSocket)
 	viper.SetDefault("http.refresh", defaultHttpRefresh)
+
 }
 
 func HttpSocket() string {

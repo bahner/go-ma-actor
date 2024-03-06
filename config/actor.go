@@ -30,8 +30,16 @@ func init() {
 	pflag.Bool("generate", false, "Generates a new keyset")
 	pflag.Bool("publish", false, "Publishes keyset to IPFS")
 	pflag.Bool("force", false, "Forces regneration of config keyset and publishing")
+
 	pflag.StringP("nick", "n", defaultNick, "Nickname to use in character creation")
 	pflag.StringP("location", "l", defaultLocation, "DID of the location to visit")
+
+	// Settings required for config file generation.
+	viper.BindPFlag("actor.nick", pflag.Lookup("nick"))
+	viper.SetDefault("actor.nick", defaultNick)
+
+	viper.BindPFlag("actor.location", pflag.Lookup("location"))
+	viper.SetDefault("actor.location", defaultLocation)
 
 }
 

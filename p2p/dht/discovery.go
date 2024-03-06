@@ -119,7 +119,7 @@ func (d *DHT) handleDiscoveredPeer(ctx context.Context, pai p2peer.AddrInfo) err
 	// Avoid creating any new peer objects until we have Addrs
 	// Fetch it from the backend, if it exists.
 	p, err := peer.Get(id)
-	if err == nil {
+	if err == nil && len(p.AddrInfo.Addrs) > 0 {
 		err = d.PeerConnectAndUpdateIfSuccessful(ctx, p)
 		if err == nil {
 			log.Infof("Successfully discovered peer %s", id)

@@ -45,7 +45,6 @@ func init() {
 	pflag.Bool("show-defaults", false, "Whether to print the config.")
 
 	pflag.BoolP("version", "v", false, "Print version and exit.")
-
 }
 
 // This should be called after pflag.Parse() in main.
@@ -60,12 +59,7 @@ func Init(mode string) error {
 	replacer := strings.NewReplacer(".", "_")
 	viper.SetEnvKeyReplacer(replacer)
 
-	// Settings required for config file generation.
-	viper.BindPFlag("actor.nick", pflag.Lookup("nick"))
-	viper.SetDefault("actor.nick", defaultNick)
-
-	viper.BindPFlag("actor.location", pflag.Lookup("location"))
-	viper.SetDefault("actor.location", defaultLocation)
+	viper.SetDefault("log.file", genDefaultLogfile(profile))
 
 	// Handle the easy flags first.
 	if versionFlag() {
@@ -90,7 +84,6 @@ func Init(mode string) error {
 
 	// These values initialised here are required for the generation of the config file.
 	InitP2P()
-	initHttp()
 
 	if generateFlag() {
 
