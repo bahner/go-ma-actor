@@ -3,12 +3,10 @@ package peer
 import (
 	"fmt"
 
+	"github.com/bahner/go-ma-actor/config"
 	"github.com/fxamacker/cbor/v2"
 	p2peer "github.com/libp2p/go-libp2p/core/peer"
 )
-
-// This is for discovered peers, not for any peer.
-var defaultAllowed = true
 
 type Peer struct {
 	// ID is the peer's ID
@@ -31,7 +29,7 @@ func New(addrInfo *p2peer.AddrInfo) Peer {
 		ID:       id,
 		Nick:     createNodeAlias(id),
 		AddrInfo: addrInfo,
-		Allowed:  defaultAllowed,
+		Allowed:  config.P2PDiscoveryAllowAll(),
 	}
 }
 
@@ -41,7 +39,7 @@ func GetOrCreate(addrInfo *p2peer.AddrInfo) (Peer, error) {
 
 	p, err := Get(id)
 	if err == nil {
-		return p, err
+		return p, nil
 	}
 
 	p = New(addrInfo)

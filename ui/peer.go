@@ -55,7 +55,7 @@ func (ui *ChatUI) handlePeerShowCommand(args []string) {
 
 	if len(args) == 3 {
 		id := args[2]
-		p, err := peer.Lookup(id)
+		p, err := peer.Get(id)
 		if err != nil {
 			ui.displaySystemMessage("Error: " + err.Error())
 			return
@@ -110,12 +110,7 @@ func (ui *ChatUI) handlePeerNickListCommand(args []string) {
 	log.Debugf("peer list command: %v", args)
 	if len(args) == 3 {
 
-		peers, err := peer.Peers()
-		if err != nil {
-			ui.displaySystemMessage("Error: " + err.Error())
-			return
-		}
-		log.Debugf("peers: %v", peers)
+		peers := peer.List()
 
 		if len(peers) > 0 {
 			for _, v := range peers {
@@ -140,7 +135,7 @@ func (ui ChatUI) handlePeerNickSetCommand(args []string) {
 	if len(args) == 5 {
 		id := args[3]
 		nick := args[4]
-		p, err := peer.Lookup(id)
+		p, err := peer.Get(id)
 		if err != nil {
 			ui.displaySystemMessage("Error: " + err.Error())
 			return
@@ -168,7 +163,7 @@ func (ui *ChatUI) handlePeerNickShowCommand(args []string) {
 
 	if len(args) == 4 {
 		id := args[3]
-		p, err := peer.Lookup(id)
+		p, err := peer.Get(id)
 		if err != nil {
 			ui.displaySystemMessage("Error: " + err.Error())
 			return
@@ -189,7 +184,7 @@ func (ui *ChatUI) handlePeerConnectCommand(args []string) {
 
 	if len(args) == 3 {
 		id := args[2]
-		p, err := peer.Lookup(id)
+		p, err := peer.Get(id)
 		if err != nil {
 			ui.displaySystemMessage("Error: " + err.Error())
 			return

@@ -59,9 +59,9 @@ func Init() (*sql.DB, error) {
 			return
 		}
 
-		_, err = db.Exec("CREATE TABLE IF NOT EXISTS nodes (id VARCHAR(60) PRIMARY KEY, node BLOB NO NULL)")
+		_, err = db.Exec("CREATE TABLE IF NOT EXISTS peers (id VARCHAR(60) PRIMARY KEY, nick VARCHAR(255), allowed BOOLEAN NOT NULL CHECK (allowed IN (0, 1)), UNIQUE(nick)")
 		if err != nil {
-			onceErr = fmt.Errorf("error creating nodes table: %s", err)
+			onceErr = fmt.Errorf("error creating peers table: %s", err)
 			return
 		}
 

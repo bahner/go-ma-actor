@@ -80,7 +80,7 @@ func (d *WebHandlerDocument) String() string {
 	if len(d.PeersWithSameRendez) > 0 {
 		html += fmt.Sprintf("<h2>Discovered peers (%d):</h2>\n<ul>", len(d.PeersWithSameRendez))
 		for _, pr := range d.PeersWithSameRendez {
-			p, err := actorPeer.Lookup(pr.String())
+			p, err := actorPeer.Get(pr.String())
 			if err == nil {
 				html += "<li>" + p.ID + "(" + p.Nick + ")</li>"
 			} else {

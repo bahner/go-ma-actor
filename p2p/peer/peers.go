@@ -1,187 +1,89 @@
 package peer
 
 import (
-	"errors"
+	"sync"
 
 	"github.com/bahner/go-ma-actor/config/db"
 	_ "github.com/mattn/go-sqlite3"
 )
 
 const (
-	_SELECT = "SELECT node FROM nodes WHERE id =?"
-	_UPSERT = "INSERT INTO nodes (id, node) VALUES (?, ?) ON CONFLICT(id) DO UPDATE SET node = ?"
-	_DELETE = "DELETE FROM nodes WHERE id = ?"
-	_PEERS  = "SELECT node FROM nodes"
+	_DELETE_PEER = "DELETE FROM peers WHERE id = ?"
+	_UPSERT_PEER = "INSERT INTO peers (id, nick, allowed) VALUES (?, ?, ?) ON CONFLICT(id) DO UPDATE SET (nick, allowed) = (?, ?)"
 )
 
-const (
-	defaultAliasLength = 8
-)
-
+// peers safely stores and retrieves Peer values.
 var (
-	ErrNotFound = errors.New("Peer not found")
+	peers sync.Map
 )
 
-// Sets a node in the database
-// The key is the node's ID
-func Set(p Peer) error {
-
-	d, err := db.Get()
-	if err != nil {
-		return err
-	}
-
-	v, err := p.MarshalToCBOR()
-	if err != nil {
-		return err
-	}
-	_, err = d.Exec(_UPSERT, p.ID, v, v)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// Fetches a nodefrom the database
-// Returns a Peer{} if it does not exist
+// Get retrieves a peer's information from the map by ID.
 func Get(id string) (Peer, error) {
 
-	db, err := db.Get()
-	if err != nil {
-		return Peer{}, err
-	}
+	var err error
 
-	var (
-		p Peer
-		v []byte
-	)
-
-	err = db.QueryRow(_SELECT, id).Scan(&v)
-	if err != nil {
-		return Peer{}, err
-	}
-
-	err = UnmarshalFromCBOR(v, &p)
-	if err == nil {
+	// Retrieve the peer.
+	value, ok := peers.Load(id)
+	if ok {
+		p := value.(Peer)
+		p.Nick, err = GetNickForID(p.ID)
+		if err != nil {
+			return Peer{}, err
+		}
+		p.Allowed, err = GetAllowedForID(p.ID)
+		if err != nil {
+			return Peer{}, err
+		}
 		return p, nil
 	}
-
-	return Peer{}, err
+	return Peer{}, ErrPeerNotFound
 }
 
-// Removes a node from the database if it exists
-func Remove(id string) error {
+// Set modifies an existing peer's information in the map and the database.
+func Set(p Peer) error {
 
+	// Delete the peer from the database.
 	d, err := db.Get()
 	if err != nil {
 		return err
 	}
 
-	_, err = d.Exec(_DELETE, id)
+	_, err = d.Exec(_UPSERT_PEER, p.ID, p.Nick, p.Allowed, p.Nick, p.Allowed)
 	if err != nil {
 		return err
 	}
+
+	peers.Store(p.ID, p)
 
 	return nil
 }
 
-// Returns the ID of a node. Returns the input if the node does not exist
-func GetID(id string) string {
+// Delete removes a peer from the map and the database by ID.
+func Delete(id string) error {
 
-	p, err := LookupNick(id)
-	if err == nil {
-		return p.ID
-	}
-
-	return id
-
-}
-
-func LookupNick(id string) (Peer, error) {
-
-	peers, err := Peers()
-	if err != nil {
-		return Peer{}, err
-	}
-
-	for _, p := range peers {
-		if p.Nick == id {
-			return p, nil
-		}
-	}
-
-	return Peer{}, ErrNotFound
-}
-
-func Lookup(id string) (Peer, error) {
-
-	// Lookup Nick first, that's probably the most used case
-	p, err := LookupNick(id)
-	if err == nil {
-		return p, nil
-	}
-
-	return Get(id)
-}
-
-// Peers returns a slice of all peers in the database
-// If an error occurs, an empty slice is returned
-func Peers() ([]Peer, error) {
-	var (
-		peers = []Peer{}
-		p     Peer
-		b     []byte
-	)
-
+	// Delete the peer from the database.
 	d, err := db.Get()
-	if err != nil {
-		return nil, err
-	}
-
-	rows, err := d.Query(_PEERS)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		err = rows.Scan(&b)
-		if err != nil {
-			return nil, err
-		}
-		p = Peer{}
-		err = UnmarshalFromCBOR(b, &p)
-		if err != nil || p.ID == "" || p.Nick == "" || p.AddrInfo == nil {
-			continue
-		}
-
-		peers = append(peers, p)
-	}
-
-	return peers, nil
-}
-
-func Exists(id string) bool {
-	_, err := Get(id)
-	return err == nil
-}
-
-func IsAllowed(id string) bool {
-	p, err := Get(id)
-	if err != nil {
-		return defaultAllowed
-	}
-
-	return p.Allowed
-}
-
-func SetAllowed(id string, allowed bool) error {
-	p, err := Get(id)
 	if err != nil {
 		return err
 	}
 
-	p.Allowed = allowed
-	return Set(p)
+	_, err = d.Exec(_DELETE_PEER, id)
+	if err != nil {
+		return err
+	}
+
+	// Remove the peer from the sync.Map.
+	peers.Delete(id)
+
+	return nil
+}
+
+// List returns a slice of all peers in the map.
+func List() []Peer {
+	p := make([]Peer, 0)
+	peers.Range(func(_, value interface{}) bool {
+		p = append(p, value.(Peer))
+		return true // continue iteration
+	})
+	return p
 }
