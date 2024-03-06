@@ -1,8 +1,6 @@
 package p2p
 
 import (
-	"context"
-
 	"github.com/bahner/go-ma"
 	"github.com/bahner/go-ma-actor/p2p/peer"
 	"github.com/libp2p/go-libp2p/core/network"
@@ -39,27 +37,16 @@ func (p *P2P) GetConnectedProtectedPeers() p2peer.IDSlice {
 
 // GetConnectedUnprotectedPeers returns a slice of p2peer.ID for all unprotected connected peers.
 func (p *P2P) GetConnectedUnprotectedPeers() p2peer.IDSlice {
-	connectedPeers := p.GetAllConnectedPeers()
-	connectedProtectedPeers := p.GetConnectedProtectedPeers()
-
+	h := p.Node
 	var connectedUnprotectedPeers p2peer.IDSlice
-	for _, connectedPeer := range connectedPeers {
-		if !containsPeer(connectedProtectedPeers, connectedPeer) {
+
+	for _, connectedPeer := range p.GetAllConnectedPeers() {
+		if !h.ConnManager().IsProtected(connectedPeer, ma.RENDEZVOUS) {
 			connectedUnprotectedPeers = append(connectedUnprotectedPeers, connectedPeer)
 		}
 	}
 
 	return connectedUnprotectedPeers
-}
-
-// containsPeer checks if a p2peer.ID is present in a slice of p2peer.ID.
-func containsPeer(slice p2peer.IDSlice, peerID p2peer.ID) bool {
-	for _, p := range slice {
-		if p == peerID {
-			return true
-		}
-	}
-	return false
 }
 
 // GetConnectedProtectedPeersAddrInfo returns a map of p2peer.ID to AddrInfo for all protected connected peers.
@@ -84,30 +71,32 @@ func (p *P2P) GetConnectedProctectedPeersShortStrings() []string {
 	return peersShortstrings
 }
 
-// Get or creates a peer from the ID
-// NB! This is a heavy operation and should be used with caution
-func (_p *P2P) GetOrCreatePeerFromIDString(id string) (peer.Peer, error) {
-
-	p, err := peer.Get(id)
-	if err == nil {
-		return p, nil
-	}
-
+func (p *P2P) GetPeerAddrInfoFromIDString(id string) (*p2peer.AddrInfo, error) {
 	pid, err := p2peer.Decode(id)
 	if err != nil {
-		return peer.Peer{}, err
+		return nil, err
 	}
 
-	addrInfo, err := _p.DHT.FindPeer(context.Background(), pid)
+	return p.GetPeerAddrInfoFromID(pid)
+}
+
+func (p *P2P) GetPeerAddrInfoFromID(id p2peer.ID) (*p2peer.AddrInfo, error) {
+	a := p2peer.AddrInfo{
+		ID:    id,
+		Addrs: p.Node.Peerstore().Addrs(id),
+	}
+
+	return &a, nil
+}
+
+// Get or creates a peer from the ID
+// NB! This is a heavy operation and should be used with caution
+func (p *P2P) GetOrCreatePeerFromIDString(id string) (peer.Peer, error) {
+
+	addrInfo, err := p.GetPeerAddrInfoFromIDString(id)
 	if err != nil {
 		return peer.Peer{}, err
 	}
 
-	p = peer.New(&addrInfo)
-	err = peer.Set(p)
-	if err != nil {
-		return peer.Peer{}, err
-	}
-
-	return p, nil
+	return peer.GetOrCreateFromAddrInfo(addrInfo)
 }
