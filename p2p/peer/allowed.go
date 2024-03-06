@@ -1,6 +1,9 @@
 package peer
 
 import (
+	"database/sql"
+	"errors"
+
 	"github.com/bahner/go-ma-actor/config/db"
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -27,6 +30,9 @@ func GetAllowedForID(id string) (bool, error) {
 
 	err = db.QueryRow(_SELECT_ALLOWED, id).Scan(&allowed)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return defaultAllowed, ErrPeerNotFoundInDB
+		}
 		return defaultAllowed, err
 	}
 
@@ -34,18 +40,26 @@ func GetAllowedForID(id string) (bool, error) {
 }
 
 func SetAllowed(id string, allowed bool) error {
-
-	db, err := db.Get()
+	d, err := db.Get()
 	if err != nil {
 		return err
 	}
 
-	_, err = db.Exec(_SET_ALLOWED, id, bool2int(allowed))
+	tx, err := d.Begin()
 	if err != nil {
 		return err
 	}
 
-	return nil
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		} else {
+			tx.Commit()
+		}
+	}()
+
+	_, err = tx.Exec(_SET_ALLOWED, id, bool2int(allowed))
+	return err
 }
 
 func IsAllowed(id string) bool {

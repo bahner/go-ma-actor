@@ -50,7 +50,9 @@ func Set(p Peer) error {
 		return err
 	}
 
-	_, err = tx.Exec(_UPSERT_PEER, p.ID, p.Nick, p.Allowed, p.Nick, p.Allowed)
+	sqlAllowed := bool2int(p.Allowed)
+
+	_, err = tx.Exec(_UPSERT_PEER, p.ID, p.Nick, sqlAllowed)
 	if err != nil {
 		tx.Rollback()
 		return err
