@@ -7,7 +7,7 @@ import (
 
 const (
 	_SELECT_ALLOWED = "SELECT allowed FROM peers WHERE id = ?"
-	_SET_ALLOWED    = "SET allowed = ? WHERE id = ?"
+	_SET_ALLOWED    = "UPDATE peers SET allowed = ? WHERE id = ?"
 )
 
 const (
@@ -18,7 +18,7 @@ const (
 // This implies whther the peer is blacklisted or not.
 func GetAllowedForID(id string) (bool, error) {
 
-	allowed := boolToAllowed(defaultAllowed)
+	allowed := bool2int(defaultAllowed)
 
 	db, err := db.Get()
 	if err != nil {
@@ -30,7 +30,7 @@ func GetAllowedForID(id string) (bool, error) {
 		return defaultAllowed, err
 	}
 
-	return allowedToBool(allowed), nil
+	return int2bool(allowed), nil
 }
 
 func SetAllowed(id string, allowed bool) error {
@@ -40,7 +40,7 @@ func SetAllowed(id string, allowed bool) error {
 		return err
 	}
 
-	_, err = db.Exec(_SET_ALLOWED, id, boolToAllowed(allowed))
+	_, err = db.Exec(_SET_ALLOWED, id, bool2int(allowed))
 	if err != nil {
 		return err
 	}
@@ -56,8 +56,8 @@ func IsAllowed(id string) bool {
 	return allowed
 }
 
-// boolToAllowed converts a bool to an int. true is 1, false is 0.
-func boolToAllowed(b bool) int {
+// bool2int converts a bool to an int. true is 1, false is 0.
+func bool2int(b bool) int {
 	if b {
 		return 1
 	}
@@ -65,6 +65,6 @@ func boolToAllowed(b bool) int {
 }
 
 // Converts an int to a bool. 1 is true, anything else is false.
-func allowedToBool(a int) bool {
+func int2bool(a int) bool {
 	return a == 1
 }
