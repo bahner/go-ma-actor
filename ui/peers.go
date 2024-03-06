@@ -19,7 +19,7 @@ const (
 func (ui *ChatUI) refreshPeers() {
 
 	// Tweak this to change the timeout for peer discovery
-	peers := ui.p.GetConnectedProtectedPeersAddrInfo()
+	peers := ui.p.ConnectedProtectedPeersAddrInfo()
 
 	// clear is thread-safe
 	ui.peersList.Clear()

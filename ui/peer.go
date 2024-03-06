@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/bahner/go-ma-actor/p2p/peer"
+
 	p2peer "github.com/libp2p/go-libp2p/core/peer"
 	log "github.com/sirupsen/logrus"
 )
@@ -144,7 +145,7 @@ func (ui ChatUI) handlePeerNickSetCommand(args []string) {
 	if len(args) == 5 {
 		id := args[3]
 		nick := args[4]
-		p, err := peer.Get(id)
+		p, err := ui.p.GetOrCreatePeerFromIDString(id)
 		if err != nil {
 			ui.displaySystemMessage("Error: " + err.Error())
 			return

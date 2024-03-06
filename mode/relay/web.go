@@ -39,10 +39,10 @@ func webHandler(w http.ResponseWriter, _ *http.Request, p *p2p.P2P) {
 
 	doc.Title = fmt.Sprintf("Bootstrap peer for rendezvous %s.", ma.RENDEZVOUS)
 	doc.H1 = fmt.Sprintf("%s@%s", ma.RENDEZVOUS, (p.Node.ID().String()))
-	doc.H1 += fmt.Sprintf("<br>Found %d peers with rendezvous %s", len(p.GetConnectedProtectedPeers()), ma.RENDEZVOUS)
+	doc.H1 += fmt.Sprintf("<br>Found %d peers with rendezvous %s", len(p.ConnectedProtectedPeers()), ma.RENDEZVOUS)
 	doc.Addrs = p.Node.Addrs()
-	doc.ProtectedPeers = p.GetConnectedProtectedPeers()
-	doc.UnprotectedPeers = p.GetConnectedUnprotectedPeers()
+	doc.ProtectedPeers = p.ConnectedProtectedPeers()
+	doc.UnprotectedPeers = p.ConnectedUnprotectedPeers()
 	// doc.AllConnectedPeers = p.GetAllConnectedPeers()
 
 	fmt.Fprint(w, doc.String())

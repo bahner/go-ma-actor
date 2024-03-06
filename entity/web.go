@@ -44,8 +44,8 @@ func webHandler(w http.ResponseWriter, _ *http.Request, p *p2p.P2P, e *Entity) {
 	doc.H1 = doc.Title
 	doc.H2 = fmt.Sprintf("%s@%s", ma.RENDEZVOUS, (p.Node.ID().String()))
 	doc.Addrs = p.Node.Addrs()
-	doc.AllConnectedPeers = p.GetAllConnectedPeers()
-	doc.PeersWithSameRendez = p.GetConnectedProtectedPeers()
+	doc.AllConnectedPeers = p.AllConnectedPeers()
+	doc.PeersWithSameRendez = p.ConnectedProtectedPeers()
 
 	fmt.Fprint(w, doc.String())
 }

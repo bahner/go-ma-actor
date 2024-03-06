@@ -73,7 +73,7 @@ func (ui *ChatUI) statusPeers() string {
 	// Return whatever status you'd like about the host.
 	// Just an example below:
 	var result string
-	for _, peer := range ui.p.GetConnectedProctectedPeersShortStrings() {
+	for _, peer := range ui.p.ConnectedProctectedPeersShortStrings() {
 		result += fmt.Sprintf("Peer: %s\n", peer)
 	}
 	return result
