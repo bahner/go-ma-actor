@@ -33,7 +33,7 @@ func New(addrInfo *p2peer.AddrInfo) Peer {
 	}
 }
 
-func GetOrCreate(addrInfo *p2peer.AddrInfo) (Peer, error) {
+func GetOrCreateFromAddrInfo(addrInfo *p2peer.AddrInfo) (Peer, error) {
 
 	id := addrInfo.ID.String()
 

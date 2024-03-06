@@ -184,7 +184,7 @@ func (ui *ChatUI) handlePeerConnectCommand(args []string) {
 
 	if len(args) == 3 {
 		id := args[2]
-		p, err := peer.Get(id)
+		p, err := ui.p.GetOrCreatePeerFromIDString(id)
 		if err != nil {
 			ui.displaySystemMessage("Error: " + err.Error())
 			return

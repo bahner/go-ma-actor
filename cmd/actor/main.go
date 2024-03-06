@@ -91,7 +91,7 @@ func setupP2POrPanic() *p2p.P2P {
 	}
 
 	// Now that we have a p2p instance and the db make sure our own entry is in the db and updated.
-	p, err := peer.GetOrCreate(P2P.AddrInfo)
+	p, err := peer.GetOrCreateFromAddrInfo(P2P.AddrInfo)
 	if err != nil {
 		panic(fmt.Sprintf("failed to get or create peer: %v", err))
 	}

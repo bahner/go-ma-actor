@@ -28,7 +28,7 @@ func (ui *ChatUI) refreshPeers() {
 
 	for _, p := range peers {
 
-		ap, err := peer.GetOrCreate(p)
+		ap, err := peer.GetOrCreateFromAddrInfo(p)
 
 		if err == nil {
 			plist = append(plist, ap.Nick)

@@ -86,3 +86,20 @@ func LookupNick(id string) (string, error) {
 
 	return nick, nil
 }
+
+// Looks up a node, but returns the input if it's not found
+// So this can be used for non-existing nodes
+func Lookup(q string) (string, error) {
+
+	db, err := db.Get()
+	if err != nil {
+		return q, err
+	}
+
+	err = db.QueryRow(_LOOKUP_ID, q, q).Scan(&q)
+	if err != nil {
+		return q, err
+	}
+
+	return q, nil
+}
