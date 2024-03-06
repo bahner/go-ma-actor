@@ -16,6 +16,8 @@ import (
 // NB! In relay mode we stop here.
 func startWebServer(p *p2p.P2P, a *actor.Actor) {
 
+	fmt.Print("Starting web server...")
+
 	// When this function stops the app stops.
 	defer os.Exit(1)
 
@@ -44,6 +46,11 @@ func startWebServer(p *p2p.P2P, a *actor.Actor) {
 	fmt.Print("Web server starting on http://" + config.HttpSocket() + "/")
 	err := http.ListenAndServe(config.HttpSocket(), mux)
 	if err != nil {
-		panic(fmt.Sprintf("Web server failed: %v", err))
+		fmt.Println("failed.")
+		// The webserver isn't critical, so we just log the error and continue.
+		log.Errorf("Failed to start web server: %v", err)
+		return
 	}
+
+	fmt.Println("done.")
 }

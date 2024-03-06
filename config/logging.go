@@ -63,7 +63,7 @@ func InitLogging() {
 		FullTimestamp: true,
 	})
 
-	log := log.WithField("prefix", actorNick())
+	log := log.WithField("prefix", ActorNick())
 
 	log.Info("Logger initialized with loglevel ", viper.GetString("log.level"), " and logfile ", viper.GetString("log.file"))
 

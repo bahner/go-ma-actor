@@ -23,6 +23,20 @@
             }
         },
         {
+            "name": "Launch plain",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/cmd/actor/",
+            "console": "integratedTerminal",
+            "env": {
+                "GOLOG_FILE": "/tmp/debug.log",
+                "GOLOG_LOG_LEVEL": "debug",
+                "GOLOG_STDOUT": "false",
+                "GOLOG_OUTPUT": "file"
+            }
+        },
+        {
             "name": "go-ma-actor generate",
             "type": "go",
             "request": "launch",

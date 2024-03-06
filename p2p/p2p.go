@@ -12,15 +12,17 @@ import (
 	libp2p "github.com/libp2p/go-libp2p"
 	p2ppubsub "github.com/libp2p/go-libp2p-pubsub"
 	"github.com/libp2p/go-libp2p/core/host"
+	p2peer "github.com/libp2p/go-libp2p/core/peer"
 )
 
 // This is not a normal libp2p node, it's a wrapper around it. And it is specific to this project.
 // It contains a libp2p node, a pubsub service and a DHT instance.
 // It also contains a list of connected peers.
 type P2P struct {
-	Node   host.Host
-	PubSub *p2ppubsub.PubSub
-	DHT    *dht.DHT
+	Node     host.Host
+	PubSub   *p2ppubsub.PubSub
+	DHT      *dht.DHT
+	AddrInfo *p2peer.AddrInfo
 }
 
 // Initialise everything needed for p2p communication. The function forces use of a specific IPNS key.
@@ -67,10 +69,16 @@ func Init(d *dht.DHT, p2pOpts ...libp2p.Option) (*P2P, error) {
 		return nil, fmt.Errorf("p2p.Init: failed to create pubsub: %w", err)
 	}
 
+	ai := p2peer.AddrInfo{
+		ID:    n.ID(),
+		Addrs: n.Addrs(),
+	}
+
 	myP2P := &P2P{
-		DHT:    d,
-		Node:   n,
-		PubSub: ps,
+		AddrInfo: &ai,
+		DHT:      d,
+		Node:     n,
+		PubSub:   ps,
 	}
 
 	return myP2P, nil

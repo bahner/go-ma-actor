@@ -15,7 +15,7 @@ import (
 const (
 	dbMaxConnections  = 1 // Required for serialized access to the database
 	defaultDBFilename = "ma.db"
-	defaultDbTimeout  = 100
+	defaultDbTimeout  = 10000
 )
 
 var (

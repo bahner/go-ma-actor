@@ -11,8 +11,9 @@ import (
 )
 
 const (
-	defaultConnmgrLowWatermark  int = 100
-	defaultConnmgrHighWatermark int = 300
+	defaultDiscoveryLimit       int = 10
+	defaultConnmgrLowWatermark  int = 50
+	defaultConnmgrHighWatermark int = 100
 	defaultListenPort           int = 0
 
 	defaultDiscoveryTimeout       time.Duration = time.Second * 30
@@ -25,30 +26,39 @@ const (
 func init() {
 
 	// P2P Settings
-	pflag.Int("p2p-connmgr-low-watermark", defaultConnmgrLowWatermark, "Low watermark for peer discovery.")
-	pflag.Int("p2p-connmgr-high-watermark", defaultConnmgrHighWatermark, "High watermark for peer discovery.")
 	pflag.Duration("p2p-connmgr-grace-period", defaultConnmgrGracePeriod, "Grace period for connection manager.")
+	pflag.Int("p2p-connmgr-high-watermark", defaultConnmgrHighWatermark, "High watermark for peer discovery.")
+	pflag.Int("p2p-connmgr-low-watermark", defaultConnmgrLowWatermark, "Low watermark for peer discovery.")
+
+	pflag.Int("p2p-discovery-limit", defaultDiscoveryLimit, "Number of concurrent peer discovery routines.")
 	pflag.Duration("p2p-discovery-retry", defaultDiscoveryRetryInterval, "Retry interval for peer discovery.")
 	pflag.Duration("p2p-discovery-timeout", defaultDiscoveryTimeout, "Timeout for peer discovery.")
+
 	pflag.Int("p2p-port", defaultListenPort, "Port for libp2p node to listen on.")
 }
 
 // P2P Node identity
 func InitP2P() {
-	viper.BindPFlag("p2p.connmgr.low-watermark", pflag.Lookup("p2p-connmgr-low-watermark"))
-	viper.BindPFlag("p2p.connmgr.high-watermark", pflag.Lookup("p2p-connmgr-high-watermark"))
 	viper.BindPFlag("p2p.connmgr.grace-period", pflag.Lookup("p2p-connmgr-grace-period"))
-	viper.BindPFlag("p2p.discovery-retry", pflag.Lookup("p2p-discovery-retryl"))
-	viper.BindPFlag("p2p.discovery-timeout", pflag.Lookup("p2p-discoveryTimeout"))
+	viper.BindPFlag("p2p.connmgr.high-watermark", pflag.Lookup("p2p-connmgr-high-watermark"))
+	viper.BindPFlag("p2p.connmgr.low-watermark", pflag.Lookup("p2p-connmgr-low-watermark"))
+
+	viper.BindPFlag("p2p.discovery.limit", pflag.Lookup("p2p-discovery-limit"))
+	viper.BindPFlag("p2p.discovery.retry", pflag.Lookup("p2p-discovery-retryl"))
+	viper.BindPFlag("p2p.discovery.timeout", pflag.Lookup("p2p-discoveryTimeout"))
+
 	viper.BindPFlag("p2p.port", pflag.Lookup("p2p-port"))
 
-	viper.SetDefault("p2p.connmgr.low-watermark", defaultConnmgrLowWatermark)
-	viper.SetDefault("p2p.connmgr.high-watermark", defaultConnmgrHighWatermark)
 	viper.SetDefault("p2p.connmgr.grace-period", defaultConnmgrGracePeriod)
-	viper.SetDefault("p2p.discovery-retry", defaultDiscoveryRetryInterval)
-	viper.SetDefault("p2p.discovery-timeout", defaultDiscoveryTimeout)
-	viper.SetDefault("p2p.port", defaultListenPort)
+	viper.SetDefault("p2p.connmgr.high-watermark", defaultConnmgrHighWatermark)
+	viper.SetDefault("p2p.connmgr.low-watermark", defaultConnmgrLowWatermark)
+
+	viper.SetDefault("p2p.discovery.limit", defaultDiscoveryLimit)
+	viper.SetDefault("p2p.discovery.retry", defaultDiscoveryRetryInterval)
+	viper.SetDefault("p2p.discovery.timeout", defaultDiscoveryTimeout)
+
 	viper.SetDefault("p2p.identity", fakeP2PIdentity)
+	viper.SetDefault("p2p.port", defaultListenPort)
 
 	var i string
 
@@ -78,7 +88,11 @@ func P2PDiscoveryContext() (context.Context, func()) {
 }
 
 func P2PDiscoveryTimeout() time.Duration {
-	return time.Duration(viper.GetDuration("p2p.discovery-timeout"))
+	return time.Duration(viper.GetDuration("p2p.discovery.timeout"))
+}
+
+func P2PDiscoveryLimit() int {
+	return viper.GetInt("p2p.discovery.limit")
 }
 
 func P2PConnmgrLowWatermark() int {
@@ -98,7 +112,7 @@ func P2PPort() int {
 }
 
 func P2PDiscoveryRetryInterval() time.Duration {
-	return viper.GetDuration("p2p.discovery-retry")
+	return viper.GetDuration("p2p.discovery.retry")
 }
 
 // String functions

@@ -68,7 +68,7 @@ func InitActor() {
 // NB! This is a little more complex than the other config functions, as it
 // needs to fetch the nick from the command line if it's not in the config.
 // Due to being a required parameter when generating a new keyset.
-func actorNick() string {
+func ActorNick() string {
 
 	return viper.GetString("actor.nick")
 
@@ -94,7 +94,7 @@ func actorIdentity() string {
 func handleGenerateOrExit() (string, string) {
 
 	// Generate a new keysets if requested
-	nick := actorNick()
+	nick := ActorNick()
 	log.Debugf("Generating new keyset for %s", nick)
 	keyset_string, err := generateKeysetString(nick)
 	if err != nil {

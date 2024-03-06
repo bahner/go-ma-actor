@@ -18,7 +18,7 @@ func generateActorConfigFile(identity string, node string) {
 		"actor": map[string]interface{}{
 			"identity": identity,
 			"location": ActorLocation(),
-			"nick":     actorNick(),
+			"nick":     ActorNick(),
 		},
 		"db": map[string]interface{}{
 			"file": DefaultDbFile,
@@ -44,8 +44,11 @@ func generateActorConfigFile(identity string, node string) {
 				"high-watermark": P2PConnmgrHighWatermark(),
 				"grace-period":   P2PConnMgrGracePeriod(),
 			},
-			"discovery-retry":   P2PDiscoveryRetryInterval(),
-			"discovery-timeout": P2PDiscoveryTimeout(),
+			"discovery": map[string]interface{}{
+				"retry":   P2PDiscoveryRetryInterval(),
+				"timeout": P2PDiscoveryTimeout(),
+				"limit":   P2PDiscoveryLimit(),
+			},
 		},
 	}
 
@@ -131,8 +134,11 @@ func generatePongConfigFile(identity string, node string) {
 				"high-watermark": P2PConnmgrHighWatermark(),
 				"grace-period":   P2PConnMgrGracePeriod(),
 			},
-			"discovery-retry":   P2PDiscoveryRetryInterval(),
-			"discovery-timeout": P2PDiscoveryTimeout(),
+			"discovery": map[string]interface{}{
+				"retry":   P2PDiscoveryRetryInterval(),
+				"timeout": P2PDiscoveryTimeout(),
+				"limit":   P2PDiscoveryLimit(),
+			},
 		},
 		"mode": map[string]interface{}{
 			"pong": map[string]interface{}{
@@ -178,8 +184,11 @@ func generateRelayConfigFile(node string) {
 				"high-watermark": P2PConnmgrHighWatermark(),
 				"grace-period":   P2PConnMgrGracePeriod(),
 			},
-			"discovery-retry":   P2PDiscoveryRetryInterval(),
-			"discovery-timeout": P2PDiscoveryTimeout(),
+			"discovery": map[string]interface{}{
+				"retry":   P2PDiscoveryRetryInterval(),
+				"timeout": P2PDiscoveryTimeout(),
+				"limit":   P2PDiscoveryLimit(),
+			},
 		},
 	}
 
