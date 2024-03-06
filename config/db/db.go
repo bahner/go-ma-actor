@@ -56,7 +56,7 @@ func Init() (*sql.DB, error) {
 		_, err = db.Exec(`
 CREATE TABLE IF NOT EXISTS entities (
 	did VARCHAR(80) PRIMARY KEY,
-	nick VARCHAR(255),
+	nick TEXT,
 	UNIQUE(nick) )`)
 		if err != nil {
 			onceErr = fmt.Errorf("error creating entities table: %s", err)
@@ -66,7 +66,7 @@ CREATE TABLE IF NOT EXISTS entities (
 		_, err = db.Exec(`
 CREATE TABLE IF NOT EXISTS peers (
 	id VARCHAR(60) PRIMARY KEY,
-	nick VARCHAR(255),
+	nick TEXT,
 	allowed BOOLEAN NOT NULL CHECK (allowed IN (0, 1)),
 	UNIQUE(nick))`)
 		if err != nil {

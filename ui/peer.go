@@ -145,7 +145,7 @@ func (ui ChatUI) handlePeerNickSetCommand(args []string) {
 	if len(args) == 5 {
 		id := args[3]
 		nick := args[4]
-		p, err := ui.p.GetOrCreatePeerFromIDString(id)
+		p, err := ui.p.GetOrCreatePeerFromIDString(peer.Lookup(id))
 		if err != nil {
 			ui.displaySystemMessage("Error: " + err.Error())
 			return

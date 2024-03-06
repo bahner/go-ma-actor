@@ -130,3 +130,15 @@ func LookupNick(id string) (string, error) {
 
 	return nick, nil
 }
+
+// Lookup finds a peer nickname by its ID or Nick.
+// If the name is not found, it returns the input name.
+func Lookup(name string) string {
+
+	id, err := LookupID(name)
+	if err != nil {
+		return name
+	}
+
+	return id
+}

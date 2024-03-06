@@ -5,6 +5,7 @@ import (
 
 	"github.com/bahner/go-ma-actor/config/db"
 	_ "github.com/mattn/go-sqlite3"
+	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -52,8 +53,11 @@ func Set(p Peer) error {
 
 	sqlAllowed := bool2int(p.Allowed)
 
+	log.Debugf("Setting peer %s to allowed: %t", p.ID, p.Allowed)
+
 	_, err = tx.Exec(_UPSERT_PEER, p.ID, p.Nick, sqlAllowed)
 	if err != nil {
+		log.Debugf("Failed to set peer %s: %s", p.ID, err.Error())
 		tx.Rollback()
 		return err
 	}
