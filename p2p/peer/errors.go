@@ -3,5 +3,6 @@ package peer
 import "errors"
 
 var (
-	ErrPeerNotFound = errors.New("Peer not found")
+	ErrPeerNotFound    = errors.New("peer not found")
+	ErrInvalidPeerType = errors.New("invalid peer type")
 )

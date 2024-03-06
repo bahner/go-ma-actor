@@ -1,7 +1,6 @@
 package config
 
 import (
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
@@ -18,6 +17,10 @@ const (
 	defaultMode = "actor"
 )
 
+var ErrConflictingModes = "Can't have both pong and relay mode enabled at the same time."
+
+// NB! This file is used early in the initialization process, so it can't depend on other packages.
+
 func init() {
 	// NB! Other mode pflags are in the proper mode packages.
 	pflag.Bool("pong", defaultPongMode, "Pong mode with automatic replies and no UI.")
@@ -30,7 +33,6 @@ func PongMode() bool {
 
 	pongMode, err := pflag.CommandLine.GetBool("pong")
 	if err != nil {
-		log.Warnf("config.init: %v", err)
 		return false
 	}
 
@@ -45,7 +47,6 @@ func RelayMode() bool {
 
 	relayMode, err := pflag.CommandLine.GetBool("relay")
 	if err != nil {
-		log.Warnf("config.init: %v", err)
 		return false
 	}
 
@@ -56,7 +57,7 @@ func RelayMode() bool {
 func Mode() string {
 
 	if PongMode() && RelayMode() {
-		log.Fatal("Can't have both pong and relay mode enabled at the same time.")
+		panic(ErrConflictingModes)
 	}
 
 	if PongMode() {

@@ -27,9 +27,9 @@ func (d *DHT) DiscoverPeers(ctx context.Context, discoveryOpts ...discovery.Opti
 	log.Debugf("Starting DHT peer discovery searching for peers with rendezvous string: %s", ma.RENDEZVOUS)
 
 	log.Debugf("Number of open connections: %d", len(d.h.Network().Conns()))
-	//  Trim connections
-	log.Debugf("Trimming open connections to %d", config.P2PConnmgrLowWatermark())
-	d.h.ConnManager().TrimOpenConns(ctx)
+	// //  Trim connections
+	// log.Debugf("Trimming open connections to %d", config.P2PConnmgrLowWatermark())
+	// d.h.ConnManager().TrimOpenConns(ctx)
 
 	log.Debugf("Peer discovery timeout: %v", config.P2PDiscoveryTimeout())
 	log.Debugf("Peer discovery context %v", ctx)
@@ -39,9 +39,9 @@ func (d *DHT) DiscoverPeers(ctx context.Context, discoveryOpts ...discovery.Opti
 		return fmt.Errorf("dht:discovery: failed to create routing discovery")
 	}
 
-	discoveryOpts = append(discoveryOpts,
-		discovery.Limit(config.P2PDiscoveryAdvertiseLimit()),
-		discovery.TTL(config.P2PDiscoveryAdvertiseTTL()))
+	// discoveryOpts = append(discoveryOpts,
+	// 	discovery.Limit(config.P2PDiscoveryAdvertiseLimit()),
+	// 	discovery.TTL(config.P2PDiscoveryAdvertiseTTL()))
 
 	dutil.Advertise(ctx, routingDiscovery, ma.RENDEZVOUS, discoveryOpts...)
 	log.Debugf("Advertising rendezvous string: %s", ma.RENDEZVOUS)
@@ -54,8 +54,8 @@ func (d *DHT) DiscoverPeers(ctx context.Context, discoveryOpts ...discovery.Opti
 	sem := make(chan struct{}, config.P2PDiscoveryLimit()) // Semaphore for controlling concurrency
 	var successCount int32
 
-	// Make sure we have set the allowAll flag to it's to it's allowed state
-	d.ConnectionGater.AllowAll = config.P2PDiscoveryAllowAll()
+	// // Make sure we have set the allowAll flag to it's to it's allowed state
+	// d.ConnectionGater.AllowAll = config.P2PDiscoveryAllowAll()
 
 	for p := range peerChan {
 		sem <- struct{}{} // Acquire a token

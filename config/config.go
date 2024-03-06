@@ -28,18 +28,16 @@ const (
 )
 
 var (
-	config            string = ""
 	configHome        string = xdg.ConfigHome + "/" + ma.NAME + "/"
 	dataHome          string = xdg.DataHome + "/" + ma.NAME + "/"
-	defaultConfigFile string = NormalisePath(configHome + defaultNick + ".yaml")
-	profile           string = defaultProfile
+	defaultConfigFile string = NormalisePath(configHome + defaultProfile + ".yaml")
 )
 
 func init() {
 
 	// Allow to set config file via command line flag.
-	pflag.StringVarP(&config, "config", "c", defaultConfigFile, "Config file to use.")
-	pflag.StringVarP(&profile, "profile", "p", defaultProfile, "Config profile (name) to use.")
+	pflag.StringP("config", "c", defaultConfigFile, "Config file to use.")
+	pflag.StringP("profile", "p", defaultProfile, "Config profile (name) to use.")
 
 	pflag.Bool("show-config", false, "Whether to print the config.")
 	pflag.Bool("show-defaults", false, "Whether to print the config.")
@@ -51,6 +49,8 @@ func init() {
 // The name parameter is the name of the config file to search for without the extension.
 func Init(mode string) error {
 
+	//VIPER CONFIGURATION
+
 	// Read the config file and environment variables.
 	viper.SetEnvPrefix(ENV_PREFIX)
 	viper.AutomaticEnv()
@@ -59,7 +59,26 @@ func Init(mode string) error {
 	replacer := strings.NewReplacer(".", "_")
 	viper.SetEnvKeyReplacer(replacer)
 
-	viper.SetDefault("log.file", genDefaultLogfile(profile))
+	// Look in the current directory, the home directory and /etc for the config file.
+	// In that order.
+	viper.SetConfigType("yaml")
+	viper.AddConfigPath(".")
+	viper.AddConfigPath(configHome)
+
+	// We *must* read the config file after we have generated the identity.
+	// Otherwise: Unforeseen consequences.
+	log.Infof("Using config file: %s", configFile()) // This one goes to STDERR
+	viper.SetConfigFile(configFile())
+	err := viper.ReadInConfig()
+	if err != nil {
+		log.Warnf("No config file found: %s", err)
+	}
+
+	// Logging
+	viper.SetDefault("log.file", genDefaultLogFileName(Profile()))
+	InitLogging()
+
+	// FLAGS
 
 	// Handle the easy flags first.
 	if versionFlag() {
@@ -74,20 +93,12 @@ func Init(mode string) error {
 	}
 
 	// Make sure the XDG directories exist before we start writing to them.
-	err := createXDGDirectories()
+	err = createXDGDirectories()
 	if err != nil {
 		panic(err)
 	}
 
-	// Now we need logging to be set up, so we can see what's going on.
-	InitLogging()
-
-	// These values initialised here are required for the generation of the config file.
-	InitP2P()
-
 	if generateFlag() {
-
-		InitLogging()
 
 		// Reinit logging to STDOUT
 		log.SetOutput(os.Stdout)
@@ -110,25 +121,11 @@ func Init(mode string) error {
 		os.Exit(0)
 	}
 
-	// Look in the current directory, the home directory and /etc for the config file.
-	// In that order.
-	viper.SetConfigType("yaml")
-	viper.AddConfigPath(".")
-	viper.AddConfigPath(configHome)
-
-	// We *must* read the config file after we have generated the identity.
-	// Otherwise: Unforeseen consequences.
-	log.Infof("Using config file: %s", configFile())
-	viper.SetConfigFile(configFile())
-	err = viper.ReadInConfig()
-	if err != nil {
-		log.Warnf("No config file found: %s", err)
-	}
-
-	if !RelayMode() {
+	if !RelayMode() { // No need for an actor in relay mode
 		InitActor()
 	}
 
+	// This flag is dependent on the actor or relay mode being initialized to make sense.
 	if showConfigFlag() {
 		Print()
 		os.Exit(0)
@@ -165,20 +162,6 @@ func ConfigHome() string {
 	return configHome
 }
 
-// Return the configName to use. If the mode is not the default, return the mode.
-// If the mode is the default, return the actor nick provided on the command line.
-// This is to avoid confusion for the user, so they don't have to use a nick
-// to know which config file to use.
-func configName() string {
-
-	if Mode() != defaultMode {
-		return Mode()
-	}
-
-	return pflag.CommandLine.Lookup("profile").Value.String()
-
-}
-
 // Returns the configfile name to use.
 // The preferred value is the explcitily requested config file on the command line.
 // Else it uses the nick of the actor or the mode.
@@ -189,6 +172,11 @@ func configFile() string {
 		err      error
 	)
 
+	config, err := pflag.CommandLine.GetString("config")
+	if err != nil {
+		panic(err)
+	}
+
 	// Prefer explcitly requested config. If not, use the name of the actor or mode.
 	if config != defaultConfigFile {
 		filename, err = homedir.Expand(config)
@@ -196,26 +184,10 @@ func configFile() string {
 			panic(err)
 		}
 	} else {
-		filename = configHome + configName() + ".yaml"
+		filename = configHome + Profile() + ".yaml"
 	}
 
 	return filepath.Clean(filename)
-
-}
-
-func createXDGDirectories() error {
-
-	err := os.MkdirAll(configHome, configDirMode)
-	if err != nil {
-		return err
-	}
-
-	err = os.MkdirAll(dataHome, dataHomeMode)
-	if err != nil {
-		return err
-	}
-
-	return nil
 
 }
 

@@ -96,6 +96,6 @@ func LogFile() string {
 	return viper.GetString("log.file")
 }
 
-func genDefaultLogfile(nick string) string {
-	return NormalisePath(dataHome + nick + ".log")
+func genDefaultLogFileName(name string) string {
+	return NormalisePath(dataHome + name + ".log")
 }

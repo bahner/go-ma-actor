@@ -5,7 +5,6 @@ import (
 	"strconv"
 	"time"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
@@ -18,8 +17,8 @@ const (
 	defaultDiscoveryLimit          int           = 10
 	defaultDiscoveryTimeout        time.Duration = time.Second * 30
 	defaultDiscoveryRetryInterval  time.Duration = time.Second * 60
-	defaultDiscoveryAdvertiseTTL   time.Duration = time.Second * 60
-	defaultDiscoveryAdvertiseLimit int           = 10
+	defaultDiscoveryAdvertiseTTL   time.Duration = time.Minute * 60
+	defaultDiscoveryAdvertiseLimit int           = 100
 	defaultDiscoveryAllowAll       bool          = false
 
 	defaultListenPort int    = 0
@@ -73,20 +72,6 @@ func init() {
 	// Identity
 	viper.SetDefault("p2p.identity", fakeP2PIdentity)
 
-}
-
-// P2P Node identity
-func InitP2P() {
-
-	var i string
-
-	if P2PIdentity() == fakeP2PIdentity {
-		i, _ = generateNodeIdentity()
-
-		viper.Set("p2p.identity", i)
-	}
-
-	log.Debugf("P2P identity: %s", i)
 }
 
 // P2P Settings

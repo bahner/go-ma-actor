@@ -59,22 +59,23 @@ func (cg *ConnectionGater) InterceptAccept(conn network.ConnMultiaddrs) (allow b
 // For simplicity, they are set to allow all connections in this example.
 func (cg *ConnectionGater) InterceptSecured(nd network.Direction, p p2peer.ID, _ network.ConnMultiaddrs) (allow bool) {
 
-	if config.P2PDiscoveryAllowAll() {
-		return true
-	}
-
-	if nd == network.DirOutbound {
-		return true
-	}
-
-	allow = cg.IsAllowed(p)
-
-	// if allow {
-	// 	log.Debugf("InterceptSecured: Allow dialing to %s", p)
-	// } else {
-	// 	log.Debugf("InterceptSecured: Block dialing to %s", p)
+	return true
+	// if config.P2PDiscoveryAllowAll() {
+	// 	return true
 	// }
-	return allow
+
+	// if nd == network.DirOutbound {
+	// 	return true
+	// }
+
+	// allow = cg.IsAllowed(p)
+
+	// // if allow {
+	// // 	log.Debugf("InterceptSecured: Allow dialing to %s", p)
+	// // } else {
+	// // 	log.Debugf("InterceptSecured: Block dialing to %s", p)
+	// // }
+	// return allow
 }
 
 func (cg *ConnectionGater) InterceptAddrDial(p p2peer.ID, _ multiaddr.Multiaddr) (allow bool) {

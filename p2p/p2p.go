@@ -13,6 +13,7 @@ import (
 	p2ppubsub "github.com/libp2p/go-libp2p-pubsub"
 	"github.com/libp2p/go-libp2p/core/host"
 	p2peer "github.com/libp2p/go-libp2p/core/peer"
+	log "github.com/sirupsen/logrus"
 )
 
 var _p2p *P2P
@@ -41,6 +42,8 @@ type P2P struct {
 
 func Init(d *dht.DHT, p2pOpts ...libp2p.Option) (*P2P, error) {
 
+	log.Debug("p2p: Initialising p2p")
+
 	var err error
 
 	cm, err := connmgr.Init()
@@ -51,6 +54,9 @@ func Init(d *dht.DHT, p2pOpts ...libp2p.Option) (*P2P, error) {
 
 	cg := connmgr.NewConnectionGater(cm)
 	p2pOpts = append(p2pOpts, libp2p.ConnectionGater(cg))
+
+	log.Debug("p2p: Connection manager initialised as follows:")
+	log.Debug(cm.GetInfo())
 
 	// Create a new libp2p Host that listens on a random TCP port
 	n, err := node.New(config.NodeIdentity(), p2pOpts...)

@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/bahner/go-ma-actor/p2p"
 	"github.com/bahner/go-ma-actor/p2p/peer"
+	p2peer "github.com/libp2p/go-libp2p/core/peer"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -16,6 +16,8 @@ const (
 	peerShowHelp        = "Shows the peer info"
 	peerConnectUsage    = "/peer connect <id|nick>"
 	peerConnectHelp     = "Connects to a peer"
+	peerFindUsage       = "/peer find id"
+	peerFindtHelp       = "Looks up a host in the distributed hash tables\nThis might take a while."
 	peerNickUsage       = "/peer nick list|set|show"
 	peerNickHelp        = "Manages peer nicks"
 	peerNickListUsage   = "/peer nick list"
@@ -41,6 +43,9 @@ func (ui *ChatUI) handlePeerCommand(args []string) {
 			return
 		case "connect":
 			ui.handlePeerConnectCommand(args)
+			return
+		case "find":
+			ui.handlePeerFindCommand(args)
 			return
 		default:
 			ui.displaySystemMessage("Unknown peer command: " + command)
@@ -110,7 +115,11 @@ func (ui *ChatUI) handlePeerNickListCommand(args []string) {
 	log.Debugf("peer list command: %v", args)
 	if len(args) == 3 {
 
-		peers := peer.List()
+		peers, err := peer.List()
+		if err != nil {
+			ui.displaySystemMessage("Error: " + err.Error())
+			return
+		}
 
 		if len(peers) > 0 {
 			for _, v := range peers {
@@ -189,14 +198,41 @@ func (ui *ChatUI) handlePeerConnectCommand(args []string) {
 			ui.displaySystemMessage("Error: " + err.Error())
 			return
 		}
-		_p2p := p2p.Get()
-		err = _p2p.DHT.PeerConnectAndUpdateIfSuccessful(context.Background(), p)
+		p.AddrInfo, err = ui.p.GetPeerAddrInfoFromIDString(id)
+		if err != nil {
+			ui.displaySystemMessage("Error: " + err.Error())
+			return
+		}
+		err = ui.p.DHT.PeerConnectAndUpdateIfSuccessful(context.Background(), p)
 		if err != nil {
 			ui.displaySystemMessage("Error connecting to peer: " + err.Error())
 			return
 		}
 		ui.displaySystemMessage("Connected to " + p.ID)
 	} else {
-		ui.handleHelpPeerShowCommand()
+		ui.handleHelpCommand(peerConnectUsage, peerConnectHelp)
+	}
+}
+
+func (ui *ChatUI) handlePeerFindCommand(args []string) {
+
+	if len(args) == 3 {
+		id, err := p2peer.Decode(args[2])
+		if err != nil {
+			ui.displaySystemMessage("Error: " + err.Error())
+			return
+		}
+
+		ai, err := ui.p.DHT.FindPeer(context.Background(), id)
+		if err != nil {
+			ui.displaySystemMessage("Error: " + err.Error())
+			return
+		}
+		ui.displaySystemMessage("ID: " + ai.ID.String())
+		for _, maddr := range ai.Addrs {
+			ui.displaySystemMessage(maddr.String())
+		}
+	} else {
+		ui.handleHelpCommand(peerConnectUsage, peerConnectHelp)
 	}
 }
