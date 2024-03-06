@@ -61,7 +61,7 @@ func main() {
 	go startWebServer(p2P, a)
 
 	// We have a valid actor, but for it to be useful, we need to discover peers.
-	discoverPeersOrPanic(p2P)
+	// discoverPeersOrPanic(p2P)
 
 	ui := initialiseUiOrPanic(p2P, a)
 
@@ -103,18 +103,18 @@ func setupP2POrPanic() *p2p.P2P {
 	return P2P
 }
 
-func discoverPeersOrPanic(P2P *p2p.P2P) {
-	// PEER DISCOVERY
+// func discoverPeersOrPanic(P2P *p2p.P2P) {
+// 	// PEER DISCOVERY
 
-	// We need to discover peers before we can do anything else.
-	// So this is a blocking call.
-	fmt.Print("Discovering peers...")
-	err := P2P.DiscoverPeers()
-	if err != nil {
-		panic(fmt.Sprintf("failed to initialize p2p: %v", err))
-	}
-	fmt.Println("done.")
-}
+// 	// We need to discover peers before we can do anything else.
+// 	// So this is a blocking call.
+// 	fmt.Print("Discovering peers...")
+// 	err := P2P.DiscoverPeers()
+// 	if err != nil {
+// 		panic(fmt.Sprintf("failed to initialize p2p: %v", err))
+// 	}
+// 	fmt.Println("done.")
+// }
 
 func initialiseActorOrPanic() *actor.Actor {
 	// The actor is needed for initialisation of the WebHandler.

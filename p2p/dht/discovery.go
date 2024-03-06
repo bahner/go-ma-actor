@@ -39,6 +39,10 @@ func (d *DHT) DiscoverPeers(ctx context.Context, discoveryOpts ...discovery.Opti
 		return fmt.Errorf("dht:discovery: failed to create routing discovery")
 	}
 
+	discoveryOpts = append(discoveryOpts,
+		discovery.Limit(config.P2PDiscoveryAdvertiseLimit()),
+		discovery.TTL(config.P2PDiscoveryAdvertiseTTL()))
+
 	dutil.Advertise(ctx, routingDiscovery, ma.RENDEZVOUS, discoveryOpts...)
 	log.Debugf("Advertising rendezvous string: %s", ma.RENDEZVOUS)
 

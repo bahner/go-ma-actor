@@ -11,16 +11,18 @@ import (
 )
 
 const (
-	defaultDiscoveryLimit       int = 10
-	defaultConnmgrLowWatermark  int = 50
-	defaultConnmgrHighWatermark int = 100
-	defaultListenPort           int = 0
+	defaultConnmgrLowWatermark  int           = 50
+	defaultConnmgrHighWatermark int           = 100
+	defaultConnmgrGracePeriod   time.Duration = time.Minute * 1
 
-	defaultDiscoveryTimeout       time.Duration = time.Second * 30
-	defaultConnmgrGracePeriod     time.Duration = time.Minute * 1
-	defaultDiscoveryRetryInterval time.Duration = time.Second * 60
+	defaultDiscoveryLimit          int           = 10
+	defaultDiscoveryTimeout        time.Duration = time.Second * 30
+	defaultDiscoveryRetryInterval  time.Duration = time.Second * 60
+	defaultDiscoveryAdvertiseTTL   time.Duration = time.Second * 60
+	defaultDiscoveryAdvertiseLimit int           = 10
 
-	fakeP2PIdentity string = "NO_DEFAULT_NODE_IDENITY"
+	defaultListenPort int    = 0
+	fakeP2PIdentity   string = "NO_DEFAULT_NODE_IDENITY"
 )
 
 func init() {
@@ -31,8 +33,10 @@ func init() {
 	pflag.Int("p2p-connmgr-low-watermark", defaultConnmgrLowWatermark, "Low watermark for peer discovery.")
 
 	pflag.Int("p2p-discovery-limit", defaultDiscoveryLimit, "Number of concurrent peer discovery routines.")
+	pflag.Int("p2p-discovery-advertise-limit", defaultDiscoveryLimit, "Limit for advertising peer discovery.")
 	pflag.Duration("p2p-discovery-retry", defaultDiscoveryRetryInterval, "Retry interval for peer discovery.")
 	pflag.Duration("p2p-discovery-timeout", defaultDiscoveryTimeout, "Timeout for peer discovery.")
+	pflag.Duration("p2p-discovery-advertise-ttl", defaultDiscoveryTimeout, "Hint o TimeToLive for advertising peer discovery.")
 
 	pflag.Int("p2p-port", defaultListenPort, "Port for libp2p node to listen on.")
 }
@@ -46,6 +50,8 @@ func InitP2P() {
 	viper.BindPFlag("p2p.discovery.limit", pflag.Lookup("p2p-discovery-limit"))
 	viper.BindPFlag("p2p.discovery.retry", pflag.Lookup("p2p-discovery-retryl"))
 	viper.BindPFlag("p2p.discovery.timeout", pflag.Lookup("p2p-discoveryTimeout"))
+	viper.BindPFlag("p2p.discovery.advertise-ttl", pflag.Lookup("p2p-discovery-advertise-ttl"))
+	viper.BindPFlag("p2p.discovery.advertise-limit", pflag.Lookup("p2p-discovery-advertise-limit"))
 
 	viper.BindPFlag("p2p.port", pflag.Lookup("p2p-port"))
 
@@ -93,6 +99,14 @@ func P2PDiscoveryTimeout() time.Duration {
 
 func P2PDiscoveryLimit() int {
 	return viper.GetInt("p2p.discovery.limit")
+}
+
+func P2PDiscoveryAdvertiseTTL() time.Duration {
+	return viper.GetDuration("p2p.discovery.advertise-ttl")
+}
+
+func P2PDiscoveryAdvertiseLimit() int {
+	return viper.GetInt("p2p.discovery.advertise-limit")
 }
 
 func P2PConnmgrLowWatermark() int {

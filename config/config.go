@@ -79,14 +79,14 @@ func Init(mode string) error {
 		os.Exit(0)
 	}
 
-	// Now we need logging to be set up, so we can see what's going on.
-	InitLogging()
-
 	// Make sure the XDG directories exist before we start writing to them.
 	err := createXDGDirectories()
 	if err != nil {
 		panic(err)
 	}
+
+	// Now we need logging to be set up, so we can see what's going on.
+	InitLogging()
 
 	// These values initialised here are required for the generation of the config file.
 	InitP2P()

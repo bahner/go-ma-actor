@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"github.com/bahner/go-ma-actor/config"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 	"github.com/spf13/viper"
@@ -24,7 +25,7 @@ func (ui *ChatUI) pushToHistory(line string) {
 
 func (ui *ChatUI) setupInputField() *tview.InputField {
 	inputField := tview.NewInputField().
-		SetLabel(viper.GetString("actor.nick") + ": ").
+		SetLabel(config.ActorNick() + ": ").
 		SetFieldWidth(0).
 		SetLabelColor(tcell.ColorBlack).
 		SetText("/help")
