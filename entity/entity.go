@@ -34,7 +34,19 @@ type Entity struct {
 }
 
 // Create a new entity from a DID
-func New(d did.DID) (*Entity, error) {
+// In this case the DID is the string, not the struct.
+func New(id string) (*Entity, error) {
+
+	d, err := did.New(id)
+	if err != nil {
+		return nil, fmt.Errorf("entity/getorcreate: %w", err)
+	}
+
+	return NewFromDID(d)
+}
+
+// Create a new entity from a DID
+func NewFromDID(d did.DID) (*Entity, error) {
 
 	// Only 1 topic, but this is where it's at! One topic per entity.
 	_topic, err := pubsub.GetOrCreateTopic(d.Id)
@@ -67,18 +79,6 @@ func New(d did.DID) (*Entity, error) {
 	return e, nil
 }
 
-// Create a new entity from a DID.
-// In this case the DID is the strinf, not the struct.
-func NewFromDID(id string) (*Entity, error) {
-
-	d, err := did.New(id)
-	if err != nil {
-		return nil, fmt.Errorf("entity/getorcreate: %w", err)
-	}
-
-	return New(d)
-}
-
 // Get an entity from the global map.
 func GetOrCreate(id string) (*Entity, error) {
 
@@ -107,7 +107,7 @@ func GetOrCreate(id string) (*Entity, error) {
 // And verify the entity.
 func GetOrCreateFromDID(id did.DID) (*Entity, error) {
 
-	e, err := New(id)
+	e, err := NewFromDID(id)
 	if err != nil {
 		return nil, fmt.Errorf("GetOrCreateFromDID: %w", err)
 	}

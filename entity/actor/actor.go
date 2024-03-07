@@ -36,7 +36,7 @@ func New(d did.DID, k set.Keyset) (*Actor, error) {
 	// ctx, cancel := context.WithCancel(context.Background())
 	// defer cancel()
 
-	e, err := entity.New(d)
+	e, err := entity.NewFromDID(d)
 	if err != nil {
 		return nil, err
 	}

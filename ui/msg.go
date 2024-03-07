@@ -60,6 +60,14 @@ func (ui *ChatUI) handleMsgCommand(input string) {
 			return
 		}
 
+		// Connect to the entity's node, so we establish contact for the future.
+		// A web of nodes, like. A web of trust innit.
+		err = recp.ConnectPeer()
+		if err != nil {
+			ui.displaySystemMessage(fmt.Sprintf("peer connection error: %s", err))
+			ui.displaySystemMessage(fmt.Sprintf("sending message through the clouds %s", recipient))
+		}
+
 		// FIXME: get direct messaging to work.
 		// err = msg.Send(context.Background(), recp.Topic)
 		// Send private message in the entity's context. It's a whisper.
