@@ -34,11 +34,10 @@ default: clean tidy $(NAME)
 
 all: tidy releases $(PLATFORMS)
 
-$(BINDIR): $(ALL)
+$(BINDIR):
 	test -d $(BINDIR)
 
-install: $(BINDIR)
-	sudo install -m755 $(FETCH) $(KEYSET) $(NAME) $(DEBUG) $(DESTDIR)$(BINDIR)
+install: $(BINDIR) $(NAME)
 	sudo install -m755 -T $(NAME) $(DESTDIR)$(BINDIR)/ma
 	
 $(DEBUG): BUILDFLAGS = -tags=debug
@@ -247,8 +246,6 @@ windows-arm64: $(RELEASES)
 	mkdir -p $(BUILDDIR)
 	$(GO) build -o $(BUILDDIR)/$(FILENAME) $(BUILDFLAGS) ./cmd/actor
 	zip -j $(RELEASES)/$(NAME)-$(GOOS)-$(GOARCH).zip $(BUILDDIR)/$(FILENAME)
-
-install: $(BIN)
 
 lint:
 	find -name "*.yaml" -exec yamllint -c .yamllintrc {} \;
