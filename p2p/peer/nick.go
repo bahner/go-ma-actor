@@ -15,7 +15,7 @@ const (
 	_LOOKUP_NICK = "SELECT nick FROM peers WHERE nick = ? OR id = ?"
 	_SELECT_ID   = "SELECT id FROM peers WHERE nick = ?"
 	_SELECT_NICK = "SELECT nick FROM peers WHERE id = ?"
-	_UPSERT_NICK = "INSERT INTO peers (id, nick) VALUES (?, ?) ON CONFLICT(id) DO UPDATE SET nick = EXCLUDED.nick"
+	_UPDATE_NICK = "UPDATE peers SET nick = ? WHERE id = ?"
 )
 
 var (
@@ -51,7 +51,7 @@ func SetNickForID(p Peer) error {
 		}
 	}()
 
-	_, err = tx.Exec(_UPSERT_NICK, p.ID, p.Nick, p.Nick)
+	_, err = tx.Exec(_UPDATE_NICK, p.ID, p.Nick)
 	return err
 }
 

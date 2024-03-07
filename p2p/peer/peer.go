@@ -3,7 +3,6 @@ package peer
 import (
 	"fmt"
 
-	"github.com/bahner/go-ma-actor/config"
 	"github.com/fxamacker/cbor/v2"
 	p2peer "github.com/libp2p/go-libp2p/core/peer"
 )
@@ -20,16 +19,15 @@ type Peer struct {
 }
 
 // Create a new aliased addrinfo peer
-// Always creates an alias of the last 8 characters of the ID initially
-func New(addrInfo *p2peer.AddrInfo) Peer {
+func New(addrInfo *p2peer.AddrInfo, nick string, allowed bool) Peer {
 
 	addrInfo.MarshalJSON()
 	id := addrInfo.ID.String()
 	return Peer{
 		ID:       id,
-		Nick:     createNodeAlias(id),
 		AddrInfo: addrInfo,
-		Allowed:  config.P2PDiscoveryAllowAll(),
+		Nick:     nick,
+		Allowed:  allowed,
 	}
 }
 
@@ -42,7 +40,9 @@ func GetOrCreateFromAddrInfo(addrInfo *p2peer.AddrInfo) (Peer, error) {
 		return p, nil
 	}
 
-	p = New(addrInfo)
+	nodeAlias := createNodeAlias(id)
+
+	p = New(addrInfo, nodeAlias, defaultAllowed)
 	err = Set(p)
 	if err != nil {
 		return Peer{}, err

@@ -10,7 +10,7 @@ import (
 
 const (
 	_SELECT_ALLOWED = "SELECT allowed FROM peers WHERE id = ?"
-	_SET_ALLOWED    = "UPDATE peers SET allowed = ? WHERE id = ?"
+	_UPDATE_ALLOWED = "UPDATE peers SET allowed = ? WHERE id = ?"
 )
 
 const (
@@ -58,7 +58,7 @@ func SetAllowed(id string, allowed bool) error {
 		}
 	}()
 
-	_, err = tx.Exec(_SET_ALLOWED, id, bool2int(allowed))
+	_, err = tx.Exec(_UPDATE_ALLOWED, id, bool2int(allowed))
 	return err
 }
 

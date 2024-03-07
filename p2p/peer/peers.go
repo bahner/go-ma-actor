@@ -10,7 +10,9 @@ import (
 
 const (
 	_DELETE_PEER = "DELETE FROM peers WHERE id = ?"
-	_UPSERT_PEER = "INSERT INTO peers (id, nick, allowed) VALUES (?, ?, ?) ON CONFLICT(id) DO UPDATE SET nick = EXCLUDED.nick, allowed = EXCLUDED.allowed"
+	_INSERT_PEER = "INSERT INTO peers (id, nick, allowed) VALUES (?, ?, ?)"
+	// NB! UPSERT doesn't work properly with TEXT columns in sqlite3 it seems
+	// SO we have to delete and insert instead of update
 )
 
 var peers sync.Map
@@ -53,9 +55,13 @@ func Set(p Peer) error {
 
 	sqlAllowed := bool2int(p.Allowed)
 
-	log.Debugf("Setting peer %s to allowed: %t", p.ID, p.Allowed)
-
-	_, err = tx.Exec(_UPSERT_PEER, p.ID, p.Nick, sqlAllowed)
+	_, err = tx.Exec(_DELETE_PEER, p.ID)
+	if err != nil {
+		log.Debugf("Failed to set peer %s: %s", p.ID, err.Error())
+		tx.Rollback()
+		return err
+	}
+	_, err = tx.Exec(_INSERT_PEER, p.ID, p.Nick, sqlAllowed)
 	if err != nil {
 		log.Debugf("Failed to set peer %s: %s", p.ID, err.Error())
 		tx.Rollback()
