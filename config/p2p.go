@@ -19,7 +19,7 @@ const (
 	defaultDiscoveryRetryInterval  time.Duration = time.Second * 60
 	defaultDiscoveryAdvertiseTTL   time.Duration = time.Minute * 60
 	defaultDiscoveryAdvertiseLimit int           = 100
-	defaultDiscoveryAllowAll       bool          = false
+	defaultDiscoveryAllow          bool          = false
 
 	defaultListenPort int    = 0
 	fakeP2PIdentity   string = "NO_DEFAULT_NODE_IDENITY"
@@ -43,7 +43,7 @@ func init() {
 	viper.SetDefault("p2p.connmgr.low-watermark", defaultConnmgrLowWatermark)
 
 	// DISCOVERY
-	pflag.Bool("p2p-discovery-allow-all", defaultDiscoveryAllowAll, "Number of concurrent peer discovery routines.")
+	pflag.Bool("p2p-discovery-allow", defaultDiscoveryAllow, "Number of concurrent peer discovery routines.")
 	pflag.Duration("p2p-discovery-retry", defaultDiscoveryRetryInterval, "Retry interval for peer discovery.")
 	pflag.Duration("p2p-discovery-timeout", defaultDiscoveryTimeout, "Timeout for peer discovery.")
 	pflag.Duration("p2p-discovery-advertise-ttl", defaultDiscoveryTimeout, "Hint o TimeToLive for advertising peer discovery.")
@@ -55,14 +55,14 @@ func init() {
 	viper.BindPFlag("p2p.discovery.timeout", pflag.Lookup("p2p-discoveryTimeout"))
 	viper.BindPFlag("p2p.discovery.advertise-ttl", pflag.Lookup("p2p-discovery-advertise-ttl"))
 	viper.BindPFlag("p2p.discovery.advertise-limit", pflag.Lookup("p2p-discovery-advertise-limit"))
-	viper.BindPFlag("p2p.discovery.allow-all", pflag.Lookup("p2p-discovery-allow-all"))
+	viper.BindPFlag("p2p.discovery.allow", pflag.Lookup("p2p-discovery-allow"))
 
 	viper.SetDefault("p2p.discovery.limit", defaultDiscoveryLimit)
 	viper.SetDefault("p2p.discovery.retry", defaultDiscoveryRetryInterval)
 	viper.SetDefault("p2p.discovery.timeout", defaultDiscoveryTimeout)
 	viper.SetDefault("p2p.discovery.advertise-ttl", defaultDiscoveryAdvertiseTTL)
 	viper.SetDefault("p2p.discovery.advertise-limit", defaultDiscoveryAdvertiseLimit)
-	viper.SetDefault("p2p.discovery.allow-all", defaultDiscoveryAllowAll)
+	viper.SetDefault("p2p.discovery.allow", defaultDiscoveryAllow)
 
 	// Port
 	pflag.Int("p2p-port", defaultListenPort, "Port for libp2p node to listen on.")
@@ -106,8 +106,8 @@ func P2PDiscoveryAdvertiseLimit() int {
 	return viper.GetInt("p2p.discovery.advertise-limit")
 }
 
-func P2PDiscoveryAllowAll() bool {
-	return viper.GetBool("p2p.discovery.allow-all")
+func P2PDiscoveryAllow() bool {
+	return viper.GetBool("p2p.discovery.allow")
 }
 
 func P2PConnmgrLowWatermark() int {

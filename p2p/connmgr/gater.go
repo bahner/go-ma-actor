@@ -12,8 +12,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const defaultAllowAll = false
-
 // ConnectionGater is a struct that implements the network.ConnectionGater interface.
 // It uses a sync.Map to store valid peer IDs that have been discovered using the correct rendezvous string.
 type ConnectionGater struct {
@@ -24,28 +22,13 @@ type ConnectionGater struct {
 // New creates a new CustomConnectionGater instance.
 func NewConnectionGater(connMgr *p2pConnmgr.BasicConnMgr) *ConnectionGater {
 	return &ConnectionGater{
-		AllowAll: defaultAllowAll,
+		AllowAll: config.P2PDiscoveryAllow(),
 		ConnMgr:  connMgr,
 	}
 }
 
 // InterceptPeerDial checks if we should allow dialing the specified peer.
 func (cg *ConnectionGater) InterceptPeerDial(p p2peer.ID) (allow bool) {
-
-	// // Allow to call all sometimes, allowed hosts and known hosts. This is just dialing.
-	// allow = cg.AllowAll || cg.IsAllowed(p)
-
-	// // If the host is known, but for some reason denied, we should not allow dialing.
-	// if peer.IsKnown(p.String()) && !peer.IsAllowed(p.String()) {
-	// 	allow = false
-	// }
-
-	// if allow {
-	// 	log.Debugf("InterceptPeerDial: Allow dialing to %s", p)
-	// } else {
-	// 	log.Debugf("InterceptPeerDial: Block dialing to %s", p)
-	// }
-	// return allow
 
 	return true
 }
@@ -63,7 +46,7 @@ func (cg *ConnectionGater) InterceptSecured(nd network.Direction, p p2peer.ID, _
 		return true
 	}
 
-	allow = cg.IsAllowed(p)
+	allow = cg.isAllowed(p)
 
 	if allow {
 		log.Debugf("InterceptSecured: Allow dialing to %s", p)
@@ -74,20 +57,6 @@ func (cg *ConnectionGater) InterceptSecured(nd network.Direction, p p2peer.ID, _
 }
 
 func (cg *ConnectionGater) InterceptAddrDial(p p2peer.ID, _ multiaddr.Multiaddr) (allow bool) {
-	// // Allow to call all sometimes, allowed hosts and known hosts. This is just dialing.
-	// allow = cg.AllowAll || cg.IsAllowed(p)
-
-	// // If the host is known, but for some reason denied, we should not allow dialing.
-	// if peer.IsKnown(p.String()) && !peer.IsAllowed(p.String()) {
-	// 	allow = false
-	// }
-
-	// if allow {
-	// 	log.Debugf("InterceptAddrDial: Allow dialing to %s", p)
-	// } else {
-	// 	log.Debugf("InterceptAddrDial: Block dialing to %s", p)
-	// }
-	// return allow
 
 	return true
 }
@@ -96,9 +65,9 @@ func (cg *ConnectionGater) InterceptUpgraded(_ network.Conn) (allow bool, reason
 	return true, 0
 }
 
-func (cg *ConnectionGater) IsAllowed(p p2peer.ID) bool {
+func (cg *ConnectionGater) isAllowed(p p2peer.ID) bool {
 
-	if config.P2PDiscoveryAllowAll() {
+	if config.P2PDiscoveryAllow() {
 		return true
 	}
 

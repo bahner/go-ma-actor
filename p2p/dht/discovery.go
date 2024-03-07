@@ -151,7 +151,7 @@ func (d *DHT) PeerConnectAndUpdateIfSuccessful(ctx context.Context, p peer.Peer)
 
 	if !d.h.ConnManager().IsProtected(id, ma.RENDEZVOUS) {
 		log.Infof("Protecting previously unprotected peer %s", id)
-		d.h.ConnManager().TagPeer(p.AddrInfo.ID, ma.RENDEZVOUS, defaultTagValue)
+		d.h.ConnManager().TagPeer(p.AddrInfo.ID, ma.RENDEZVOUS, peer.DEFAULT_TAG_VALUE)
 		d.h.ConnManager().Protect(p.AddrInfo.ID, ma.RENDEZVOUS)
 
 		// This is a new peer, so we should allow it explicitly.

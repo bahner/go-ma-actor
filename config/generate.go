@@ -142,7 +142,7 @@ func generatePongConfigFile(identity string, node string) {
 		},
 		"mode": map[string]interface{}{
 			"pong": map[string]interface{}{
-				"reply": DefaultPongReply,
+				"reply": DEFAULT_PONG_REPLY,
 			},
 		},
 	}

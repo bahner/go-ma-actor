@@ -1,7 +1,12 @@
 package peer
 
 import (
+	"github.com/bahner/go-ma-actor/config"
 	p2peer "github.com/libp2p/go-libp2p/core/peer"
+)
+
+const (
+	DEFAULT_TAG_VALUE = 100
 )
 
 type Peer struct {
@@ -44,7 +49,7 @@ func GetOrCreateFromAddrInfo(addrInfo *p2peer.AddrInfo) (Peer, error) {
 		nodeAlias = createNodeAlias(id)
 	}
 
-	return New(addrInfo, nodeAlias, defaultAllowed), nil
+	return New(addrInfo, nodeAlias, config.P2PDiscoveryAllow()), nil
 
 }
 

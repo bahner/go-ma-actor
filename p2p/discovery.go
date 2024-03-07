@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/bahner/go-ma"
 	"github.com/bahner/go-ma-actor/config"
 	"github.com/bahner/go-ma-actor/p2p/mdns"
 	log "github.com/sirupsen/logrus"
@@ -30,7 +31,12 @@ func (p *P2P) DiscoverPeers() error {
 
 	// Start MDNS discovery in a new goroutine
 	go func() {
-		mdns.DiscoverPeers(ctx, p.DHT.Host())
+		m, err := mdns.New(p.DHT.Host(), ma.RENDEZVOUS)
+		if err != nil {
+			log.Errorf("Failed to start MDNS discovery: %s", err)
+			return
+		}
+		m.DiscoverPeers(ctx)
 	}()
 
 	// Wait for a discovery process to complete

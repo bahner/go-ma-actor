@@ -2,79 +2,90 @@ package mdns
 
 import (
 	"context"
+	"fmt"
 
-	"github.com/bahner/go-ma"
 	"github.com/libp2p/go-libp2p/core/host"
+	"github.com/libp2p/go-libp2p/core/network"
 	"github.com/libp2p/go-libp2p/core/peer"
-
 	p2pmdns "github.com/libp2p/go-libp2p/p2p/discovery/mdns"
 	log "github.com/sirupsen/logrus"
 )
 
+type MDNS struct {
+	PeerChan   chan peer.AddrInfo
+	h          host.Host
+	rendezvous string
+}
+
+// discoveryNotifee gets notified when a new peer is discovered.
 type discoveryNotifee struct {
 	PeerChan chan peer.AddrInfo
 }
 
-// interface to be called when new  peer is found
+// HandlePeerFound is called when a new peer is discovered.
 func (n *discoveryNotifee) HandlePeerFound(pi peer.AddrInfo) {
 	n.PeerChan <- pi
 }
 
-// Initialize the MDNS service
-func initMDNS(h host.Host, rendezvous string) chan peer.AddrInfo {
-	// register with service so that we get notified about peer discovery
-	n := &discoveryNotifee{}
-	n.PeerChan = make(chan peer.AddrInfo)
-
-	// An hour might be a long long period in practical applications. But this is fine for us
-	ser := p2pmdns.NewMdnsService(h, rendezvous, n)
-	if err := ser.Start(); err != nil {
-		panic(err)
+// New initializes the MDNS discovery service and returns an MDNS instance.
+func New(h host.Host, rendezvous string) (*MDNS, error) {
+	n := &discoveryNotifee{
+		PeerChan: make(chan peer.AddrInfo),
 	}
-	return n.PeerChan
+
+	// Initialize the MDNS service and start it
+	service := p2pmdns.NewMdnsService(h, rendezvous, n)
+	if err := service.Start(); err != nil {
+		return nil, fmt.Errorf("failed to start MDNS service: %w", err)
+	}
+
+	// Since service is not stored, there's no direct reference to it in the MDNS struct
+	return &MDNS{
+		PeerChan:   n.PeerChan,
+		h:          h,
+		rendezvous: rendezvous,
+	}, nil
 }
-func DiscoverPeers(ctx context.Context, h host.Host) error {
-	log.Debugf("Discovering MDNS peers for servicename: %s", ma.RENDEZVOUS)
 
-	peerChan := initMDNS(h, ma.RENDEZVOUS)
-	// Start trimming connections, so we have room for new friends
-	h.ConnManager().TrimOpenConns(context.Background())
+// DiscoverPeers starts the discovery process and connects to discovered peers until the context is cancelled.
+func (m *MDNS) DiscoverPeers(ctx context.Context) error {
+	log.Debugf("Discovering MDNS peers for service name: %s", m.rendezvous)
 
-discoveryLoop:
+	// Start trimming connections to make room for new peers
+	m.h.ConnManager().TrimOpenConns(context.Background())
+
 	for {
 		select {
-		case p, ok := <-peerChan:
+		case p, ok := <-m.PeerChan:
 			if !ok {
 				log.Debug("MDNS peer channel closed.")
-				break discoveryLoop
+				return nil // Exit if the channel is closed
 			}
-			if p.ID == h.ID() {
+			if p.ID == m.h.ID() {
 				continue // Skip self connection
 			}
 
-			log.Infof("Found MDNS peer: %s connecting", p.ID.String())
-			err := h.Connect(ctx, p)
+			if m.h.Network().Connectedness(p.ID) == network.Connected {
+				log.Debugf("Already connected to MDNS peer: %s", p.ID.String())
+				continue // Skip already connected peers
+			}
+
+			log.Infof("Found MDNS peer: %s, connecting", p.ID.String())
+			err := m.h.Connect(ctx, p)
 			if err != nil {
 				log.Debugf("Failed connecting to %s, error: %v", p.ID.String(), err)
 			} else {
 				log.Infof("Connected to MDNS peer: %s", p.ID.String())
-
-				// Add peer to list of known peers
+				// Add peer to list of known peers and protect the connection
 				log.Debugf("Protecting discovered MDNS peer: %s", p.ID.String())
-				h.ConnManager().TagPeer(p.ID, ma.RENDEZVOUS, 10)
-				h.ConnManager().Protect(p.ID, ma.RENDEZVOUS)
-
-				// We only need 1 to get started.
-				break discoveryLoop
-
+				m.h.ConnManager().TagPeer(p.ID, m.rendezvous, 10)
+				m.h.ConnManager().Protect(p.ID, m.rendezvous)
+				// Do not break; continue discovering
 			}
 
 		case <-ctx.Done():
 			log.Info("Context cancelled, stopping MDNS peer discovery.")
-			return nil
+			return nil // Stop the discovery loop if the context is done
 		}
 	}
-
-	log.Info("MDNS peer discovery complete")
-	return nil
 }

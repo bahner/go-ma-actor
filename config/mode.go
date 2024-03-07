@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	DefaultPongReply = "Pong!"
+	DEFAULT_PONG_REPLY = "Pong!"
 
 	defaultPongMode  = false
 	defaultRelayMode = false

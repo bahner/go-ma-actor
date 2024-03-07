@@ -16,8 +16,6 @@ type DHT struct {
 	ConnectionGater *connmgr.ConnectionGater
 }
 
-var defaultTagValue = 100
-
 // Initialise The Kademlia DHT and bootstrap it.
 // The context is used to abort the process, but context.Background() probably works fine.
 // If nil is passed, a background context will be used.
@@ -44,7 +42,7 @@ func New(h host.Host, cg *connmgr.ConnectionGater, dhtOpts ...p2pDHT.Option) (*D
 	d.ConnectionGater.AllowAll = true
 	d.Bootstrap(context.Background())
 	// Reset the connection gater to its original allow state
-	d.ConnectionGater.AllowAll = config.P2PDiscoveryAllowAll()
+	d.ConnectionGater.AllowAll = config.P2PDiscoveryAllow()
 
 	return d, nil
 }
