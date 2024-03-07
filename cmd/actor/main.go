@@ -47,7 +47,6 @@ func main() {
 	if err != nil {
 		panic(fmt.Sprintf("failed to initialize p2p: %v", err))
 	}
-	discoverPeers(p2P)
 
 	// Now that we have a p2p instance and the db make sure our own entry is in the db and updated.
 	p, err := peer.GetOrCreateFromAddrInfo(p2P.AddrInfo)
@@ -92,18 +91,6 @@ func main() {
 	fmt.Println("Starting the actor...")
 	if err := ui.Run(); err != nil {
 		log.Errorf("error running text UI: %s", err)
-	}
-}
-
-func discoverPeers(P2P *p2p.P2P) {
-	// PEER DISCOVERY
-
-	// We need to discover peers before we can do anything else.
-	// So this is a blocking call.
-	fmt.Println("Discovering peers...")
-	err := P2P.DiscoverPeers()
-	if err != nil {
-		log.Warnf("failed to initialize p2p: %v", err)
 	}
 }
 
