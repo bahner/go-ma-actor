@@ -11,11 +11,12 @@ import (
 const (
 	defaultAliasLength = 8
 
-	_LOOKUP_ID   = "SELECT id FROM peers WHERE nick = ? OR id = ?"
-	_LOOKUP_NICK = "SELECT nick FROM peers WHERE nick = ? OR id = ?"
-	_SELECT_ID   = "SELECT id FROM peers WHERE nick = ?"
-	_SELECT_NICK = "SELECT nick FROM peers WHERE id = ?"
-	_UPDATE_NICK = "UPDATE peers SET nick = ? WHERE id = ?"
+	_LOOKUP_ID    = "SELECT id FROM peers WHERE nick = ? OR id = ?"
+	_LOOKUP_NICK  = "SELECT nick FROM peers WHERE nick = ? OR id = ?"
+	_SELECT_ID    = "SELECT id FROM peers WHERE nick = ?"
+	_SELECT_NICK  = "SELECT nick FROM peers WHERE id = ?"
+	_UPDATE_NICK  = "UPDATE peers SET nick = ? WHERE id = ?"
+	_SELECT_NICKS = "SELECT id, nick FROM peers"
 )
 
 var (
@@ -141,4 +142,30 @@ func Lookup(name string) string {
 	}
 
 	return id
+}
+
+func Nicks() map[string]string {
+	db, err := db.Get()
+	if err != nil {
+		return nil
+	}
+
+	rows, err := db.Query(_SELECT_NICKS)
+	if err != nil {
+		return nil
+	}
+	defer rows.Close()
+
+	peers := make(map[string]string)
+	for rows.Next() {
+		var id, nick string
+		err = rows.Scan(&id, &nick)
+		if err != nil {
+			return peers
+		}
+
+		peers[id] = nick
+	}
+
+	return peers
 }

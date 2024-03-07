@@ -1,14 +1,11 @@
 package peer
 
 import (
-	"fmt"
-
-	"github.com/fxamacker/cbor/v2"
 	p2peer "github.com/libp2p/go-libp2p/core/peer"
 )
 
 type Peer struct {
-	// ID is the peer's ID
+	// ID is the string representation of the peer's ID
 	ID string
 	// Name is the peer's name
 	Nick string
@@ -21,10 +18,8 @@ type Peer struct {
 // Create a new aliased addrinfo peer
 func New(addrInfo *p2peer.AddrInfo, nick string, allowed bool) Peer {
 
-	addrInfo.MarshalJSON()
-	id := addrInfo.ID.String()
 	return Peer{
-		ID:       id,
+		ID:       addrInfo.ID.String(),
 		AddrInfo: addrInfo,
 		Nick:     nick,
 		Allowed:  allowed,
@@ -40,15 +35,13 @@ func GetOrCreateFromAddrInfo(addrInfo *p2peer.AddrInfo) (Peer, error) {
 		return p, nil
 	}
 
-	nodeAlias := createNodeAlias(id)
-
-	p = New(addrInfo, nodeAlias, defaultAllowed)
-	err = Set(p)
+	nodeAlias, err := LookupNick(id)
 	if err != nil {
-		return Peer{}, err
+		nodeAlias = createNodeAlias(id)
 	}
 
-	return p, nil
+	return New(addrInfo, nodeAlias, defaultAllowed), nil
+
 }
 
 func createNodeAlias(id string) string {
@@ -59,51 +52,4 @@ func createNodeAlias(id string) string {
 
 	return id[len(id)-defaultAliasLength:]
 
-}
-
-// Marshal returns the CBOR encoding of Peer, converting AddrInfo to JSON first.
-func (p *Peer) MarshalToCBOR() ([]byte, error) {
-	// Marshal AddrInfo to JSON
-	addrInfoJSON, err := p.AddrInfo.MarshalJSON()
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal AddrInfo to JSON: %w", err)
-	}
-
-	// Create a map to represent the Peer struct including AddrInfo as a JSON string
-	data := map[string]interface{}{
-		"ID":       p.ID,
-		"Nick":     p.Nick,
-		"AddrInfo": string(addrInfoJSON), // Store the JSON string
-	}
-
-	// Marshal the map to CBOR
-	return cbor.Marshal(data)
-}
-
-// Unmarshal decodes a CBOR-encoded Peer and assigns the result to the object, converting AddrInfo from JSON.
-// NB! We need to pass a pointer to the Peer object to assign the result to it.
-func UnmarshalFromCBOR(data []byte, p *Peer) error {
-	var intermediateMap map[string]interface{}
-	if err := cbor.Unmarshal(data, &intermediateMap); err != nil {
-		return fmt.Errorf("failed to unmarshal CBOR to map: %w", err)
-	}
-
-	// Extract the AddrInfo JSON string
-	addrInfoJSON, ok := intermediateMap["AddrInfo"].(string)
-	if !ok {
-		return fmt.Errorf("AddrInfo is not a valid JSON string")
-	}
-
-	// Unmarshal the JSON string to an AddrInfo object
-	var addrInfo p2peer.AddrInfo
-	if err := addrInfo.UnmarshalJSON([]byte(addrInfoJSON)); err != nil {
-		return fmt.Errorf("failed to unmarshal JSON to AddrInfo: %w", err)
-	}
-
-	// Assign the values to the Peer struct
-	p.ID = intermediateMap["ID"].(string)
-	p.Nick = intermediateMap["Nick"].(string)
-	p.AddrInfo = &addrInfo
-
-	return nil
 }

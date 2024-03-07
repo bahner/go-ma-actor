@@ -11,24 +11,24 @@ import (
 )
 
 const (
-	peerUsage           = "/peer show|nick"
-	peerHelp            = "Manages peer info"
-	peerShowUsage       = "/peer show <id|nick>"
-	peerShowHelp        = "Shows the peer info"
-	peerConnectUsage    = "/peer connect <id|nick>"
-	peerConnectHelp     = "Connects to a peer"
-	peerFindUsage       = "/peer find id"
-	peerFindtHelp       = "Looks up a host in the distributed hash tables\nThis might take a while."
-	peerNickUsage       = "/peer nick list|set|show"
-	peerNickHelp        = "Manages peer nicks"
-	peerNickListUsage   = "/peer nick list"
-	peerNickListHelp    = "List peer DID and nicks"
-	peerNickSetUsage    = "/peer nick set <id|nick> <nick>"
-	peerNickSetHelp     = "Sets a nick for an peer"
-	peerNickShowUsage   = "/peer nick show <id|nick>"
-	peerNickShowHelp    = "Shows the peer info"
-	peerNickRemoveUsage = "/peer nick remove <id|nick>"
-	peerNickRemoveHelp  = "Removes a nick for an peer"
+	peerUsage         = "/peer show|nick"
+	peerHelp          = "Manages peer info"
+	peerShowUsage     = "/peer show <id|nick>"
+	peerShowHelp      = "Shows the peer info"
+	peerConnectUsage  = "/peer connect <id|nick>"
+	peerConnectHelp   = "Connects to a peer"
+	peerFindUsage     = "/peer find id"
+	peerFindHelp      = "Looks up a host in the distributed hash tables\nThis might take a while."
+	peerDeleteUsage   = "/peer remove <id|nick>"
+	peerDeleteHelp    = "Deletes a peer from the database, but not from the network"
+	peerNickUsage     = "/peer nick list|set|show"
+	peerNickHelp      = "Manages peer nicks"
+	peerNickListUsage = "/peer nick list"
+	peerNickListHelp  = "List peer DID and nicks"
+	peerNickSetUsage  = "/peer nick set <id|nick> <nick>"
+	peerNickSetHelp   = "Sets a nick for an peer"
+	peerNickShowUsage = "/peer nick show <id|nick>"
+	peerNickShowHelp  = "Shows the peer info"
 )
 
 func (ui *ChatUI) handlePeerCommand(args []string) {
@@ -36,17 +36,20 @@ func (ui *ChatUI) handlePeerCommand(args []string) {
 	if len(args) >= 2 {
 		command := args[1]
 		switch command {
+		case "connect":
+			ui.handlePeerConnectCommand(args)
+			return
+		case "delete":
+			ui.handlePeerDeleteCommand(args)
+			return
+		case "find":
+			ui.handlePeerFindCommand(args)
+			return
 		case "nick":
 			ui.handlePeerNickCommand(args)
 			return
 		case "show":
 			ui.handlePeerShowCommand(args)
-			return
-		case "connect":
-			ui.handlePeerConnectCommand(args)
-			return
-		case "find":
-			ui.handlePeerFindCommand(args)
 			return
 		default:
 			ui.displaySystemMessage("Unknown peer command: " + command)
@@ -113,18 +116,14 @@ func (ui *ChatUI) handlePeerNickCommand(args []string) {
 // LIST
 func (ui *ChatUI) handlePeerNickListCommand(args []string) {
 
-	log.Debugf("peer list command: %v", args)
+	log.Debugf("peer nick list command: %v", args)
 	if len(args) == 3 {
 
-		peers, err := peer.List()
-		if err != nil {
-			ui.displaySystemMessage("Error: " + err.Error())
-			return
-		}
+		nicks := peer.Nicks()
 
-		if len(peers) > 0 {
-			for _, v := range peers {
-				ui.displaySystemMessage(v.ID + " : " + v.Nick)
+		if len(nicks) > 0 {
+			for k, v := range nicks {
+				ui.displaySystemMessage(k + " : " + v)
 			}
 		} else {
 			ui.displaySystemMessage("No peers found")
@@ -233,6 +232,26 @@ func (ui *ChatUI) handlePeerFindCommand(args []string) {
 		for _, maddr := range ai.Addrs {
 			ui.displaySystemMessage(maddr.String())
 		}
+	} else {
+		ui.handleHelpCommand(peerConnectUsage, peerConnectHelp)
+	}
+}
+
+func (ui *ChatUI) handlePeerDeleteCommand(args []string) {
+
+	if len(args) == 3 {
+		id, err := peer.LookupID(args[2])
+		if err != nil {
+			ui.displaySystemMessage("Error: " + err.Error())
+			return
+		}
+		err = peer.Delete(id)
+		if err != nil {
+			ui.displaySystemMessage("Error: " + err.Error())
+			return
+		}
+
+		ui.displaySystemMessage("Peer " + id + " deleted")
 	} else {
 		ui.handleHelpCommand(peerConnectUsage, peerConnectHelp)
 	}

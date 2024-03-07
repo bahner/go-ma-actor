@@ -107,8 +107,11 @@ func (d *DHT) handleDiscoveredPeer(ctx context.Context, pai p2peer.AddrInfo) err
 
 	if len(pai.Addrs) > 0 {
 		log.Debugf("Peer %s discovered with addresses, attempting to connect", id)
-		p := peer.New(&pai)
-		err := d.PeerConnectAndUpdateIfSuccessful(ctx, p)
+		p, err := peer.GetOrCreateFromAddrInfo(&pai)
+		if err != nil {
+			return err
+		}
+		err = d.PeerConnectAndUpdateIfSuccessful(ctx, p)
 		if err == nil {
 			log.Infof("Successfully discovered peer %s", id)
 			return nil
@@ -118,26 +121,13 @@ func (d *DHT) handleDiscoveredPeer(ctx context.Context, pai p2peer.AddrInfo) err
 	log.Debugf("Discovered peer %s has no addresses.", id)
 	// Avoid creating any new peer objects until we have Addrs
 	// Fetch it from the backend, if it exists.
-	p, err := peer.Get(id)
+	p, err := peer.GetOrCreateFromAddrInfo(&pai)
 	if err == nil && len(p.AddrInfo.Addrs) > 0 {
 		err = d.PeerConnectAndUpdateIfSuccessful(ctx, p)
 		if err == nil {
 			log.Infof("Successfully discovered peer %s", id)
 			return nil
 		}
-	}
-
-	// When all else fails attempt to fetch the Addrs from the DHT
-	log.Debugf("Failed to connect to peer %s, fetching addresses from DHT", id)
-	a, err := d.FindPeer(ctx, pai.ID)
-	if err != nil {
-		log.Debugf("Failed to find peer %s: %v", id, err)
-		return err
-	}
-
-	err = d.PeerConnectAndUpdateIfSuccessful(ctx, peer.New(&a))
-	if err != nil {
-		log.Debugf("Failed to connect to peer %s: %v", id, err)
 	}
 
 	return err

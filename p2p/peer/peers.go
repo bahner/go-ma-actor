@@ -102,8 +102,10 @@ func Delete(id string) error {
 	return nil
 }
 
-// List returns a slice of all peers in the map.
-func List() ([]Peer, error) {
+// CachedPeers returns a slice of all peers in the the DB.
+// NB! This is not the database and should be used to check nick and allowed status.
+// It's just a cache.
+func CachedPeers() ([]Peer, error) {
 	var pList []Peer
 	peers.Range(func(_, value interface{}) bool {
 		p, ok := value.(Peer)

@@ -95,8 +95,6 @@ func setupP2POrPanic() *p2p.P2P {
 	if err != nil {
 		panic(fmt.Sprintf("failed to get or create peer: %v", err))
 	}
-	p.AddrInfo = P2P.AddrInfo
-	p.Nick = config.ActorNick() + "'s"
 	peer.Set(p)
 	fmt.Println("done.")
 
