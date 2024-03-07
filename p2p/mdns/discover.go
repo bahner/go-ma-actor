@@ -2,9 +2,12 @@ package mdns
 
 import (
 	"context"
+	"errors"
 
 	log "github.com/sirupsen/logrus"
 )
+
+var ErrNoProtectedPeersFound = errors.New("protected peers not found")
 
 // DiscoverPeers starts the discovery process and connects to discovered peers until the context is cancelled.
 func (m *MDNS) DiscoverPeers(ctx context.Context) error {
