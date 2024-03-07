@@ -1,7 +1,7 @@
 package ui
 
 const (
-	meUsage = "/me who|where"
+	meUsage = "/me nick|who|where"
 	meHelp  = "Shows your own DID or the last known location of your DID"
 )
 
@@ -17,10 +17,13 @@ func (ui *ChatUI) handleMeCommands(args []string) {
 
 		switch args[1] {
 		case "who":
-			ui.handleWhoAmICommand(args)
+			ui.handleMeWhoCommand(args)
 			return
 		case "where":
-			ui.handleWhereAmICommand(args)
+			ui.handleMeWhereCommand(args)
+			return
+		case "nick":
+			ui.handleMeNickCommand(args)
 			return
 		default:
 			ui.displaySystemMessage("Unknown /me command: " + args[1])
@@ -30,10 +33,10 @@ func (ui *ChatUI) handleMeCommands(args []string) {
 }
 
 // handleAliasCommand handles the /alias command
-// handleWhoAmICommand displays the ID of the current user.
+// handleMeWhoCommand displays the ID of the current user.
 // If the number of arguments is 2, it displays the user's ID.
 // Otherwise, it delegates the handling to the handleHelpMeCommands function.
-func (ui *ChatUI) handleWhoAmICommand(args []string) {
+func (ui *ChatUI) handleMeWhoCommand(args []string) {
 
 	if len(args) == 2 {
 		ui.displaySystemMessage(ui.a.Entity.DID.Id)
@@ -42,10 +45,19 @@ func (ui *ChatUI) handleWhoAmICommand(args []string) {
 	}
 
 }
-func (ui *ChatUI) handleWhereAmICommand(args []string) {
+func (ui *ChatUI) handleMeWhereCommand(args []string) {
 
 	if len(args) == 2 {
 		ui.displaySystemMessage(ui.e.DID.Id)
+	} else {
+		ui.handleHelpCommand(meUsage, meHelp)
+	}
+
+}
+func (ui *ChatUI) handleMeNickCommand(args []string) {
+
+	if len(args) == 2 {
+		ui.displaySystemMessage(ui.e.Nick)
 	} else {
 		ui.handleHelpCommand(meUsage, meHelp)
 	}
