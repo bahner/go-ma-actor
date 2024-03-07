@@ -7,6 +7,7 @@ import (
 
 	"github.com/bahner/go-ma"
 	"github.com/bahner/go-ma-actor/config"
+	"github.com/bahner/go-ma-actor/p2p/dht"
 	"github.com/bahner/go-ma-actor/p2p/mdns"
 	log "github.com/sirupsen/logrus"
 )
@@ -27,6 +28,10 @@ func (p *P2P) DiscoverPeers() error {
 	// Start MDNS discovery in a new goroutine
 	go func() {
 		m, err := mdns.New(p.DHT.Host(), ma.RENDEZVOUS)
+		if err == mdns.ErrNoProtectedPeersFound {
+			log.Warnf("No protected peers found")
+			return
+		}
 		if err != nil {
 			log.Errorf("Failed to start MDNS discovery: %s", err)
 			return
@@ -36,8 +41,11 @@ func (p *P2P) DiscoverPeers() error {
 
 	// Wait for a discovery process to complete
 	err := p.DHT.DiscoverPeers(ctx)
+	if err != dht.ErrNoProtectedPeersFound {
+		return fmt.Errorf("no new peers found %w", err)
+	}
 	if err != nil {
-		return fmt.Errorf("failed to initialise DHT. Peer discovery unsuccessful: %w", err)
+		return fmt.Errorf("peer discovery unsuccessful: %w", err)
 	}
 
 	return nil

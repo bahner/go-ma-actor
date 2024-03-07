@@ -34,6 +34,8 @@ default: clean tidy $(NAME)
 
 all: tidy releases $(PLATFORMS)
 
+local: clean tidy install
+
 $(BINDIR):
 	test -d $(BINDIR)
 

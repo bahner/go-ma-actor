@@ -160,9 +160,10 @@ func (ui *ChatUI) handleEntityConnectCommand(args []string) {
 			ui.displaySystemMessage("Error: " + err.Error())
 			return
 		}
+		log.Debugf("Connecting to peer for entity: %v", e.DID.Id)
 		pai, err := e.ConnectPeer()
 		if err != nil {
-			ui.displaySystemMessage("Error connecting to enityty peer: " + err.Error())
+			ui.displaySystemMessage("Error connecting to entity peer: " + err.Error())
 			return
 		}
 		ui.displaySystemMessage("Connected to " + e.DID.Id + ": " + pai.ID.String())

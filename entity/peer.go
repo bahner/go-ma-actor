@@ -5,6 +5,7 @@ import (
 	"github.com/bahner/go-ma-actor/p2p/peer"
 	"github.com/libp2p/go-libp2p/core/network"
 	p2peer "github.com/libp2p/go-libp2p/core/peer"
+	log "github.com/sirupsen/logrus"
 )
 
 // This function connects to a peer using the DHT.
@@ -16,21 +17,22 @@ func (e *Entity) ConnectPeer() (pi p2peer.AddrInfo, err error) {
 
 	pid, err := e.DID.PeerID()
 	if err != nil {
+		log.Debugf("Failed to get peer ID: %v", err)
 		return p2peer.AddrInfo{}, err
 	}
 
 	// If we're already connected, return
 	if p.DHT.Host().Network().Connectedness(pid) == network.Connected {
-		return p2peer.AddrInfo{}, peer.ErrAlreadyConnected
+		log.Debugf("Already connected to peer: %s", pid.String())
+		return pi, peer.ErrAlreadyConnected
 	}
 
 	// Look for the peer in the DHT
-	pi, err = p.DHT.FindPeer(e.Ctx, pid)
-	if err != nil {
-		return pi, err
-	}
+	pai := p.DHT.Host().Peerstore().PeerInfo(pid)
+	log.Debugf("PeerInfo: %v", pai.Addrs)
 
 	// Connect to the peer
+	log.Debugf("Connecting to peer with addrs: %v", pi.Addrs)
 	err = p.DHT.Host().Connect(e.Ctx, pi)
 
 	return pi, err

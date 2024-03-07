@@ -1,7 +1,6 @@
 package connmgr
 
 import (
-	"github.com/bahner/go-ma"
 	"github.com/bahner/go-ma-actor/config"
 	"github.com/bahner/go-ma-actor/p2p/peer"
 	"github.com/libp2p/go-libp2p/core/control"
@@ -67,16 +66,9 @@ func (cg *ConnectionGater) InterceptUpgraded(_ network.Conn) (allow bool, reason
 
 func (cg *ConnectionGater) isAllowed(p p2peer.ID) bool {
 
-	if config.P2PDiscoveryAllow() {
+	if config.P2PDiscoveryAllow() || cg.AllowAll {
 		return true
 	}
 
-	// NB! Check peer.IsAllowed first. Because it might be explicitly denied and we want to adhere to that.
-	// So if it's explicitly denied, we don't need to check the other conditions.
-	if !peer.IsAllowed(p.String()) {
-		log.Warnf("Peer %s is explicitly denied", p)
-		return false
-	}
-
-	return cg.AllowAll || cg.ConnMgr.IsProtected(p, ma.RENDEZVOUS)
+	return peer.IsAllowed(p.String())
 }
