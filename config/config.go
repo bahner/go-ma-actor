@@ -150,7 +150,7 @@ func Print() (int, error) {
 
 func Save() error {
 
-	return viper.SafeWriteConfig()
+	return viper.WriteConfig()
 
 }
 

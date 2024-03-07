@@ -55,7 +55,9 @@ type ChatUI struct {
 	p *p2p.P2P
 
 	// The actor is need to encrypt and sign messages in the event loop.
-	a *actor.Actor
+	a                  *actor.Actor
+	currentActorCtx    context.Context
+	currentActorCancel context.CancelFunc
 
 	// The current entity is the "room" we are convering with.
 	e *entity.Entity

@@ -14,12 +14,10 @@ import (
 )
 
 const (
-	setBroadcastUsage = "/set broadcast on|off"
-	setBroadcastHelp  = "Toggles broadcast messages on and off"
-	broadcastUsage    = "/broadcast message"
-	broadcastHelp     = "Broadcasts a message to all peers"
-	broadcastOnText   = "Broadcast channel is on"
-	broadcastOffText  = "Broadcast channel is off"
+	broadcastUsage   = "/broadcast message"
+	broadcastHelp    = "Broadcasts a message to all peers"
+	broadcastOnText  = "Broadcast channel is on"
+	broadcastOffText = "Broadcast channel is off"
 )
 
 func (ui *ChatUI) handleBroadcastCommand(args []string) {
@@ -152,30 +150,4 @@ func (ui *ChatUI) subscribeBroadcasts() {
 			}
 		}
 	}
-}
-
-func (ui *ChatUI) handleSetBroadcastCommand(args []string) {
-
-	if len(args) == 3 {
-
-		toggle := args[2]
-
-		switch toggle {
-		case "on":
-			go ui.subscribeBroadcasts()
-			ui.displaySystemMessage(broadcastOnText)
-			return
-		case "off":
-			if ui.broadcastCancel != nil {
-				ui.broadcastCancel()
-				ui.displaySystemMessage(broadcastOffText)
-				return
-			}
-		default:
-			ui.displayHelpUsage(setBroadcastUsage)
-			return
-		}
-	}
-
-	ui.handleHelpCommand(setBroadcastUsage, setBroadcastHelp)
 }

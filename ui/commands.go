@@ -33,10 +33,12 @@ func (ui *ChatUI) handleCommands(input string) {
 		go ui.handleResolveCommand(args) // This make take some time. No need to block the UI
 	case "/peer":
 		ui.handlePeerCommand(args)
+	case "/p2p":
+		ui.handleP2PCommand(args)
+	case "/reset":
+		ui.handleResetCommand(args)
 	case "/refresh":
-		ui.refreshPeers()
-		ui.msgBox.Clear()
-		ui.app.Draw()
+		ui.handleRefreshCommand(args)
 	case "/save":
 		ui.handleSaveCommand(args)
 	case "/set":

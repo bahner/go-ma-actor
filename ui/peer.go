@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	peerUsage         = "/peer show|nick"
+	peerUsage         = "/peer connect|find|nick|remove|show"
 	peerHelp          = "Manages peer info"
 	peerShowUsage     = "/peer show <id|nick>"
 	peerShowHelp      = "Shows the peer info"
@@ -76,19 +76,8 @@ func (ui *ChatUI) handlePeerShowCommand(args []string) {
 			ui.displaySystemMessage(maddr.String())
 		}
 	} else {
-		ui.handleHelpPeerShowCommand()
+		ui.handleHelpCommand(peerShowUsage, peerShowHelp)
 	}
-}
-
-func (ui *ChatUI) handleHelpPeerShowCommand() {
-	ui.displayHelpUsage(peerShowUsage)
-	ui.displayHelpText(peerShowHelp)
-}
-
-// NICK
-func (ui *ChatUI) handleHelpPeerNickCommand() {
-	ui.displayHelpUsage(peerNickUsage)
-	ui.displayHelpText(peerNickHelp)
 }
 
 func (ui *ChatUI) handlePeerNickCommand(args []string) {
@@ -110,7 +99,7 @@ func (ui *ChatUI) handlePeerNickCommand(args []string) {
 		}
 	}
 
-	ui.handleHelpPeerNickCommand()
+	ui.handleHelpCommand(peerNickUsage, peerNickHelp)
 }
 
 // LIST
@@ -129,13 +118,8 @@ func (ui *ChatUI) handlePeerNickListCommand(args []string) {
 			ui.displaySystemMessage("No peers found")
 		}
 	} else {
-		ui.handleHelpPeerNickListCommand()
+		ui.handleHelpCommand(peerNickListUsage, peerNickListHelp)
 	}
-}
-
-func (ui *ChatUI) handleHelpPeerNickListCommand() {
-	ui.displayHelpUsage(peerNickListUsage)
-	ui.displayHelpText(peerNickListHelp)
 }
 
 // SET
@@ -157,14 +141,9 @@ func (ui ChatUI) handlePeerNickSetCommand(args []string) {
 		}
 		ui.displaySystemMessage(p.ID + " is now known as " + p.Nick)
 	} else {
-		ui.handleHelpPeerNickSetCommand()
+		ui.handleHelpCommand(peerNickSetUsage, peerNickSetHelp)
 		return
 	}
-}
-
-func (ui *ChatUI) handleHelpPeerNickSetCommand() {
-	ui.displaySystemMessage("Usage: /peer nick set <id|nick> <nick>")
-	ui.displaySystemMessage("       Sets a nick for an peer")
 }
 
 // SHOW
@@ -180,13 +159,8 @@ func (ui *ChatUI) handlePeerNickShowCommand(args []string) {
 		peerInfo := fmt.Sprintf(p.ID + " is also known as " + p.Nick)
 		ui.displaySystemMessage(peerInfo)
 	} else {
-		ui.handleHelpPeerNickShowCommand()
+		ui.handleHelpCommand(peerNickShowUsage, peerNickShowHelp)
 	}
-}
-
-func (ui *ChatUI) handleHelpPeerNickShowCommand() {
-	ui.displaySystemMessage("Usage: /peer nick show <id|nick>")
-	ui.displaySystemMessage("       Shows the peer info")
 }
 
 func (ui *ChatUI) handlePeerConnectCommand(args []string) {
@@ -233,7 +207,7 @@ func (ui *ChatUI) handlePeerFindCommand(args []string) {
 			ui.displaySystemMessage(maddr.String())
 		}
 	} else {
-		ui.handleHelpCommand(peerConnectUsage, peerConnectHelp)
+		ui.handleHelpCommand(peerFindUsage, peerFindHelp)
 	}
 }
 
@@ -253,6 +227,6 @@ func (ui *ChatUI) handlePeerDeleteCommand(args []string) {
 
 		ui.displaySystemMessage("Peer " + id + " deleted")
 	} else {
-		ui.handleHelpCommand(peerConnectUsage, peerConnectHelp)
+		ui.handleHelpCommand(peerDeleteUsage, peerDeleteHelp)
 	}
 }

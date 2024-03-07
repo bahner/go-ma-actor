@@ -6,16 +6,9 @@ import (
 	"time"
 
 	"github.com/bahner/go-ma"
+	"github.com/bahner/go-ma-actor/config"
 	log "github.com/sirupsen/logrus"
 )
-
-// // displaySelfMessage writes a message from ourself to the message window,
-// // with our nick highlighted in yellow.
-//
-//	func (ui *ChatUI) displaySelfMessage(msg string) {
-//		prompt := withColor("yellow", fmt.Sprintf("<%s>:", ui.e.Nick))
-//		fmt.Fprintf(ui.msgW, "%s %s\n", prompt, msg)
-//	}
 
 // withColor wraps a string with color tags for display in the messages text box.
 func withColor(color, msg string) string {
@@ -32,7 +25,7 @@ func (ui *ChatUI) displaySystemMessage(msg string) {
 // refreshes the list of peers in the UI.
 
 func (ui *ChatUI) handleEvents() {
-	peerRefreshTicker := time.NewTicker(getUIPeersRefreshInterval())
+	peerRefreshTicker := time.NewTicker(config.UIPeersRefreshInterval())
 	defer peerRefreshTicker.Stop()
 
 	for {

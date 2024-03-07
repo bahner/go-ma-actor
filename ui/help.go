@@ -38,12 +38,13 @@ func (ui *ChatUI) handleHelpCommands(args []string) {
 		ui.displaySystemMessage("")
 		ui.displaySystemMessage("Available commands:")
 		ui.displaySystemMessage("/help broadcast")
-		ui.displaySystemMessage("/help discover")
 		ui.displaySystemMessage("/help enter")
 		ui.displaySystemMessage("/help entity")
 		ui.displaySystemMessage("/help me # Pun intended")
 		ui.displaySystemMessage("/help peer")
+		ui.displaySystemMessage("/help p2p")
 		ui.displaySystemMessage("/help quit")
+		ui.displaySystemMessage("/help reset")
 		ui.displaySystemMessage("/help refresh")
 		ui.displaySystemMessage("/help resolve")
 		ui.displaySystemMessage("/help save")
@@ -57,7 +58,7 @@ func (ui *ChatUI) handleHelpCommands(args []string) {
 		case "broadcast":
 			ui.handleHelpCommand(broadcastUsage, broadcastHelp)
 		case "discover":
-			ui.handleHelpCommand(discoverUsage, discoverHelp)
+			ui.handleHelpCommand(p2pDiscoverUsage, p2pDiscoverHelp)
 		case "enter":
 			ui.handleHelpCommand(enterUsage, enterHelp)
 		case "entity":

@@ -2,12 +2,17 @@ package actor
 
 import (
 	"context"
+	"time"
 
 	"github.com/bahner/go-ma/msg"
 	p2ppubsub "github.com/libp2p/go-libp2p-pubsub"
 )
 
+const broadcastWait = 3 * time.Second
+
 func HelloWorld(ctx context.Context, a *Actor, b *p2ppubsub.Topic) {
+
+	time.Sleep(broadcastWait) // Wait for the network to be ready. This is why we run in a goroutine.
 
 	if a == nil {
 		return

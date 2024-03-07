@@ -9,6 +9,7 @@ import (
 	"github.com/bahner/go-ma-actor/config"
 	"github.com/bahner/go-ma-actor/p2p/peer"
 	"github.com/libp2p/go-libp2p/core/discovery"
+	"github.com/libp2p/go-libp2p/core/network"
 	p2peer "github.com/libp2p/go-libp2p/core/peer"
 	drouting "github.com/libp2p/go-libp2p/p2p/discovery/routing"
 	dutil "github.com/libp2p/go-libp2p/p2p/discovery/util"
@@ -94,43 +95,38 @@ func (d *DHT) handleDiscoveredPeer(ctx context.Context, pai p2peer.AddrInfo) err
 
 	id := pai.ID.String()
 
+	// If peer is explicitly denied, close any connections
 	if !peer.IsAllowed(id) {
 		// For this to happen the peer must be known AND have been disallowed
 		// Or it is unknown and allowAll is false
 		log.Warnf("Discovered peer %s has been denied access.", id)
+		log.Warnf("Closing connections to peer %s", id)
+		d.h.Network().ClosePeer(pai.ID)
 		return nil
 	}
 
-	// Algo. If we get Addrs from the discover process, we use them and try to connect.
-	// If the connection succeeds, we protect the peer and write the Addrs back to the peerstore.
-	// If the connection fails, we try to fetch the Addrs from the peerstore and connect with them.
+	// If the peer is already connected, skip
+	if d.h.Network().Connectedness(pai.ID) == network.Connected {
+		log.Debugf("Peer %s is already connected", id)
+		return nil
+	}
+
+	p, err := peer.GetOrCreateFromAddrInfo(&pai)
+	if err != nil {
+		return err
+	}
 
 	if len(pai.Addrs) > 0 {
 		log.Debugf("Peer %s discovered with addresses, attempting to connect", id)
-		p, err := peer.GetOrCreateFromAddrInfo(&pai)
+		err = d.PeerConnectAndUpdateIfSuccessful(ctx, p)
 		if err != nil {
+			log.Debugf("Failed to connect to newly discovered peer %s: %v", id, err)
 			return err
 		}
-		err = d.PeerConnectAndUpdateIfSuccessful(ctx, p)
-		if err == nil {
-			log.Infof("Successfully discovered peer %s", id)
-			return nil
-		}
 	}
 
-	log.Debugf("Discovered peer %s has no addresses.", id)
-	// Avoid creating any new peer objects until we have Addrs
-	// Fetch it from the backend, if it exists.
-	p, err := peer.GetOrCreateFromAddrInfo(&pai)
-	if err == nil && len(p.AddrInfo.Addrs) > 0 {
-		err = d.PeerConnectAndUpdateIfSuccessful(ctx, p)
-		if err == nil {
-			log.Infof("Successfully discovered peer %s", id)
-			return nil
-		}
-	}
-
-	return err
+	log.Infof("Successfully discovered peer %s", id)
+	return nil
 }
 
 func (d *DHT) PeerConnectAndUpdateIfSuccessful(ctx context.Context, p peer.Peer) error {

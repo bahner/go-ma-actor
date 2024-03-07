@@ -14,7 +14,7 @@ const (
 )
 
 const (
-	defaultAllowed = true
+	defaultAllowed = true // We need this to be able to discover newly added peers.
 )
 
 // GetAllowedForID returns whether a peer is allowed to be discovered.

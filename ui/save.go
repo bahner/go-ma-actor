@@ -18,6 +18,7 @@ func (ui *ChatUI) handleSaveCommand(args []string) {
 			return
 		}
 		ui.displaySystemMessage("Configuration saved")
+		return
 	}
 
 	ui.handleHelpCommand(saveUsage, saveHelp)

@@ -59,23 +59,18 @@ func (cg *ConnectionGater) InterceptAccept(conn network.ConnMultiaddrs) (allow b
 // For simplicity, they are set to allow all connections in this example.
 func (cg *ConnectionGater) InterceptSecured(nd network.Direction, p p2peer.ID, _ network.ConnMultiaddrs) (allow bool) {
 
-	return true
-	// if config.P2PDiscoveryAllowAll() {
-	// 	return true
-	// }
+	if nd == network.DirOutbound {
+		return true
+	}
 
-	// if nd == network.DirOutbound {
-	// 	return true
-	// }
+	allow = cg.IsAllowed(p)
 
-	// allow = cg.IsAllowed(p)
-
-	// // if allow {
-	// // 	log.Debugf("InterceptSecured: Allow dialing to %s", p)
-	// // } else {
-	// // 	log.Debugf("InterceptSecured: Block dialing to %s", p)
-	// // }
-	// return allow
+	if allow {
+		log.Debugf("InterceptSecured: Allow dialing to %s", p)
+	} else {
+		log.Debugf("InterceptSecured: Block dialing to %s", p)
+	}
+	return allow
 }
 
 func (cg *ConnectionGater) InterceptAddrDial(p p2peer.ID, _ multiaddr.Multiaddr) (allow bool) {
@@ -106,6 +101,7 @@ func (cg *ConnectionGater) IsAllowed(p p2peer.ID) bool {
 	if config.P2PDiscoveryAllowAll() {
 		return true
 	}
+
 	// NB! Check peer.IsAllowed first. Because it might be explicitly denied and we want to adhere to that.
 	// So if it's explicitly denied, we don't need to check the other conditions.
 	if !peer.IsAllowed(p.String()) {
