@@ -35,12 +35,11 @@ func main() {
 	fmt.Printf("Starting in %s mode.\n", mode)
 
 	// DB
-	fmt.Print("Initialising DB ...")
+	fmt.Println("Initialising DB ...")
 	_, err = db.Init()
 	if err != nil {
 		panic(fmt.Sprintf("failed to initialize db: %v", err))
 	}
-	fmt.Println("done.")
 
 	// P2P
 	p2P, err := initP2P()
@@ -55,7 +54,6 @@ func main() {
 		panic(fmt.Sprintf("failed to get or create peer: %v", err))
 	}
 	peer.Set(p)
-	fmt.Println("done.")
 
 	// P2P Relay mode
 	if config.RelayMode() {
@@ -88,31 +86,28 @@ func discoverPeers(P2P *p2p.P2P) {
 
 	// We need to discover peers before we can do anything else.
 	// So this is a blocking call.
-	fmt.Print("Discovering peers...")
+	fmt.Println("Discovering peers...")
 	err := P2P.DiscoverPeers()
 	if err != nil {
 		log.Warnf("failed to initialize p2p: %v", err)
 	}
-	fmt.Println("done.")
 }
 
 func initActorOrPanic() *actor.Actor {
 	// The actor is needed for initialisation of the WebHandler.
-	fmt.Print("Creating actor from keyset...")
+	fmt.Println("Creating actor from keyset...")
 	a, err := actor.NewFromKeyset(config.ActorKeyset())
 	if err != nil {
 		log.Debugf("error creating actor: %s", err)
 	}
-	fmt.Println("done.")
 
 	id := a.Entity.DID.Id
 
-	fmt.Print("Creating and setting DID Document for actor...")
+	fmt.Println("Creating and setting DID Document for actor...")
 	err = a.CreateAndSetDocument(id)
 	if err != nil {
 		panic(fmt.Sprintf("error creating document: %s", err))
 	}
-	fmt.Println("done.")
 
 	// Better safe than sorry.
 	// Without a valid actor, we can't do anything.
@@ -129,11 +124,10 @@ func initActorOrPanic() *actor.Actor {
 }
 
 func initUiOrPanic(p2P *p2p.P2P, a *actor.Actor) *ui.ChatUI {
-	fmt.Print("Creating text UI...")
+	fmt.Println("Creating text UI...")
 	ui, err := ui.NewChatUI(p2P, a)
 	if err != nil {
 		panic(fmt.Sprintf("error creating text UI: %s", err))
 	}
-	fmt.Println("done.")
 	return ui
 }

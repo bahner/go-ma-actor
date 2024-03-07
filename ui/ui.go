@@ -112,9 +112,8 @@ func NewChatUI(p *p2p.P2P, a *actor.Actor) (*ChatUI, error) {
 
 	// Start the broadcast subscription first, so
 	// actors can announce themselves.
-	fmt.Print("Initialising broadcasts...")
+	fmt.Println("Initialising broadcasts...")
 	ui.initBroadcast()
-	fmt.Println("done.")
 
 	// Since tview is global we can just run this which sets the style for the whole app.
 	ui.setupApp()
@@ -142,30 +141,26 @@ func (ui *ChatUI) Run() error {
 	defer ui.end()
 
 	// Now we can start continuous discovery in the background.
-	fmt.Print("Starting discovery loop...")
+	fmt.Println("Starting discovery loop...")
 	ui.discoveryLoopCtx, ui.discoveryLoopCancel = context.WithCancel(context.Background())
 	go ui.p.DiscoveryLoop(context.Background())
-	fmt.Println("done.")
 
 	// The actor should just run in the background for ever.
 	// It will handle incoming messages and envelopes.
 	// It shouldn't change - ever.
 	fmt.Println("Starting actor...")
 	ui.startActor()
-	fmt.Println("Actor started.")
 
 	// We must wait for this to finish.
-	fmt.Printf("Entering %s ...", config.ActorLocation())
+	fmt.Printf("Entering %s ...\n", config.ActorLocation())
 	err := ui.enterEntity(config.ActorLocation(), true)
 	if err != nil {
 		ui.displayStatusMessage(err.Error())
 	}
-	fmt.Println("done.")
 	fmt.Printf("Entered %s\n", config.ActorLocation())
 
-	fmt.Print("Starting event loop...")
+	fmt.Println("Starting event loop...")
 	go ui.handleEvents()
-	fmt.Println("done.")
 
 	return ui.app.Run()
 

@@ -11,7 +11,7 @@ import (
 )
 
 func initP2P() (P2P *p2p.P2P, err error) {
-	fmt.Print("Initialising libp2p...")
+	fmt.Println("Initialising libp2p...")
 
 	// Everyone needs a connection manager.
 	cm, err := connmgr.Init()
@@ -21,7 +21,7 @@ func initP2P() (P2P *p2p.P2P, err error) {
 	cg := connmgr.NewConnectionGater(cm)
 
 	if config.RelayMode() {
-		fmt.Print("Relay mode enabled.")
+		fmt.Println("Relay mode enabled.")
 		d, err := relay.DHT(cg)
 		if err != nil {
 			panic(fmt.Sprintf("failed to initialize dht: %v", err))
@@ -30,7 +30,7 @@ func initP2P() (P2P *p2p.P2P, err error) {
 	}
 
 	if config.PongMode() {
-		fmt.Print("Pong mode enabled.")
+		fmt.Println("Pong mode enabled.")
 		d, err := pong.DHT(cg)
 		if err != nil {
 			panic(fmt.Sprintf("failed to initialize dht: %v", err))
@@ -38,7 +38,7 @@ func initP2P() (P2P *p2p.P2P, err error) {
 		return p2p.Init(d)
 	}
 
-	fmt.Print("Actor mode enabled.")
+	fmt.Println("Actor mode enabled.")
 	d, err := DHT(cg)
 	if err != nil {
 		panic(fmt.Sprintf("failed to initialize dht: %v", err))

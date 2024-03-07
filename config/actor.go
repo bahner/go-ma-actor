@@ -62,12 +62,11 @@ func InitActor() {
 	initActorKeyset()
 
 	if publishFlag() && keyset_string != "" {
-		fmt.Print("Publishing identity to IPFS...")
+		fmt.Println("Publishing identity to IPFS...")
 		err := publishIdentityFromKeyset(keyset)
 		if err != nil {
 			log.Warnf("config.initActor: %v", err)
 		}
-		fmt.Println("done.")
 	}
 
 }

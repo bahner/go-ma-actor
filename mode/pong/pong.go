@@ -24,6 +24,7 @@ func Run(ctx context.Context, a *actor.Actor, b *p2ppubsub.Topic, n *p2p.P2P) {
 	viper.SetDefault("mode.pong.reply", config.DefaultPongReply)
 
 	log.Infof("Starting pong mode as %s", a.Entity.DID.Id)
+	go n.DiscoveryLoop(ctx)
 	go a.Subscribe(ctx, a.Entity)
 
 	go handleEnvelopeEvents(ctx, a)

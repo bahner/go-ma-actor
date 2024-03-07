@@ -145,7 +145,7 @@ func Print() (int, error) {
 
 	fmt.Println("# " + ActorKeyset().DID.Id)
 
-	return fmt.Print(string(configYAML))
+	return fmt.Println(string(configYAML))
 }
 
 func Save() error {

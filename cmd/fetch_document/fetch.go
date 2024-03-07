@@ -32,6 +32,6 @@ func main() {
 	}
 
 	if d != nil {
-		fmt.Print(d.String())
+		fmt.Println(d.String())
 	}
 }
