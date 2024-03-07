@@ -18,5 +18,5 @@ func (ui *ChatUI) startActor() {
 	go ui.handleIncomingEnvelopes(ui.currentActorCtx, ui.a.Entity, ui.a)
 	go ui.handleIncomingMessages(ui.currentActorCtx, ui.a.Entity)
 
-	go actor.HelloWorld(ui.currentActorCtx, ui.a, ui.b) // This wait a bit before sending the message.
+	go actor.HelloWorld(ui.currentActorCtx, ui.a) // This wait a bit before sending the message.
 }

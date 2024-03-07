@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/bahner/go-ma-actor/p2p/pubsub"
 	"github.com/bahner/go-ma/did"
 	"github.com/bahner/go-ma/did/doc"
 	"github.com/bahner/go-ma/msg"
@@ -36,7 +37,7 @@ type Entity struct {
 func New(d did.DID) (*Entity, error) {
 
 	// Only 1 topic, but this is where it's at! One topic per entity.
-	_topic, err := getOrCreateTopic(d.Id)
+	_topic, err := pubsub.GetOrCreateTopic(d.Id)
 	if err != nil {
 		return nil, fmt.Errorf("entity/new: failed to join topic: %w", err)
 	}

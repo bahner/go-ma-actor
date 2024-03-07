@@ -4,18 +4,14 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"os"
 	"time"
 
-	"github.com/bahner/go-ma-actor/config"
 	"github.com/bahner/go-ma-actor/entity"
 	"github.com/bahner/go-ma-actor/entity/actor"
-	"github.com/bahner/go-ma-actor/mode/pong"
 	"github.com/bahner/go-ma-actor/p2p"
 	"github.com/bahner/go-ma/msg"
 	p2ppubsub "github.com/libp2p/go-libp2p-pubsub"
 	"github.com/rivo/tview"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
@@ -94,10 +90,10 @@ type ChatUI struct {
 	chDone    chan struct{}
 }
 
-// NewChatUI returns a new ChatUI struct that controls the text UI.
+// New returns a new ChatUI struct that controls the text UI.
 // It won't actually do anything until you call Run().
 // The enity is the "room" we are convering with.
-func NewChatUI(p *p2p.P2P, a *actor.Actor) (*ChatUI, error) {
+func New(p *p2p.P2P, a *actor.Actor) (*ChatUI, error) {
 
 	app := tview.NewApplication()
 
@@ -119,51 +115,6 @@ func NewChatUI(p *p2p.P2P, a *actor.Actor) (*ChatUI, error) {
 	ui.setupApp()
 
 	return ui, nil
-}
-
-// Run starts the chat event loop in the background, then starts
-// the event loop for the text UI.
-func (ui *ChatUI) Run() error {
-
-	if config.PongMode() {
-		// Cancel if trouble arises. Maybe this should be a background context?
-		ctx := context.Background()
-
-		// In Pong we can just stop here. We dont' need to display anything.
-		// or handle input events. Hence this is a blocking call.
-		log.Infof("Running in Pong mode")
-		pong.Run(ctx, ui.a, ui.b, ui.p)
-		log.Warnf("Pong run loop ended, exiting...")
-		os.Exit(0)
-
-	}
-
-	defer ui.end()
-
-	// Now we can start continuous discovery in the background.
-	fmt.Println("Starting discovery loop...")
-	ui.discoveryLoopCtx, ui.discoveryLoopCancel = context.WithCancel(context.Background())
-	go ui.p.DiscoveryLoop(context.Background())
-
-	// The actor should just run in the background for ever.
-	// It will handle incoming messages and envelopes.
-	// It shouldn't change - ever.
-	fmt.Println("Starting actor...")
-	ui.startActor()
-
-	// We must wait for this to finish.
-	fmt.Printf("Entering %s ...\n", config.ActorLocation())
-	err := ui.enterEntity(config.ActorLocation(), true)
-	if err != nil {
-		ui.displayStatusMessage(err.Error())
-	}
-	fmt.Printf("Entered %s\n", config.ActorLocation())
-
-	fmt.Println("Starting event loop...")
-	go ui.handleEvents()
-
-	return ui.app.Run()
-
 }
 
 // end signals the event loop to exit gracefully

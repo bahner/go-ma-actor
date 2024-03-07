@@ -1,19 +1,18 @@
-package entity
+package pubsub
 
 import (
 	"fmt"
 	"sync"
 
-	"github.com/bahner/go-ma-actor/p2p/pubsub"
 	p2ppubsub "github.com/libp2p/go-libp2p-pubsub"
 )
 
 var topic sync.Map
 
-func getOrCreateTopic(topicName string) (*p2ppubsub.Topic, error) {
+func GetOrCreateTopic(topicName string) (*p2ppubsub.Topic, error) {
 	t, ok := topic.Load(topicName)
 	if !ok {
-		ps := pubsub.Get()
+		ps := Get()
 		var err error
 		t, err = ps.Join(topicName)
 		if err != nil {

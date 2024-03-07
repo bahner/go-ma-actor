@@ -26,6 +26,10 @@ func New(addrInfo *p2peer.AddrInfo, nick string, allowed bool) Peer {
 	}
 }
 
+// Get or create a peer from an addrinfo. This is a dead function,
+// in the sense that it does not do any live P2P lookups and as such
+// it's use is safe to use anytime.
+// The lookup is just in the local memory cache and database.
 func GetOrCreateFromAddrInfo(addrInfo *p2peer.AddrInfo) (Peer, error) {
 
 	id := addrInfo.ID.String()
