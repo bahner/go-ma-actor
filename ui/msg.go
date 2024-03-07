@@ -62,7 +62,7 @@ func (ui *ChatUI) handleMsgCommand(input string) {
 
 		// Connect to the entity's node, so we establish contact for the future.
 		// A web of nodes, like. A web of trust innit.
-		err = recp.ConnectPeer()
+		_, err = recp.ConnectPeer()
 		if err != nil {
 			ui.displaySystemMessage(fmt.Sprintf("peer connection error: %s", err))
 			ui.displaySystemMessage(fmt.Sprintf("sending message through the clouds %s", recipient))

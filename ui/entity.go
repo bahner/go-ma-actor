@@ -11,6 +11,8 @@ const (
 	entityUsage = "/entity nick|show"
 	entityHelp  = `Manages info on seen entities
 At this point only nicks are handled`
+	entityConnectUsage    = "/entity connect <id|nick>"
+	entityConnectHelp     = "Connects to an entity's libp2p node"
 	entityNickUsage       = "/entity nick list|set|remove|show"
 	entityNickHelp        = "Manages nicks for entities"
 	entityNickListUsage   = "/entity nick list"
@@ -33,6 +35,9 @@ func (ui *ChatUI) handleEntityCommand(args []string) {
 			return
 		case "show":
 			ui.handleEntityNickShowCommand(args)
+			return
+		case "connect":
+			ui.handleEntityConnectCommand(args)
 			return
 		default:
 			ui.displaySystemMessage("Unknown alias entity command: " + command)
@@ -145,4 +150,23 @@ func (ui *ChatUI) handleEntityNickRemoveCommand(args []string) {
 		ui.handleHelpCommand(entityNickRemoveUsage, entityNickRemoveHelp)
 	}
 
+}
+
+func (ui *ChatUI) handleEntityConnectCommand(args []string) {
+
+	if len(args) == 3 {
+		e, err := entity.GetOrCreate(args[2])
+		if err != nil {
+			ui.displaySystemMessage("Error: " + err.Error())
+			return
+		}
+		pai, err := e.ConnectPeer()
+		if err != nil {
+			ui.displaySystemMessage("Error connecting to enityty peer: " + err.Error())
+			return
+		}
+		ui.displaySystemMessage("Connected to " + e.DID.Id + ": " + pai.ID.String())
+	} else {
+		ui.handleHelpCommand(entityConnectUsage, entityConnectHelp)
+	}
 }

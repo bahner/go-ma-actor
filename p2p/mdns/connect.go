@@ -17,40 +17,53 @@ func (m *MDNS) peerConnectAndUpdateIfSuccessful(ctx context.Context, pai p2peer.
 	if len(pai.Addrs) == 0 {
 		return peer.ErrAddrInfoAddrsEmpty
 	}
+
+	p, err := peer.GetOrCreateFromAddrInfo(&pai)
+	if err != nil {
+		return err
+	}
+	if !peer.IsAllowed(p.ID) { // Do an actual lookup in the database here
+		log.Debugf("Peer %s is explicitly denied", pai.ID.String())
+		m.unprotectPeer(pai.ID)
+		return peer.ErrPeerDenied
+	}
+
 	if m.h.Network().Connectedness(pai.ID) == network.Connected {
 		log.Debugf("Already connected to MDNS peer: %s", pai.ID.String())
 		return peer.ErrAlreadyConnected // This is not an error, but we'll return it as such for now.
 	}
 
-	err := m.h.Connect(ctx, pai)
-	// NOOP. Clients that are protected are allowed to connect to us.
-	// Even if we can't connect to them right now, we should still protect them.
-	// if err != nil && d.h.ConnManager().IsProtected(id, ma.RENDEZVOUS) {
-	// log.Warnf("Unprotecting previously protected peer %s: %v", id, err)
-	// d.h.ConnManager().UntagPeer(id, ma.RENDEZVOUS)
-	// d.h.ConnManager().Unprotect(id, ma.RENDEZVOUS)
-	// }
+	err = m.protectPeer(pai.ID)
+	if err != nil {
+		log.Warnf("Failed to protect peer %s as allowed: %v", pai.ID.String(), err)
+	}
+
+	err = m.h.Connect(ctx, pai)
 	if err != nil {
 		return err
 	}
 
-	if !m.h.ConnManager().IsProtected(pai.ID, ma.RENDEZVOUS) {
-		log.Infof("Protecting previously unprotected peer %s", pai.ID.String())
-		m.h.ConnManager().TagPeer(pai.ID, ma.RENDEZVOUS, peer.DEFAULT_TAG_VALUE)
-		m.h.ConnManager().Protect(pai.ID, ma.RENDEZVOUS)
+	return peer.Set(p)
+}
 
-		// This is a new peer, so we should allow it explicitly.
-		// ACtually it should be allowed by default, but we'll set it explicitly here.
-		// Ref. line #99 above
+func (m *MDNS) protectPeer(id p2peer.ID) error {
 
-		p, err = peer.GetOrCreateFromAddrInfo(&pai)
-		if err != nil {
-			return err
-		}
-		p.Allowed = true
-
+	if !m.h.ConnManager().IsProtected(id, ma.RENDEZVOUS) {
+		log.Infof("Protecting previously unprotected peer %s", id.String())
+		m.h.ConnManager().TagPeer(id, ma.RENDEZVOUS, peer.DEFAULT_TAG_VALUE)
+		m.h.ConnManager().Protect(id, ma.RENDEZVOUS)
 	}
 
-	return peer.Set(p)
+	return nil
+}
 
+func (m *MDNS) unprotectPeer(id p2peer.ID) error {
+
+	if m.h.ConnManager().IsProtected(id, ma.RENDEZVOUS) {
+		log.Infof("Unprotecting previously protected peer %s", id.String())
+		m.h.ConnManager().UntagPeer(id, ma.RENDEZVOUS)
+		m.h.ConnManager().Unprotect(id, ma.RENDEZVOUS)
+	}
+
+	return nil
 }

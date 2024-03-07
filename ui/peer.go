@@ -166,23 +166,19 @@ func (ui *ChatUI) handlePeerNickShowCommand(args []string) {
 func (ui *ChatUI) handlePeerConnectCommand(args []string) {
 
 	if len(args) == 3 {
-		id := args[2]
-		p, err := ui.p.GetOrCreatePeerFromIDString(id)
+		id := peer.Lookup(args[2])
+
+		addrInfo, err := ui.p.GetPeerAddrInfoFromIDString(id)
 		if err != nil {
 			ui.displaySystemMessage("Error: " + err.Error())
 			return
 		}
-		p.AddrInfo, err = ui.p.GetPeerAddrInfoFromIDString(id)
-		if err != nil {
-			ui.displaySystemMessage("Error: " + err.Error())
-			return
-		}
-		err = ui.p.DHT.PeerConnectAndUpdateIfSuccessful(context.Background(), p)
+		err = ui.p.DHT.PeerConnectAndUpdateIfSuccessful(context.Background(), *addrInfo)
 		if err != nil {
 			ui.displaySystemMessage("Error connecting to peer: " + err.Error())
 			return
 		}
-		ui.displaySystemMessage("Connected to " + p.ID)
+		ui.displaySystemMessage("Connected to " + id)
 	} else {
 		ui.handleHelpCommand(peerConnectUsage, peerConnectHelp)
 	}

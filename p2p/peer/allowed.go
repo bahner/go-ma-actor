@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"errors"
 
-	"github.com/bahner/go-ma-actor/config"
 	"github.com/bahner/go-ma-actor/config/db"
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -12,25 +11,27 @@ import (
 const (
 	_SELECT_ALLOWED = "SELECT allowed FROM peers WHERE id = ?"
 	_UPDATE_ALLOWED = "UPDATE peers SET allowed = ? WHERE id = ?"
+
+	defaultAllowed = true // This is required for discovery to work for hosts that are not in the database.
 )
 
 // GetAllowedForID returns whether a peer is allowed to be discovered.
 // This implies whther the peer is blacklisted or not.
 func GetAllowedForID(id string) (bool, error) {
 
-	allowed := bool2int(config.P2PDiscoveryAllow())
+	allowed := bool2int(defaultAllowed)
 
 	db, err := db.Get()
 	if err != nil {
-		return config.P2PDiscoveryAllow(), err
+		return defaultAllowed, err
 	}
 
 	err = db.QueryRow(_SELECT_ALLOWED, id).Scan(&allowed)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return config.P2PDiscoveryAllow(), ErrPeerNotFoundInDB
+			return defaultAllowed, ErrPeerNotFoundInDB
 		}
-		return config.P2PDiscoveryAllow(), err
+		return defaultAllowed, err
 	}
 
 	return int2bool(allowed), nil
@@ -62,7 +63,7 @@ func SetAllowed(id string, allowed bool) error {
 func IsAllowed(id string) bool {
 	allowed, err := GetAllowedForID(id)
 	if err != nil {
-		return config.P2PDiscoveryAllow()
+		return defaultAllowed
 	}
 	return allowed
 }

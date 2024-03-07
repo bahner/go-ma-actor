@@ -5,41 +5,65 @@ import (
 
 	"github.com/bahner/go-ma"
 	"github.com/bahner/go-ma-actor/p2p/peer"
+	"github.com/libp2p/go-libp2p/core/network"
+	p2peer "github.com/libp2p/go-libp2p/core/peer"
 	log "github.com/sirupsen/logrus"
 )
 
-func (d *DHT) PeerConnectAndUpdateIfSuccessful(ctx context.Context, p peer.Peer) error {
+func (m *DHT) PeerConnectAndUpdateIfSuccessful(ctx context.Context, pai p2peer.AddrInfo) error {
 
-	if len(p.AddrInfo.Addrs) == 0 {
-		return ErrAddrInfoAddrsEmpty
+	var p peer.Peer
+
+	if len(pai.Addrs) == 0 {
+		return peer.ErrAddrInfoAddrsEmpty
 	}
 
-	id := p.AddrInfo.ID
+	p, err := peer.GetOrCreateFromAddrInfo(&pai)
+	if err != nil {
+		return err
+	}
+	if !peer.IsAllowed(p.ID) { // Do an actual lookup in the database here
+		log.Debugf("Peer %s is explicitly denied", pai.ID.String())
+		m.unprotectPeer(pai.ID)
+		return peer.ErrPeerDenied
+	}
 
-	err := d.h.Connect(ctx, *p.AddrInfo)
-	// NOOP. Clients that are protected are allowed to connect to us.
-	// Even if we can't connect to them right now, we should still protect them.
-	// if err != nil && d.h.ConnManager().IsProtected(id, ma.RENDEZVOUS) {
-	// log.Warnf("Unprotecting previously protected peer %s: %v", id, err)
-	// d.h.ConnManager().UntagPeer(id, ma.RENDEZVOUS)
-	// d.h.ConnManager().Unprotect(id, ma.RENDEZVOUS)
-	// }
+	if m.h.Network().Connectedness(pai.ID) == network.Connected {
+		log.Debugf("Already connected to DHT peer: %s", pai.ID.String())
+		return peer.ErrAlreadyConnected // This is not an error, but we'll return it as such for now.
+	}
+
+	err = m.protectPeer(pai.ID)
+	if err != nil {
+		log.Warnf("Failed to protect peer %s: %v", pai.ID.String(), err)
+	}
+
+	err = m.h.Connect(ctx, pai)
 	if err != nil {
 		return err
 	}
 
-	if !d.h.ConnManager().IsProtected(id, ma.RENDEZVOUS) {
-		log.Infof("Protecting previously unprotected peer %s", id)
-		d.h.ConnManager().TagPeer(p.AddrInfo.ID, ma.RENDEZVOUS, peer.DEFAULT_TAG_VALUE)
-		d.h.ConnManager().Protect(p.AddrInfo.ID, ma.RENDEZVOUS)
+	return peer.Set(p)
+}
 
-		// This is a new peer, so we should allow it explicitly.
-		// ACtually it should be allowed by default, but we'll set it explicitly here.
-		// Ref. line #99 above
-		p.Allowed = true
+func (m *DHT) protectPeer(id p2peer.ID) error {
 
+	if !m.h.ConnManager().IsProtected(id, ma.RENDEZVOUS) {
+		log.Infof("Protecting previously unprotected peer %s", id.String())
+		m.h.ConnManager().TagPeer(id, ma.RENDEZVOUS, peer.DEFAULT_TAG_VALUE)
+		m.h.ConnManager().Protect(id, ma.RENDEZVOUS)
 	}
 
-	return peer.Set(p)
+	return nil
+}
 
+func (m *DHT) unprotectPeer(id p2peer.ID) error {
+
+	if m.h.ConnManager().IsProtected(id, ma.RENDEZVOUS) {
+		log.Infof("Unprotecting previously protected peer %s", id.String())
+		m.h.ConnManager().UntagPeer(id, ma.RENDEZVOUS)
+		m.h.ConnManager().Unprotect(id, ma.RENDEZVOUS)
+	}
+
+	return nil
 }
