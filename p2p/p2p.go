@@ -4,11 +4,14 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/bahner/go-ma"
 	"github.com/bahner/go-ma-actor/p2p/dht"
+	"github.com/bahner/go-ma-actor/p2p/mdns"
 	"github.com/bahner/go-ma-actor/p2p/pubsub"
 	libp2p "github.com/libp2p/go-libp2p"
 	p2ppubsub "github.com/libp2p/go-libp2p-pubsub"
 	p2peer "github.com/libp2p/go-libp2p/core/peer"
+	log "github.com/sirupsen/logrus"
 )
 
 var _p2p *P2P
@@ -19,6 +22,7 @@ var _p2p *P2P
 type P2P struct {
 	PubSub   *p2ppubsub.PubSub
 	DHT      *dht.DHT
+	MDNS     *mdns.MDNS
 	AddrInfo *p2peer.AddrInfo
 }
 
@@ -46,9 +50,15 @@ func Init(d *dht.DHT, p2pOpts ...libp2p.Option) (*P2P, error) {
 		Addrs: d.Host().Addrs(),
 	}
 
+	m, err := mdns.New(d.Host(), ma.RENDEZVOUS)
+	if err != nil {
+		log.Errorf("p2p.Init: failed to start MDNS discovery: %v", err)
+	}
+
 	_p2p = &P2P{
 		AddrInfo: ai,
 		DHT:      d,
+		MDNS:     m,
 		PubSub:   ps,
 	}
 

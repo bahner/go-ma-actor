@@ -24,11 +24,6 @@ func (p *P2P) DiscoverPeers() error {
 	ctx, cancel := config.P2PDiscoveryContext()
 	defer cancel()
 
-	err := p.DHT.DiscoverPeers(ctx)
-	if err != nil {
-		return fmt.Errorf("failed to initialise DHT. Peer discovery unsuccessful: %w", err)
-	}
-
 	// Start MDNS discovery in a new goroutine
 	go func() {
 		m, err := mdns.New(p.DHT.Host(), ma.RENDEZVOUS)
@@ -40,6 +35,10 @@ func (p *P2P) DiscoverPeers() error {
 	}()
 
 	// Wait for a discovery process to complete
+	err := p.DHT.DiscoverPeers(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to initialise DHT. Peer discovery unsuccessful: %w", err)
+	}
 
 	return nil
 }
@@ -56,7 +55,10 @@ func (p *P2P) DiscoveryLoop(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		default:
-			p.DHT.DiscoverPeers(ctx)
+			err := p.DiscoverPeers() // This will block until discovery is complete or timeout
+			if err != nil {
+				log.Debugf("Discovery attempt failed: %s", err)
+			}
 			sleepTime := config.P2PDiscoveryRetryInterval()
 			log.Debugf("Discovery sleeping for %s", sleepTime.String())
 			time.Sleep(sleepTime)
