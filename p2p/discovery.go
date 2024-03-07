@@ -30,7 +30,7 @@ func (p *P2P) DiscoverPeers() error {
 
 	// Start MDNS discovery in a new goroutine
 	go func() {
-		mdns.DiscoverPeers(ctx, p.Node)
+		mdns.DiscoverPeers(ctx, p.DHT.Host())
 	}()
 
 	// Wait for a discovery process to complete

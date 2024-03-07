@@ -35,7 +35,7 @@ func (p *P2P) GetPeerAddrInfoFromIDString(id string) (*p2peer.AddrInfo, error) {
 func (p *P2P) GetPeerAddrInfoFromID(id p2peer.ID) (*p2peer.AddrInfo, error) {
 	a := p2peer.AddrInfo{
 		ID:    id,
-		Addrs: p.Node.Peerstore().Addrs(id),
+		Addrs: p.DHT.Host().Peerstore().Addrs(id),
 	}
 
 	return &a, nil

@@ -9,7 +9,6 @@ import (
 	"github.com/bahner/go-ma-actor/config/db"
 	"github.com/bahner/go-ma-actor/entity"
 	"github.com/bahner/go-ma-actor/entity/actor"
-	"github.com/bahner/go-ma-actor/mode/relay"
 	"github.com/bahner/go-ma-actor/p2p"
 	"github.com/bahner/go-ma-actor/p2p/peer"
 	"github.com/bahner/go-ma-actor/ui"
@@ -44,7 +43,19 @@ func main() {
 	fmt.Println("done.")
 
 	// P2P
-	p2P := setupP2POrPanic()
+	p2P, err := initP2P()
+	if err != nil {
+		panic(fmt.Sprintf("failed to initialize p2p: %v", err))
+	}
+	discoverPeers(p2P)
+
+	// Now that we have a p2p instance and the db make sure our own entry is in the db and updated.
+	p, err := peer.GetOrCreateFromAddrInfo(p2P.AddrInfo)
+	if err != nil {
+		panic(fmt.Sprintf("failed to get or create peer: %v", err))
+	}
+	peer.Set(p)
+	fmt.Println("done.")
 
 	// P2P Relay mode
 	if config.RelayMode() {
@@ -55,7 +66,7 @@ func main() {
 	}
 
 	// ACTOR
-	a := initialiseActorOrPanic()
+	a := initActorOrPanic()
 
 	// Start the webserver in the background. Ignore - but log - errors.
 	go startWebServer(p2P, a)
@@ -63,7 +74,7 @@ func main() {
 	// We have a valid actor, but for it to be useful, we need to discover peers.
 	// discoverPeersOrPanic(p2P)
 
-	ui := initialiseUiOrPanic(p2P, a)
+	ui := initUiOrPanic(p2P, a)
 
 	// START THE ACTOR UI
 	fmt.Println("Starting the actor...")
@@ -72,49 +83,20 @@ func main() {
 	}
 }
 
-func setupP2POrPanic() *p2p.P2P {
-	fmt.Print("Initialising libp2p...")
+func discoverPeers(P2P *p2p.P2P) {
+	// PEER DISCOVERY
 
-	var (
-		err error
-		P2P *p2p.P2P
-	)
-
-	if config.RelayMode() {
-		fmt.Print("Relay mode enabled.")
-		P2P, err = p2p.Init(nil, relay.GetOptions()...)
-	} else {
-		P2P, err = p2p.Init(nil)
-	}
+	// We need to discover peers before we can do anything else.
+	// So this is a blocking call.
+	fmt.Print("Discovering peers...")
+	err := P2P.DiscoverPeers()
 	if err != nil {
-		panic(fmt.Sprintf("failed to initialize p2p: %v", err))
+		log.Warnf("failed to initialize p2p: %v", err)
 	}
-
-	// Now that we have a p2p instance and the db make sure our own entry is in the db and updated.
-	p, err := peer.GetOrCreateFromAddrInfo(P2P.AddrInfo)
-	if err != nil {
-		panic(fmt.Sprintf("failed to get or create peer: %v", err))
-	}
-	peer.Set(p)
 	fmt.Println("done.")
-
-	return P2P
 }
 
-// func discoverPeersOrPanic(P2P *p2p.P2P) {
-// 	// PEER DISCOVERY
-
-// 	// We need to discover peers before we can do anything else.
-// 	// So this is a blocking call.
-// 	fmt.Print("Discovering peers...")
-// 	err := P2P.DiscoverPeers()
-// 	if err != nil {
-// 		panic(fmt.Sprintf("failed to initialize p2p: %v", err))
-// 	}
-// 	fmt.Println("done.")
-// }
-
-func initialiseActorOrPanic() *actor.Actor {
+func initActorOrPanic() *actor.Actor {
 	// The actor is needed for initialisation of the WebHandler.
 	fmt.Print("Creating actor from keyset...")
 	a, err := actor.NewFromKeyset(config.ActorKeyset())
@@ -146,7 +128,7 @@ func initialiseActorOrPanic() *actor.Actor {
 	return a
 }
 
-func initialiseUiOrPanic(p2P *p2p.P2P, a *actor.Actor) *ui.ChatUI {
+func initUiOrPanic(p2P *p2p.P2P, a *actor.Actor) *ui.ChatUI {
 	fmt.Print("Creating text UI...")
 	ui, err := ui.NewChatUI(p2P, a)
 	if err != nil {

@@ -8,7 +8,7 @@ import (
 
 // AllConnectedPeers returns a slice of p2peer.ID for all connected peers of the given host.
 func (p *P2P) AllConnectedPeers() p2peer.IDSlice {
-	h := p.Node
+	h := p.DHT.Host()
 	var connectedPeers p2peer.IDSlice
 
 	for _, p := range h.Network().Peers() {
@@ -22,7 +22,7 @@ func (p *P2P) AllConnectedPeers() p2peer.IDSlice {
 
 // ConnectedProtectedPeers returns a slice of p2peer.ID for all protected connected peers.
 func (p *P2P) ConnectedProtectedPeers() p2peer.IDSlice {
-	h := p.Node
+	h := p.DHT.Host()
 	var connectedProtectedPeers p2peer.IDSlice
 
 	for _, connectedPeer := range p.AllConnectedPeers() {
@@ -36,7 +36,7 @@ func (p *P2P) ConnectedProtectedPeers() p2peer.IDSlice {
 
 // ConnectedUnprotectedPeers returns a slice of p2peer.ID for all unprotected connected peers.
 func (p *P2P) ConnectedUnprotectedPeers() p2peer.IDSlice {
-	h := p.Node
+	h := p.DHT.Host()
 	var connectedUnprotectedPeers p2peer.IDSlice
 
 	for _, connectedPeer := range p.AllConnectedPeers() {
@@ -50,7 +50,7 @@ func (p *P2P) ConnectedUnprotectedPeers() p2peer.IDSlice {
 
 // ConnectedProtectedPeersAddrInfo returns a map of p2peer.ID to AddrInfo for all protected connected peers.
 func (p *P2P) ConnectedProtectedPeersAddrInfo() map[string]*p2peer.AddrInfo {
-	h := p.Node
+	h := p.DHT.Host()
 	connectedPeersAddrInfo := make(map[string]*p2peer.AddrInfo)
 
 	for _, connectedPeer := range p.ConnectedProtectedPeers() {

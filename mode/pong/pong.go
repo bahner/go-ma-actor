@@ -31,7 +31,7 @@ func Run(ctx context.Context, a *actor.Actor, b *p2ppubsub.Topic, n *p2p.P2P) {
 
 	actor.HelloWorld(ctx, a, b)
 
-	fmt.Printf("Running in pong mode as %s@%s\n", a.Entity.DID.Id, n.Node.ID())
+	fmt.Printf("Running in pong mode as %s@%s\n", a.Entity.DID.Id, n.DHT.Host().ID())
 	fmt.Println("Press Ctrl-C to stop.")
 
 	for {

@@ -64,8 +64,8 @@ func (ui *ChatUI) statusHost() string {
 	// Return whatever status you'd like about the host.
 	// Just an example below:
 	var result string
-	result += "Peer ID: " + ui.p.Node.ID().String() + "\n"
-	result += fmt.Sprintf("Peers no# %d\n", len(ui.p.Node.Network().Peers()))
+	result += "Peer ID: " + ui.p.DHT.Host().ID().String() + "\n"
+	result += fmt.Sprintf("Peers no# %d\n", len(ui.p.DHT.Host().Network().Peers()))
 	return result
 }
 

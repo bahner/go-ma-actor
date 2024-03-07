@@ -1,0 +1,47 @@
+package main
+
+import (
+	"fmt"
+
+	"github.com/bahner/go-ma-actor/config"
+	"github.com/bahner/go-ma-actor/mode/pong"
+	"github.com/bahner/go-ma-actor/mode/relay"
+	"github.com/bahner/go-ma-actor/p2p"
+	"github.com/bahner/go-ma-actor/p2p/connmgr"
+)
+
+func initP2P() (P2P *p2p.P2P, err error) {
+	fmt.Print("Initialising libp2p...")
+
+	// Everyone needs a connection manager.
+	cm, err := connmgr.Init()
+	if err != nil {
+		panic(fmt.Errorf("pong: failed to create connection manager: %w", err))
+	}
+	cg := connmgr.NewConnectionGater(cm)
+
+	if config.RelayMode() {
+		fmt.Print("Relay mode enabled.")
+		d, err := relay.DHT(cg)
+		if err != nil {
+			panic(fmt.Sprintf("failed to initialize dht: %v", err))
+		}
+		return p2p.Init(d)
+	}
+
+	if config.PongMode() {
+		fmt.Print("Pong mode enabled.")
+		d, err := pong.DHT(cg)
+		if err != nil {
+			panic(fmt.Sprintf("failed to initialize dht: %v", err))
+		}
+		return p2p.Init(d)
+	}
+
+	fmt.Print("Actor mode enabled.")
+	d, err := DHT(cg)
+	if err != nil {
+		panic(fmt.Sprintf("failed to initialize dht: %v", err))
+	}
+	return p2p.Init(d)
+}

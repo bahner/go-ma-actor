@@ -4,16 +4,11 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/bahner/go-ma-actor/config"
-	"github.com/bahner/go-ma-actor/p2p/connmgr"
 	"github.com/bahner/go-ma-actor/p2p/dht"
-	"github.com/bahner/go-ma-actor/p2p/node"
 	"github.com/bahner/go-ma-actor/p2p/pubsub"
 	libp2p "github.com/libp2p/go-libp2p"
 	p2ppubsub "github.com/libp2p/go-libp2p-pubsub"
-	"github.com/libp2p/go-libp2p/core/host"
 	p2peer "github.com/libp2p/go-libp2p/core/peer"
-	log "github.com/sirupsen/logrus"
 )
 
 var _p2p *P2P
@@ -22,7 +17,6 @@ var _p2p *P2P
 // It contains a libp2p node, a pubsub service and a DHT instance.
 // It also contains a list of connected peers.
 type P2P struct {
-	Node     host.Host
 	PubSub   *p2ppubsub.PubSub
 	DHT      *dht.DHT
 	AddrInfo *p2peer.AddrInfo
@@ -42,50 +36,19 @@ type P2P struct {
 
 func Init(d *dht.DHT, p2pOpts ...libp2p.Option) (*P2P, error) {
 
-	log.Debug("p2p: Initialising p2p")
-
-	var err error
-
-	cm, err := connmgr.Init()
-	if err != nil {
-		return nil, fmt.Errorf("p2p.Init: failed to create connection manager: %w", err)
-	}
-	p2pOpts = append(p2pOpts, libp2p.ConnectionManager(cm))
-
-	cg := connmgr.NewConnectionGater(cm)
-	p2pOpts = append(p2pOpts, libp2p.ConnectionGater(cg))
-
-	log.Debug("p2p: Connection manager initialised as follows:")
-	log.Debug(cm.GetInfo())
-
-	// Create a new libp2p Host that listens on a random TCP port
-	n, err := node.New(config.NodeIdentity(), p2pOpts...)
-	if err != nil {
-		return nil, fmt.Errorf("p2p.Init: failed to create libp2p node: %w", err)
-	}
-
-	if d == nil {
-
-		d, err = dht.New(n, cg)
-		if err != nil {
-			return nil, fmt.Errorf("p2p.Init: failed to create DHT: %w", err)
-		}
-	}
-
-	ps, err := pubsub.New(context.Background(), n)
+	ps, err := pubsub.New(context.Background(), d.Host())
 	if err != nil {
 		return nil, fmt.Errorf("p2p.Init: failed to create pubsub: %w", err)
 	}
 
-	ai := p2peer.AddrInfo{
-		ID:    n.ID(),
-		Addrs: n.Addrs(),
+	ai := &p2peer.AddrInfo{
+		ID:    d.Host().ID(),
+		Addrs: d.Host().Addrs(),
 	}
 
 	_p2p = &P2P{
-		AddrInfo: &ai,
+		AddrInfo: ai,
 		DHT:      d,
-		Node:     n,
 		PubSub:   ps,
 	}
 
