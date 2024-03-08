@@ -40,8 +40,19 @@ func webHandler(w http.ResponseWriter, _ *http.Request, p *p2p.P2P, e *Entity) {
 
 	doc := NewWebHandlerDocument()
 
-	doc.Title = fmt.Sprintf("Entity: %s", e.DID.Id)
-	doc.H1 = doc.Title
+	titleStr := fmt.Sprintf("Entity: %s", e.DID.Id)
+	h1str := titleStr
+
+	if config.PongMode() {
+		h1str = fmt.Sprintf("%s (Pong mode)", titleStr)
+	}
+
+	if config.PongFortuneMode() {
+		h1str = fmt.Sprintf("%s (Pong mode with fortune cookies)", titleStr)
+	}
+
+	doc.Title = titleStr
+	doc.H1 = h1str
 	doc.H2 = fmt.Sprintf("%s@%s", ma.RENDEZVOUS, (p.DHT.Host().ID().String()))
 	doc.Addrs = p.DHT.Host().Addrs()
 	doc.AllConnectedPeers = p.AllConnectedPeers()

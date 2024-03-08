@@ -40,7 +40,9 @@ type P2P struct {
 
 func Init(d *dht.DHT, p2pOpts ...libp2p.Option) (*P2P, error) {
 
-	ps, err := pubsub.New(context.Background(), d.Host())
+	ctx := context.Background()
+
+	ps, err := pubsub.New(ctx, d.Host())
 	if err != nil {
 		return nil, fmt.Errorf("p2p.Init: failed to create pubsub: %w", err)
 	}
@@ -61,6 +63,8 @@ func Init(d *dht.DHT, p2pOpts ...libp2p.Option) (*P2P, error) {
 		MDNS:     m,
 		PubSub:   ps,
 	}
+
+	go _p2p.protectLoop(ctx)
 
 	return _p2p, nil
 }

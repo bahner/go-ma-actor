@@ -1,7 +1,11 @@
 package peer
 
 import (
+	"database/sql"
+	"errors"
+
 	"github.com/bahner/go-ma-actor/config"
+	"github.com/bahner/go-ma-actor/config/db"
 	p2peer "github.com/libp2p/go-libp2p/core/peer"
 )
 
@@ -51,4 +55,28 @@ func GetOrCreateFromAddrInfo(addrInfo *p2peer.AddrInfo) (Peer, error) {
 
 	return New(addrInfo, nodeAlias, config.P2PDiscoveryAllowAll()), nil
 
+}
+
+// Return a boolean whther the peer is knoor not
+// This this should err on the side of caution and return false
+func IsKnown(id string) bool {
+	db, err := db.Get()
+	if err != nil {
+		return false
+	}
+
+	// We just need to know if the peer exists, so we select the id itself.
+	var peerID string
+	err = db.QueryRow(_SELECT_ID, id).Scan(&peerID)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			// The peer is not in the database.
+			return false
+		}
+		// Some other error occurred.
+		return false
+	}
+
+	// If we get here, it means the peer exists in the database.
+	return true
 }
