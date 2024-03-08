@@ -46,19 +46,9 @@ func GetOrCreateFromAddrInfo(addrInfo *p2peer.AddrInfo) (Peer, error) {
 
 	nodeAlias, err := LookupNick(id)
 	if err != nil {
-		nodeAlias = createNodeAlias(id)
+		nodeAlias = addrInfo.ID.ShortString()
 	}
 
 	return New(addrInfo, nodeAlias, config.P2PDiscoveryAllowAll()), nil
-
-}
-
-func createNodeAlias(id string) string {
-
-	if len(id) <= defaultAliasLength {
-		return id
-	}
-
-	return id[len(id)-defaultAliasLength:]
 
 }

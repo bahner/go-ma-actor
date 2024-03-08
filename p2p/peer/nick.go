@@ -9,8 +9,6 @@ import (
 )
 
 const (
-	defaultAliasLength = 8
-
 	_LOOKUP_ID    = "SELECT id FROM peers WHERE nick = ? OR id = ?"
 	_LOOKUP_NICK  = "SELECT nick FROM peers WHERE nick = ? OR id = ?"
 	_SELECT_ID    = "SELECT id FROM peers WHERE nick = ?"

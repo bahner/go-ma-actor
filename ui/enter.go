@@ -36,7 +36,7 @@ func (ui *ChatUI) handleEnterCommand(args []string) {
 // This is *the* function that changes the entity. Do Everything™ here.
 // Do *not* use this to change the actor.
 // INput is the nick or DID of the entity.
-func (ui *ChatUI) enterEntity(d string, force bool) error {
+func (ui *ChatUI) enterEntity(d string, reEntry bool) error {
 
 	var (
 		e   *entity.Entity
@@ -63,7 +63,7 @@ func (ui *ChatUI) enterEntity(d string, force bool) error {
 	// FIXEME: hm. Why not?
 	// If this is not the same as the last known location, then
 	// update the last known location
-	if ui.e != nil && d == ui.e.DID.Id && !force {
+	if ui.e != nil && d == ui.e.DID.Id && !reEntry {
 		return errAlreadyHereWarning
 	}
 
@@ -83,7 +83,12 @@ func (ui *ChatUI) enterEntity(d string, force bool) error {
 	ui.currentEntityCtx, ui.currentEntityCancel = context.WithCancel(context.Background())
 
 	ui.msgBox.Clear()
-	ui.msgBox.SetTitle(e.Nick)
+	titleNick, err := entity.LookupNick(e.DID.Id)
+	if err != nil {
+		titleNick = e.DID.Id
+		ui.displaySystemMessage("Error looking up nick: " + err.Error())
+	}
+	ui.msgBox.SetTitle(titleNick)
 
 	// Start handling the new topic
 	// This *must* be called *after* the entity is set!

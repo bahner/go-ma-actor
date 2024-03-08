@@ -49,12 +49,12 @@ func (ui *ChatUI) refreshPeers() {
 	plist := []string{}
 
 	for _, p := range peers {
-
-		ap, err := peer.GetOrCreateFromAddrInfo(p)
-
-		if err == nil {
-			plist = append(plist, ap.Nick)
+		n, err := peer.LookupNick(p.ID.String())
+		if err != nil {
+			ui.displaySystemMessage(fmt.Sprintf("Error looking up nick for %s: %s", p.ID, err))
+			n = p.ID.ShortString()
 		}
+		plist = append(plist, n)
 	}
 
 	sort.Strings(plist)
