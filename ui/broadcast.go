@@ -34,7 +34,7 @@ func (ui *ChatUI) handleBroadcastCommand(args []string) {
 		}
 		msgBytes := []byte(message)
 		if log.GetLevel() == log.DebugLevel {
-			ui.displaySystemMessage(fmt.Sprintf("Broadcasting %s", message))
+			ui.displayDebugMessage(fmt.Sprintf("Broadcasting %s", message))
 		}
 
 		msg, err := msg.NewBroadcast(me, msgBytes, "text/plain", ui.a.Keyset.SigningKey.PrivKey)

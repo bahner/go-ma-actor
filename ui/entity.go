@@ -2,6 +2,7 @@ package ui
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/bahner/go-ma-actor/entity"
 	log "github.com/sirupsen/logrus"
@@ -11,14 +12,17 @@ const (
 	entityUsage = "/entity nick|show"
 	entityHelp  = `Manages info on seen entities
 At this point only nicks are handled`
-	entityConnectUsage    = "/entity connect <id|nick>"
-	entityConnectHelp     = "Connects to an entity's libp2p node"
-	entityNickUsage       = "/entity nick list|set|remove|show"
-	entityNickHelp        = "Manages nicks for entities"
-	entityNickListUsage   = "/entity nick list"
-	entityNickListHelp    = "Lists nicks for entities"
-	entityNickSetUsage    = "/entity nick set <id|nick> <nick>"
-	entityNickSetHelp     = "Sets a nick for an entity"
+	entityConnectUsage  = "/entity connect <id|nick>"
+	entityConnectHelp   = "Connects to an entity's libp2p node"
+	entityNickUsage     = "/entity nick list|set|remove|show"
+	entityNickHelp      = "Manages nicks for entities"
+	entityNickListUsage = "/entity nick list"
+	entityNickListHelp  = "Lists nicks for entities"
+	entityNickSetUsage  = "/entity nick set <id|nick> <nick>"
+	entityNickSetHelp   = `Sets a nick for an entity
+The entity to set nick for *MUST* be quoted if it contains spaces.
+The nick after the entity to set nick for doesn't need to be quoted.
+`
 	entityNickRemoveUsage = "/entity nick remove <id|nick>"
 	entityNickRemoveHelp  = "Removes a nick for an entity"
 	entityNickShowUsage   = "/entity nick show <id|nick>"
@@ -102,9 +106,10 @@ func (ui *ChatUI) handleEntityNickCommand(args []string) {
 func (ui ChatUI) handleEntityNickSetCommand(args []string) {
 
 	if len(args) == 5 {
-		id := args[3]
-		nick := args[4]
-		e, err := entity.Lookup(id)
+		id := entity.Lookup(args[3])
+		nick := strings.Join(args[4:], separator)
+
+		e, err := entity.GetOrCreate(id)
 		if err != nil {
 			ui.displaySystemMessage("Error: " + err.Error())
 			return
@@ -113,6 +118,10 @@ func (ui ChatUI) handleEntityNickSetCommand(args []string) {
 		if err != nil {
 			ui.displaySystemMessage("Error setting entity nick: " + err.Error())
 			return
+		}
+		// Change the window title if the ID matches the current entity
+		if id == ui.e.DID.Id {
+			ui.msgBox.SetTitle(nick)
 		}
 		ui.displaySystemMessage(e.DID.Id + " is now known as " + e.Nick)
 	} else {
@@ -125,8 +134,8 @@ func (ui ChatUI) handleEntityNickSetCommand(args []string) {
 func (ui *ChatUI) handleEntityNickShowCommand(args []string) {
 
 	if len(args) == 4 {
-		id := args[3]
-		e, err := entity.Lookup(id)
+		id := strings.Join(args[3:], separator)
+		e, err := entity.GetOrCreate(entity.Lookup(id))
 		if err != nil {
 			ui.displaySystemMessage("Error: " + err.Error())
 			return
@@ -143,7 +152,8 @@ func (ui *ChatUI) handleEntityNickShowCommand(args []string) {
 func (ui *ChatUI) handleEntityNickRemoveCommand(args []string) {
 
 	if len(args) == 4 {
-		id := entity.GetDID(args[3])
+		id := strings.Join(args[3:], separator)
+		id = entity.Lookup(id)
 		entity.RemoveNick(id)
 		ui.displaySystemMessage("Nick removed for " + id + " if it existed")
 	} else {
@@ -154,19 +164,21 @@ func (ui *ChatUI) handleEntityNickRemoveCommand(args []string) {
 
 func (ui *ChatUI) handleEntityConnectCommand(args []string) {
 
-	if len(args) == 3 {
-		e, err := entity.GetOrCreate(args[2])
+	if len(args) >= 3 {
+		id := strings.Join(args[2:], separator)
+		id = entity.Lookup(id)
+		e, err := entity.GetOrCreate(id)
 		if err != nil {
 			ui.displaySystemMessage("Error: " + err.Error())
 			return
 		}
-		log.Debugf("Connecting to peer for entity: %v", e.DID.Id)
+		log.Debugf("Connecting to peer for entity: %v", id)
 		pai, err := e.ConnectPeer()
 		if err != nil {
 			ui.displaySystemMessage("Error connecting to entity peer: " + err.Error())
 			return
 		}
-		ui.displaySystemMessage("Connected to " + e.DID.Id + ": " + pai.ID.String())
+		ui.displaySystemMessage("Connected to " + id + ": " + pai.ID.String())
 	} else {
 		ui.handleHelpCommand(entityConnectUsage, entityConnectHelp)
 	}

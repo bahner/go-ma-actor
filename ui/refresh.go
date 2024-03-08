@@ -21,17 +21,17 @@ func (ui *ChatUI) handleRefreshCommand(args []string) {
 }
 
 func (ui *ChatUI) handleRefresh() {
-	ui.displaySystemMessage("Looking up nick for " + ui.e.DID.Id)
+	ui.displayDebugMessage("Looking up nick for " + ui.e.DID.Id)
 	nick, err := peer.GetNickForID(ui.e.DID.Id)
 	if err != nil {
 		ui.displaySystemMessage(fmt.Sprintf("Error looking up nick: %s", err))
 	}
-	ui.displaySystemMessage("Found nick " + nick)
+	ui.displayDebugMessage("Found nick " + nick)
 	ui.e.SetNick(nick)
 	ui.refreshPeers()
 	ui.msgBox.Clear()
 	ui.setupInputField()
-	ui.displaySystemMessage("Setting title to " + ui.e.Nick)
+	ui.displayDebugMessage("Setting title to " + ui.e.Nick)
 	ui.msgBox.SetTitle(ui.e.Nick)
 	ui.app.Draw()
 }

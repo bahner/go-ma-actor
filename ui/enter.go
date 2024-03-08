@@ -49,7 +49,7 @@ func (ui *ChatUI) enterEntity(d string, reEntry bool) error {
 	}
 
 	// If we have a cached entity for this nick, use it.
-	e, err = entity.Lookup(d)
+	e, err = entity.GetOrCreate((entity.Lookup(d)))
 	if err != nil {
 		// If we don't have it stored, then create it.
 		e, err = entity.GetOrCreate(d)
@@ -86,7 +86,7 @@ func (ui *ChatUI) enterEntity(d string, reEntry bool) error {
 	titleNick, err := entity.LookupNick(e.DID.Id)
 	if err != nil {
 		titleNick = e.DID.Id
-		ui.displaySystemMessage("Error looking up nick: " + err.Error())
+		ui.displayDebugMessage("Error looking up nick for " + e.DID.Id + ": " + err.Error())
 	}
 	ui.msgBox.SetTitle(titleNick)
 

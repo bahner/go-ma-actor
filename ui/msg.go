@@ -18,7 +18,7 @@ const (
 
 func (ui *ChatUI) handleMsgCommand(input string) {
 
-	parts := strings.SplitN(input, " ", 2)
+	parts := strings.SplitN(input, separator, 2)
 
 	if len(parts) == 2 {
 
@@ -35,7 +35,7 @@ func (ui *ChatUI) handleMsgCommand(input string) {
 		message := parts[1]
 		msgBytes := []byte(message)
 		if log.GetLevel() == log.DebugLevel {
-			ui.displaySystemMessage(fmt.Sprintf("Sending message to %s: %s", recipient, message))
+			ui.displayDebugMessage(fmt.Sprintf("Sending message to %s: %s", recipient, message))
 		}
 
 		msg, err := msg.New(ui.a.Entity.DID.Id, recipient, msgBytes, "text/plain", ui.a.Keyset.SigningKey.PrivKey)

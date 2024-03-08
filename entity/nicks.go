@@ -21,7 +21,7 @@ var ErrFailedToSetNick = errors.New("failed to set entity nick")
 // This is used before we know in an Entity exists or not. It can be used anywhere.
 func GetDID(id string) string {
 
-	did, err := LookupNick(id)
+	did, err := LookupID(id)
 	if err == nil {
 		return did
 	}
@@ -60,22 +60,53 @@ func ListNicks() map[string]string {
 
 // Takes a nick as input and returns the corresponding DID
 // Else it returns the input as is with an error.
-func LookupNick(id string) (string, error) {
+func LookupID(nick string) (string, error) {
 
-	did := id
+	var did string
 
 	d, err := db.Get()
 	if err != nil {
-		return id, err
+		return nick, err
 	}
 
-	err = d.QueryRow(_SELECT_DID, id).Scan(&did)
+	err = d.QueryRow(_SELECT_DID, nick).Scan(&did)
 	if err != nil {
-		return id, err
+		return nick, err
 	}
 
 	return did, nil
 
+}
+
+// Takes a nick as input and returns the corresponding DID
+// Else it returns the input as is with an error.
+func LookupNick(did string) (string, error) {
+
+	var nick string
+
+	d, err := db.Get()
+	if err != nil {
+		return did, err
+	}
+
+	err = d.QueryRow(_SELECT_NICK, did).Scan(&nick)
+	if err != nil {
+		return did, err
+	}
+
+	return nick, nil
+
+}
+
+// Tries to find a DID for the input name whether DID or Nick
+func Lookup(name string) string {
+
+	id, err := LookupID(name)
+	if err != nil {
+		return name
+	}
+
+	return id
 }
 
 // Removes a node from the database if it exists

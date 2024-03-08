@@ -28,7 +28,11 @@ func (e *Entity) ConnectPeer() (pi p2peer.AddrInfo, err error) {
 	}
 
 	// Look for the peer in the DHT
-	pai := p.DHT.Host().Peerstore().PeerInfo(pid)
+	pai, err := p.DHT.FindPeer(e.Ctx, pid)
+	if err != nil {
+		log.Debugf("Failed to find peer: %v", err)
+		return pi, err
+	}
 	log.Debugf("PeerInfo: %v", pai.Addrs)
 
 	// Connect to the peer

@@ -125,7 +125,3 @@ func GetOrCreateFromDID(id did.DID) (*Entity, error) {
 
 	return e, nil
 }
-
-func Lookup(id string) (*Entity, error) {
-	return GetOrCreate(GetDID(id))
-}

@@ -44,7 +44,7 @@ func (ui *ChatUI) handleSetNickCommand(args []string) {
 
 	if len(args) >= 3 {
 
-		nick := strings.Join(args[2:], " ")
+		nick := strings.Join(args[2:], separator)
 
 		viper.Set("actor.nick", nick)
 		ui.inputField.SetLabel(nick + ": ")

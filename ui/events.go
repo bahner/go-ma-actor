@@ -20,6 +20,12 @@ func (ui *ChatUI) displaySystemMessage(msg string) {
 	fmt.Fprintf(ui.msgW, "%s\n", out)
 }
 
+func (ui *ChatUI) displayDebugMessage(m string) {
+	if log.GetLevel() == log.DebugLevel {
+		ui.displaySystemMessage(fmt.Sprintf("DEBUG: %s", m))
+	}
+}
+
 // handleEvents runs an event loop that sends user input to the chat room
 // and displays messages received from the chat room. It also periodically
 // refreshes the list of peers in the UI.
