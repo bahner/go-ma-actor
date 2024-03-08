@@ -111,7 +111,7 @@ func LookupID(q string) (string, error) {
 	return id, nil
 }
 
-// LookupNick finds a peer nickname by its ID or Nick.
+// LookupNick finds a nickname for a peerby its ID or Nick.
 func LookupNick(id string) (string, error) {
 	db, err := db.Get()
 	if err != nil {

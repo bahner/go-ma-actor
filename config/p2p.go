@@ -15,7 +15,7 @@ const (
 
 	defaultDiscoveryAdvertiseTTL   time.Duration = time.Minute * 60
 	defaultDiscoveryAdvertiseLimit int           = 100
-	defaultAllowAll                bool          = true // Allow all peers by default. This is the norm for now. Use connmgr threshold and protection instead.
+	DEFAULT_ALLOW_ALL              bool          = true // Allow all peers by default. This is the norm for now. Use connmgr threshold and protection instead.
 
 	defaultListenPort int    = 0
 	fakeP2PIdentity   string = "NO_DEFAULT_NODE_IDENITY"
@@ -41,7 +41,7 @@ func init() {
 	// DISCOVERY
 	pflag.Int("p2p-discovery-advertise-limit", defaultDiscoveryAdvertiseLimit, "Limit for advertising peer discovery.")
 	pflag.Duration("p2p-discovery-advertise-ttl", defaultDiscoveryAdvertiseTTL, "Hint o TimeToLive for advertising peer discovery.")
-	pflag.Bool("p2p-discovery-allow-all", defaultAllowAll, "Number of concurrent peer discovery routines.")
+	pflag.Bool("p2p-discovery-allow-all", DEFAULT_ALLOW_ALL, "Number of concurrent peer discovery routines.")
 
 	viper.BindPFlag("p2p.discovery.advertise-limit", pflag.Lookup("p2p-discovery-advertise-limit"))
 	viper.BindPFlag("p2p.discovery.advertise-ttl", pflag.Lookup("p2p-discovery-advertise-ttl"))
@@ -49,7 +49,7 @@ func init() {
 
 	viper.SetDefault("p2p.discovery.advertise-limit", defaultDiscoveryAdvertiseLimit)
 	viper.SetDefault("p2p.discovery.advertise-ttl", defaultDiscoveryAdvertiseTTL)
-	viper.SetDefault("p2p.discovery.allow-all", defaultAllowAll)
+	viper.SetDefault("p2p.discovery.allow-all", DEFAULT_ALLOW_ALL)
 
 	// Port
 	pflag.Int("p2p-port", defaultListenPort, "Port for libp2p node to listen on.")

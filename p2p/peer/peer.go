@@ -11,7 +11,11 @@ import (
 
 const (
 	DEFAULT_TAG_VALUE = 100
+	defaultAllowAll   = true
+	nodeAliasLength   = 8
 )
+
+var ErrIDTooShort = errors.New("ID too short")
 
 type Peer struct {
 	// ID is the string representation of the peer's ID
@@ -48,12 +52,10 @@ func GetOrCreateFromAddrInfo(addrInfo *p2peer.AddrInfo) (Peer, error) {
 		return p, nil
 	}
 
-	nodeAlias, err := LookupNick(id)
-	if err != nil {
-		nodeAlias = addrInfo.ID.ShortString()
-	}
-
-	return New(addrInfo, nodeAlias, config.P2PDiscoveryAllowAll()), nil
+	return New(
+		addrInfo,
+		getOrCreateNodeAlias(id),
+		config.DEFAULT_ALLOW_ALL), nil
 
 }
 
@@ -79,4 +81,28 @@ func IsKnown(id string) bool {
 
 	// If we get here, it means the peer exists in the database.
 	return true
+}
+
+// Function is equiavalent to ShortString() in libp2p, but it also
+// checks if the peer is known in the database and returns the
+// node alias if it exists.
+// The ShortString() function returns the last 8 chars of the peer ID.
+// The input is a full peer ID string.
+// Returns the input in case of errors
+func getOrCreateNodeAlias(id string) (nodeAlias string) {
+
+	if len(id) < nodeAliasLength {
+		return id
+	}
+
+	// Nicks to lookup can be less than 8 chars
+	if IsKnown(id) {
+		nodeAlias, err := LookupNick(id)
+		if err == nil {
+			return nodeAlias
+		}
+	}
+
+	return id[len(id)-nodeAliasLength:]
+
 }
