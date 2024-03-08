@@ -45,9 +45,9 @@ func generateActorConfigFile(identity string, node string) {
 				"grace-period":   P2PConnMgrGracePeriod(),
 			},
 			"discovery": map[string]interface{}{
-				"retry":   P2PDiscoveryRetryInterval(),
-				"timeout": P2PDiscoveryTimeout(),
-				"limit":   P2PDiscoveryLimit(),
+				"advertise-ttl":   P2PDiscoveryAdvertiseTTL(),
+				"advertise-limit": P2PDiscoveryAdvertiseLimit(),
+				"allow-all":       P2PDiscoveryAllowAll(),
 			},
 		},
 	}
@@ -135,9 +135,9 @@ func generatePongConfigFile(identity string, node string) {
 				"grace-period":   P2PConnMgrGracePeriod(),
 			},
 			"discovery": map[string]interface{}{
-				"retry":   P2PDiscoveryRetryInterval(),
-				"timeout": P2PDiscoveryTimeout(),
-				"limit":   P2PDiscoveryLimit(),
+				"advertise-ttl":   P2PDiscoveryAdvertiseTTL(),
+				"advertise-limit": P2PDiscoveryAdvertiseLimit(),
+				"allow-all":       P2PDiscoveryAllowAll(),
 			},
 		},
 		"mode": map[string]interface{}{
@@ -185,9 +185,9 @@ func generateRelayConfigFile(node string) {
 				"grace-period":   P2PConnMgrGracePeriod(),
 			},
 			"discovery": map[string]interface{}{
-				"retry":   P2PDiscoveryRetryInterval(),
-				"timeout": P2PDiscoveryTimeout(),
-				"limit":   P2PDiscoveryLimit(),
+				"advertise-ttl":   P2PDiscoveryAdvertiseTTL(),
+				"advertise-limit": P2PDiscoveryAdvertiseLimit(),
+				"allow-all":       P2PDiscoveryAllowAll(),
 			},
 		},
 	}

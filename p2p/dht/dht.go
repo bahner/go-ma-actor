@@ -42,7 +42,7 @@ func New(h host.Host, cg *connmgr.ConnectionGater, dhtOpts ...p2pDHT.Option) (*D
 	d.ConnectionGater.AllowAll = true
 	d.Bootstrap(context.Background())
 	// Reset the connection gater to its original allow state
-	d.ConnectionGater.AllowAll = config.P2PDiscoveryAllow()
+	d.ConnectionGater.AllowAll = config.P2PDiscoveryAllowAll()
 
 	return d, nil
 }

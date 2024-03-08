@@ -17,10 +17,6 @@ func (ui *ChatUI) handleReset() {
 
 	ui.msgBox.Clear()
 
-	// First trigger discovery of peers.
-	ui.displaySystemMessage("Discovering peers...")
-	ui.p.DiscoverPeers()
-
 	// Cancel the broadcast loop and start it again
 	ui.displaySystemMessage("Resetting broadcast channel...")
 	ui.broadcastCancel()

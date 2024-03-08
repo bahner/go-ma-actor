@@ -49,7 +49,7 @@ func GetOrCreateFromAddrInfo(addrInfo *p2peer.AddrInfo) (Peer, error) {
 		nodeAlias = createNodeAlias(id)
 	}
 
-	return New(addrInfo, nodeAlias, config.P2PDiscoveryAllow()), nil
+	return New(addrInfo, nodeAlias, config.P2PDiscoveryAllowAll()), nil
 
 }
 

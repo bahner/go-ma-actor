@@ -2,14 +2,6 @@ package p2p
 
 import (
 	"context"
-	"fmt"
-	"time"
-
-	"github.com/bahner/go-ma"
-	"github.com/bahner/go-ma-actor/config"
-	"github.com/bahner/go-ma-actor/p2p/dht"
-	"github.com/bahner/go-ma-actor/p2p/mdns"
-	log "github.com/sirupsen/logrus"
 )
 
 // DiscoverPeers starts the peer discovery process.
@@ -20,56 +12,11 @@ import (
 // DHT is a Kademlia DHT instance.
 // If nil, a new DHT instance will be created.
 // You might want to pass a DHT instance in Server mode here, for long running processes.
-func (p *P2P) DiscoverPeers() error {
+func (p *P2P) DiscoveryLoop(ctx context.Context) error {
 
-	ctx, cancel := config.P2PDiscoveryContext()
-	defer cancel()
+	go p.MDNS.DiscoveryLoop(ctx)
 
-	// Start MDNS discovery in a new goroutine
-	go func() {
-		m, err := mdns.New(p.DHT.Host(), ma.RENDEZVOUS)
-		if err == mdns.ErrNoProtectedPeersFound {
-			log.Warnf("No protected peers found")
-			return
-		}
-		if err != nil {
-			log.Errorf("Failed to start MDNS discovery: %s", err)
-			return
-		}
-		m.DiscoverPeers(ctx)
-	}()
-
-	// Wait for a discovery process to complete
-	err := p.DHT.DiscoverPeers(ctx)
-	if err != dht.ErrNoProtectedPeersFound {
-		return fmt.Errorf("no new peers found %w", err)
-	}
-	if err != nil {
-		return fmt.Errorf("peer discovery unsuccessful: %w", err)
-	}
+	go p.DHT.DiscoveryLoop(ctx)
 
 	return nil
-}
-
-// DiscoveryLoop is a blocking function that will periodically
-// call DiscoverPeers() until the context is cancelled.
-// This shouldn't be cancelled in normal operation.
-// Each iteration will have a timeout of its own.
-
-func (p *P2P) DiscoveryLoop(ctx context.Context) {
-	log.Infof("Starting discovery with retry interval %s", config.P2PDiscoveryRetryIntervalString())
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		default:
-			err := p.DiscoverPeers() // This will block until discovery is complete or timeout
-			if err != nil {
-				log.Debugf("Discovery attempt failed: %s", err)
-			}
-			sleepTime := config.P2PDiscoveryRetryInterval()
-			log.Debugf("Discovery sleeping for %s", sleepTime.String())
-			time.Sleep(sleepTime)
-		}
-	}
 }

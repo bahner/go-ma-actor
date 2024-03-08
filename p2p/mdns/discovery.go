@@ -2,21 +2,21 @@ package mdns
 
 import (
 	"context"
-	"errors"
 
 	log "github.com/sirupsen/logrus"
 )
 
-var ErrNoProtectedPeersFound = errors.New("protected peers not found")
-
-// DiscoverPeers starts the discovery process and connects to discovered peers until the context is cancelled.
-func (m *MDNS) DiscoverPeers(ctx context.Context) error {
+// DiscoveryLoop starts the discovery process and connects to discovered peers until the context is cancelled.
+func (m *MDNS) DiscoveryLoop(ctx context.Context) error {
 	log.Debugf("Discovering MDNS peers for service name: %s", m.rendezvous)
 
 	for {
 		select {
 		case pai, ok := <-m.PeerChan:
 			if !ok {
+				if !(ctx == nil) { // conext.Bacground() is nil
+					log.Fatalf("MDNS peer channel closed, ut was supposed to be running in the background.")
+				}
 				log.Debug("MDNS peer channel closed.")
 				return nil // Exit if the channel is closed
 			}

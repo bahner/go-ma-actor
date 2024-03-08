@@ -57,8 +57,6 @@ func (ui *ChatUI) handleHelpCommands(args []string) {
 		switch args[1] {
 		case "broadcast":
 			ui.handleHelpCommand(broadcastUsage, broadcastHelp)
-		case "discover":
-			ui.handleHelpCommand(p2pDiscoverUsage, p2pDiscoverHelp)
 		case "enter":
 			ui.handleHelpCommand(enterUsage, enterHelp)
 		case "entity":

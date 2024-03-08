@@ -17,8 +17,6 @@ func (ui *ChatUI) handleCommands(input string) {
 	switch args[0] {
 	case "/broadcast":
 		ui.handleBroadcastCommand(args)
-	case "/discover":
-		ui.triggerDiscovery()
 	case "/edit":
 		ui.handleEditCommand()
 	case "/enter":
@@ -33,8 +31,6 @@ func (ui *ChatUI) handleCommands(input string) {
 		go ui.handleResolveCommand(args) // This make take some time. No need to block the UI
 	case "/peer":
 		ui.handlePeerCommand(args)
-	case "/p2p":
-		ui.handleP2PCommand(args)
 	case "/reset":
 		ui.handleResetCommand(args)
 	case "/refresh":

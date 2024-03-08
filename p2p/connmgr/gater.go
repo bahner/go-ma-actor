@@ -21,7 +21,7 @@ type ConnectionGater struct {
 // New creates a new CustomConnectionGater instance.
 func NewConnectionGater(connMgr *p2pConnmgr.BasicConnMgr) *ConnectionGater {
 	return &ConnectionGater{
-		AllowAll: config.P2PDiscoveryAllow(),
+		AllowAll: config.P2PDiscoveryAllowAll(),
 		ConnMgr:  connMgr,
 	}
 }
@@ -41,10 +41,12 @@ func (cg *ConnectionGater) InterceptAccept(conn network.ConnMultiaddrs) (allow b
 // For simplicity, they are set to allow all connections in this example.
 func (cg *ConnectionGater) InterceptSecured(nd network.Direction, p p2peer.ID, _ network.ConnMultiaddrs) (allow bool) {
 
-	if nd == network.DirOutbound {
+	// We should probably run with cg.AllowAll = true in the future
+	if nd == network.DirOutbound || cg.AllowAll {
 		return true
 	}
 
+	// We normally shouldn't arrive here.
 	allow = cg.isAllowed(p)
 
 	if allow {
@@ -66,7 +68,7 @@ func (cg *ConnectionGater) InterceptUpgraded(_ network.Conn) (allow bool, reason
 
 func (cg *ConnectionGater) isAllowed(p p2peer.ID) bool {
 
-	if config.P2PDiscoveryAllow() || cg.AllowAll {
+	if config.P2PDiscoveryAllowAll() || cg.AllowAll {
 		return true
 	}
 
