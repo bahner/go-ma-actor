@@ -13,9 +13,10 @@ const (
 	defaultConnmgrHighWatermark int           = 100
 	defaultConnmgrGracePeriod   time.Duration = time.Minute * 1
 
-	defaultDiscoveryAdvertiseTTL   time.Duration = time.Minute * 60
-	defaultDiscoveryAdvertiseLimit int           = 100
-	DEFAULT_ALLOW_ALL              bool          = true // Allow all peers by default. This is the norm for now. Use connmgr threshold and protection instead.
+	defaultDiscoveryAdvertiseInterval time.Duration = time.Minute * 5
+	defaultDiscoveryAdvertiseTTL      time.Duration = time.Minute * 60
+	defaultDiscoveryAdvertiseLimit    int           = 100
+	DEFAULT_ALLOW_ALL                 bool          = true // Allow all peers by default. This is the norm for now. Use connmgr threshold and protection instead.
 
 	defaultListenPort int    = 0
 	fakeP2PIdentity   string = "NO_DEFAULT_NODE_IDENITY"
@@ -40,13 +41,16 @@ func init() {
 
 	// DISCOVERY
 	pflag.Int("p2p-discovery-advertise-limit", defaultDiscoveryAdvertiseLimit, "Limit for advertising peer discovery.")
-	pflag.Duration("p2p-discovery-advertise-ttl", defaultDiscoveryAdvertiseTTL, "Hint o TimeToLive for advertising peer discovery.")
+	pflag.Duration("p2p-discovery-advertise-ttl", defaultDiscoveryAdvertiseTTL, "Hint of TimeToLive for advertising peer discovery.")
+	pflag.Duration("p2p-discovery-advertise-interval", defaultDiscoveryAdvertiseInterval, "How often to advertise our presence to libp2p")
 	pflag.Bool("p2p-discovery-allow-all", DEFAULT_ALLOW_ALL, "Number of concurrent peer discovery routines.")
 
+	viper.BindPFlag("p2p.discovery.advetise-interval", pflag.Lookup("p2p-discovery-advertise-interval"))
 	viper.BindPFlag("p2p.discovery.advertise-limit", pflag.Lookup("p2p-discovery-advertise-limit"))
 	viper.BindPFlag("p2p.discovery.advertise-ttl", pflag.Lookup("p2p-discovery-advertise-ttl"))
 	viper.BindPFlag("p2p.discovery.allow-all", pflag.Lookup("p2p-discovery-allow-all"))
 
+	viper.SetDefault("p2p.discovery.advertise-interval", defaultDiscoveryAdvertiseInterval)
 	viper.SetDefault("p2p.discovery.advertise-limit", defaultDiscoveryAdvertiseLimit)
 	viper.SetDefault("p2p.discovery.advertise-ttl", defaultDiscoveryAdvertiseTTL)
 	viper.SetDefault("p2p.discovery.allow-all", DEFAULT_ALLOW_ALL)
@@ -66,6 +70,10 @@ func init() {
 func P2PIdentity() string {
 
 	return viper.GetString("p2p.identity")
+}
+
+func P2PDiscoveryAdvertiseInterval() time.Duration {
+	return viper.GetDuration("p2p.discovery.advertise-interval")
 }
 
 func P2PDiscoveryAdvertiseTTL() time.Duration {
