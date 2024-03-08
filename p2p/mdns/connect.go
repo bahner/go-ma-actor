@@ -18,7 +18,7 @@ func (m *MDNS) peerConnectAndUpdateIfSuccessful(ctx context.Context, pai p2peer.
 		return peer.ErrAddrInfoAddrsEmpty
 	}
 
-	p, err := peer.GetOrCreateFromAddrInfo(&pai)
+	p, err := peer.GetOrCreateFromAddrInfo(pai)
 	if err != nil {
 		return err
 	}

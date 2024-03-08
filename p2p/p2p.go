@@ -23,7 +23,7 @@ type P2P struct {
 	PubSub   *p2ppubsub.PubSub
 	DHT      *dht.DHT
 	MDNS     *mdns.MDNS
-	AddrInfo *p2peer.AddrInfo
+	AddrInfo p2peer.AddrInfo
 }
 
 // Initialise everything needed for p2p communication. The function forces use of a specific IPNS key.
@@ -47,7 +47,7 @@ func Init(d *dht.DHT, p2pOpts ...libp2p.Option) (*P2P, error) {
 		return nil, fmt.Errorf("p2p.Init: failed to create pubsub: %w", err)
 	}
 
-	ai := &p2peer.AddrInfo{
+	ai := p2peer.AddrInfo{
 		ID:    d.Host().ID(),
 		Addrs: d.Host().Addrs(),
 	}

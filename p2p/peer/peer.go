@@ -23,13 +23,13 @@ type Peer struct {
 	// Name is the peer's name
 	Nick string
 	// AddrInfo
-	AddrInfo *p2peer.AddrInfo
+	AddrInfo p2peer.AddrInfo
 	// Allowed
 	Allowed bool
 }
 
 // Create a new aliased addrinfo peer
-func New(addrInfo *p2peer.AddrInfo, nick string, allowed bool) Peer {
+func New(addrInfo p2peer.AddrInfo, nick string, allowed bool) Peer {
 
 	return Peer{
 		ID:       addrInfo.ID.String(),
@@ -43,7 +43,7 @@ func New(addrInfo *p2peer.AddrInfo, nick string, allowed bool) Peer {
 // in the sense that it does not do any live P2P lookups and as such
 // it's use is safe to use anytime.
 // The lookup is just in the local memory cache and database.
-func GetOrCreateFromAddrInfo(addrInfo *p2peer.AddrInfo) (Peer, error) {
+func GetOrCreateFromAddrInfo(addrInfo p2peer.AddrInfo) (Peer, error) {
 
 	id := addrInfo.ID.String()
 

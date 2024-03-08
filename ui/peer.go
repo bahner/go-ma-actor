@@ -173,7 +173,7 @@ func (ui *ChatUI) handlePeerConnectCommand(args []string) {
 			ui.displaySystemMessage("Error: " + err.Error())
 			return
 		}
-		err = ui.p.DHT.PeerConnectAndUpdateIfSuccessful(context.Background(), *addrInfo)
+		err = ui.p.DHT.PeerConnectAndUpdateIfSuccessful(context.Background(), addrInfo)
 		if err != nil {
 			ui.displaySystemMessage("Error connecting to peer: " + err.Error())
 			return

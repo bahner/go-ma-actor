@@ -18,7 +18,7 @@ func (d *DHT) PeerConnectAndUpdateIfSuccessful(ctx context.Context, pai p2peer.A
 		return peer.ErrAddrInfoAddrsEmpty
 	}
 
-	p, err := peer.GetOrCreateFromAddrInfo(&pai)
+	p, err := peer.GetOrCreateFromAddrInfo(pai)
 	if err != nil {
 		return err
 	}

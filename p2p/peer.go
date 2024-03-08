@@ -23,20 +23,20 @@ func (p *P2P) GetOrCreatePeerFromIDString(id string) (peer.Peer, error) {
 	return peer.GetOrCreateFromAddrInfo(addrInfo)
 }
 
-func (p *P2P) GetPeerAddrInfoFromIDString(id string) (*p2peer.AddrInfo, error) {
+func (p *P2P) GetPeerAddrInfoFromIDString(id string) (p2peer.AddrInfo, error) {
 	pid, err := p2peer.Decode(id)
 	if err != nil {
-		return nil, err
+		return p2peer.AddrInfo{}, err
 	}
 
 	return p.GetPeerAddrInfoFromID(pid)
 }
 
-func (p *P2P) GetPeerAddrInfoFromID(id p2peer.ID) (*p2peer.AddrInfo, error) {
+func (p *P2P) GetPeerAddrInfoFromID(id p2peer.ID) (p2peer.AddrInfo, error) {
 	a := p2peer.AddrInfo{
 		ID:    id,
 		Addrs: p.DHT.Host().Peerstore().Addrs(id),
 	}
 
-	return &a, nil
+	return a, nil
 }
