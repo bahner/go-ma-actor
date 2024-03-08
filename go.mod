@@ -4,7 +4,7 @@ go 1.22
 
 require (
 	github.com/adrg/xdg v0.4.0
-	github.com/bahner/go-ma v0.7.4-0.20240307210945-9437e049e6d7
+	github.com/bahner/go-ma v0.7.4
 	github.com/gdamore/tcell/v2 v2.7.2
 	github.com/libp2p/go-libp2p v0.32.2
 	github.com/libp2p/go-libp2p-kad-dht v0.24.4
