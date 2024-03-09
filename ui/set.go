@@ -86,7 +86,7 @@ func (ui *ChatUI) handleSetDiscoveryCommand(args []string) {
 
 			// Now we can start continuous discovery in the background.
 			ui.discoveryLoopCtx, ui.discoveryLoopCancel = context.WithCancel(context.Background())
-			go ui.p.DiscoveryLoop(context.Background())
+			go ui.p.StartDiscoveryLoop(context.Background())
 			ui.displaySystemMessage("Discovery is on")
 		case "off":
 			if ui.discoveryLoopCancel != nil {

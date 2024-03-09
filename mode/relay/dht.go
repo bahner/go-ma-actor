@@ -4,14 +4,14 @@ import (
 	"fmt"
 
 	"github.com/bahner/go-ma-actor/config"
+	"github.com/bahner/go-ma-actor/p2p"
 	"github.com/bahner/go-ma-actor/p2p/connmgr"
-	"github.com/bahner/go-ma-actor/p2p/dht"
 	"github.com/bahner/go-ma-actor/p2p/node"
 	"github.com/libp2p/go-libp2p"
 	p2pDHT "github.com/libp2p/go-libp2p-kad-dht"
 )
 
-func DHT(cg *connmgr.ConnectionGater) (*dht.DHT, error) {
+func DHT(cg *connmgr.ConnectionGater) (*p2p.DHT, error) {
 
 	// THese are the relay specific parts.
 	p2pOpts := []libp2p.Option{
@@ -27,7 +27,7 @@ func DHT(cg *connmgr.ConnectionGater) (*dht.DHT, error) {
 		return nil, fmt.Errorf("pong: failed to create libp2p node: %w", err)
 	}
 
-	d, err := dht.New(n, cg, dhtOpts...)
+	d, err := p2p.NewDHT(n, cg, dhtOpts...)
 	if err != nil {
 		return nil, fmt.Errorf("pong: failed to create DHT: %w", err)
 	}

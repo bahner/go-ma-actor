@@ -2,13 +2,15 @@ package p2p
 
 import (
 	"github.com/bahner/go-ma"
+	"github.com/bahner/go-ma-actor/p2p/peer"
 	"github.com/libp2p/go-libp2p/core/network"
 	p2peer "github.com/libp2p/go-libp2p/core/peer"
+	log "github.com/sirupsen/logrus"
 )
 
 // AllConnectedPeers returns a slice of p2peer.ID for all connected peers of the given host.
 func (p *P2P) AllConnectedPeers() p2peer.IDSlice {
-	h := p.DHT.Host()
+	h := p.Host
 	var connectedPeers p2peer.IDSlice
 
 	for _, p := range h.Network().Peers() {
@@ -22,7 +24,7 @@ func (p *P2P) AllConnectedPeers() p2peer.IDSlice {
 
 // ConnectedProtectedPeers returns a slice of p2peer.ID for all protected connected peers.
 func (p *P2P) ConnectedProtectedPeers() p2peer.IDSlice {
-	h := p.DHT.Host()
+	h := p.Host
 	var connectedProtectedPeers p2peer.IDSlice
 
 	for _, connectedPeer := range p.AllConnectedPeers() {
@@ -36,7 +38,7 @@ func (p *P2P) ConnectedProtectedPeers() p2peer.IDSlice {
 
 // ConnectedUnprotectedPeers returns a slice of p2peer.ID for all unprotected connected peers.
 func (p *P2P) ConnectedUnprotectedPeers() p2peer.IDSlice {
-	h := p.DHT.Host()
+	h := p.Host
 	var connectedUnprotectedPeers p2peer.IDSlice
 
 	for _, connectedPeer := range p.AllConnectedPeers() {
@@ -50,7 +52,7 @@ func (p *P2P) ConnectedUnprotectedPeers() p2peer.IDSlice {
 
 // ConnectedProtectedPeersAddrInfo returns a map of p2peer.ID to AddrInfo for all protected connected peers.
 func (p *P2P) ConnectedProtectedPeersAddrInfo() map[string]*p2peer.AddrInfo {
-	h := p.DHT.Host()
+	h := p.Host
 	connectedPeersAddrInfo := make(map[string]*p2peer.AddrInfo)
 
 	for _, connectedPeer := range p.ConnectedProtectedPeers() {
@@ -61,11 +63,16 @@ func (p *P2P) ConnectedProtectedPeersAddrInfo() map[string]*p2peer.AddrInfo {
 	return connectedPeersAddrInfo
 }
 
-func (p *P2P) ConnectedProctectedPeersShortStrings() []string {
+func (p *P2P) ConnectedProctectedPeersNickList() []string {
 	peers := p.ConnectedProtectedPeersAddrInfo()
-	peersShortstrings := make([]string, 0, len(peers))
+	peersNickList := make([]string, 0, len(peers))
 	for _, p := range peers {
-		peersShortstrings = append(peersShortstrings, p.ID.ShortString())
+		nick, err := peer.LookupNick(p.ID.String())
+		if err != nil {
+			log.Warnf("Error looking up nick for connected protected peer %s: %s", p.ID.String(), err)
+			continue
+		}
+		peersNickList = append(peersNickList, nick)
 	}
-	return peersShortstrings
+	return peersNickList
 }

@@ -53,8 +53,8 @@ func webHandler(w http.ResponseWriter, _ *http.Request, p *p2p.P2P, e *Entity) {
 
 	doc.Title = titleStr
 	doc.H1 = h1str
-	doc.H2 = fmt.Sprintf("%s@%s", ma.RENDEZVOUS, (p.DHT.Host().ID().String()))
-	doc.Addrs = p.DHT.Host().Addrs()
+	doc.H2 = fmt.Sprintf("%s@%s", ma.RENDEZVOUS, (p.Host.ID().String()))
+	doc.Addrs = p.Host.Addrs()
 	doc.AllConnectedPeers = p.AllConnectedPeers()
 	doc.PeersWithSameRendez = p.ConnectedProtectedPeers()
 

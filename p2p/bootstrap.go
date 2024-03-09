@@ -1,4 +1,4 @@
-package dht
+package p2p
 
 import (
 	"context"
@@ -14,7 +14,7 @@ import (
 func (d *DHT) Bootstrap(ctx context.Context) error {
 	log.Info("Initialising Kademlia DHT.")
 
-	err := d.IpfsDHT.Bootstrap(context.Background())
+	err := d.IpfsDHT.Bootstrap(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to bootstrap Kademlia DHT: %w", err)
 	}
@@ -36,7 +36,7 @@ func (d *DHT) Bootstrap(ctx context.Context) error {
 		go func(pInfo peer.AddrInfo) {
 			defer wg.Done()
 
-			if err := d.h.Connect(ctx, pInfo); err != nil {
+			if err := d.Host.Connect(ctx, pInfo); err != nil {
 				log.Warnf("Bootstrap warning: %v", err)
 			}
 		}(*peerinfo)

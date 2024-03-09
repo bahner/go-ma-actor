@@ -60,7 +60,7 @@ func main() {
 	// So let's just start it quickly and stop here.
 	if config.RelayMode() {
 		fmt.Println("Starting relay mode...")
-		go p2P.DiscoveryLoop(context.Background())
+		go p2P.StartDiscoveryLoop(context.Background())
 		startWebServer(p2P, nil)
 		os.Exit(0) // This won't be reached.
 	}

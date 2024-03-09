@@ -4,12 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/bahner/go-ma"
-	"github.com/bahner/go-ma-actor/p2p/dht"
-	"github.com/bahner/go-ma-actor/p2p/mdns"
 	"github.com/bahner/go-ma-actor/p2p/pubsub"
 	libp2p "github.com/libp2p/go-libp2p"
 	p2ppubsub "github.com/libp2p/go-libp2p-pubsub"
+	"github.com/libp2p/go-libp2p/core/host"
 	p2peer "github.com/libp2p/go-libp2p/core/peer"
 	log "github.com/sirupsen/logrus"
 )
@@ -21,8 +19,9 @@ var _p2p *P2P
 // It also contains a list of connected peers.
 type P2P struct {
 	PubSub   *p2ppubsub.PubSub
-	DHT      *dht.DHT
-	MDNS     *mdns.MDNS
+	DHT      *DHT
+	MDNS     *MDNS
+	Host     host.Host
 	AddrInfo p2peer.AddrInfo
 }
 
@@ -38,21 +37,21 @@ type P2P struct {
 //
 // The function return the libp2p node and a PubSub Service
 
-func Init(d *dht.DHT, p2pOpts ...libp2p.Option) (*P2P, error) {
+func Init(d *DHT, p2pOpts ...libp2p.Option) (*P2P, error) {
 
 	ctx := context.Background()
 
-	ps, err := pubsub.New(ctx, d.Host())
+	ps, err := pubsub.New(ctx, d.Host)
 	if err != nil {
 		return nil, fmt.Errorf("p2p.Init: failed to create pubsub: %w", err)
 	}
 
 	ai := p2peer.AddrInfo{
-		ID:    d.Host().ID(),
-		Addrs: d.Host().Addrs(),
+		ID:    d.Host.ID(),
+		Addrs: d.Host.Addrs(),
 	}
 
-	m, err := mdns.New(d.Host(), ma.RENDEZVOUS)
+	m, err := newMDNS(d.Host)
 	if err != nil {
 		log.Errorf("p2p.Init: failed to start MDNS discovery: %v", err)
 	}
@@ -60,6 +59,7 @@ func Init(d *dht.DHT, p2pOpts ...libp2p.Option) (*P2P, error) {
 	_p2p = &P2P{
 		AddrInfo: ai,
 		DHT:      d,
+		Host:     d.Host,
 		MDNS:     m,
 		PubSub:   ps,
 	}
@@ -72,4 +72,13 @@ func Init(d *dht.DHT, p2pOpts ...libp2p.Option) (*P2P, error) {
 // Get the P2P instance. This is a singleton.
 func Get() *P2P {
 	return _p2p
+}
+
+func (p *P2P) StartDiscoveryLoop(ctx context.Context) error {
+
+	go p.MDNS.discoveryLoop(ctx)
+
+	go p.DHT.discoveryLoop(ctx)
+
+	return nil
 }

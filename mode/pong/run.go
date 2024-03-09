@@ -26,7 +26,7 @@ func Run(a *actor.Actor, p *p2p.P2P) {
 	viper.SetDefault("mode.pong.fortune", config.DEFAULT_PONG_FORTUNE_MODE)
 
 	fmt.Printf("Starting pong mode as %s\n", a.Entity.DID.Id)
-	go p.DiscoveryLoop(ctx)
+	go p.StartDiscoveryLoop(ctx)
 	fmt.Println("Discovery loop started.")
 	go a.Subscribe(ctx, a.Entity)
 	fmt.Println("Subscribed to self.")
@@ -38,7 +38,7 @@ func Run(a *actor.Actor, p *p2p.P2P) {
 	actor.HelloWorld(ctx, a)
 	fmt.Println("Sent hello world.")
 
-	fmt.Printf("Running in pong mode as %s@%s\n", a.Entity.DID.Id, p.DHT.Host().ID())
+	fmt.Printf("Running in pong mode as %s@%s\n", a.Entity.DID.Id, p.Host.ID())
 	fmt.Println("Press Ctrl-C to stop.")
 
 	for {

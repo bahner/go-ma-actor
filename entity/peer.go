@@ -22,7 +22,7 @@ func (e *Entity) ConnectPeer() (pi p2peer.AddrInfo, err error) {
 	}
 
 	// If we're already connected, return
-	if p.DHT.Host().Network().Connectedness(pid) == network.Connected {
+	if p.Host.Network().Connectedness(pid) == network.Connected {
 		log.Debugf("Already connected to peer: %s", pid.String())
 		return pi, peer.ErrAlreadyConnected
 	}
@@ -37,7 +37,7 @@ func (e *Entity) ConnectPeer() (pi p2peer.AddrInfo, err error) {
 
 	// Connect to the peer
 	log.Debugf("Connecting to peer with addrs: %v", pi.Addrs)
-	err = p.DHT.Host().Connect(e.Ctx, pi)
+	err = p.Host.Connect(e.Ctx, pi)
 
 	return pi, err
 
