@@ -146,7 +146,11 @@ func getOrCreateNick(id string) (nodeAlias string) {
 		}
 	}
 
-	// Else return the last 8 chars of the peer ID.
+	// We can't shorten the ID if it's too short.
+	if len(id) < nodeAliasLength {
+		return id
+	}
+
 	return id[len(id)-nodeAliasLength:]
 
 }
