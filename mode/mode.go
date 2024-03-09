@@ -25,14 +25,14 @@ func UnorderedListFromPeerIDSlice(peers p2peer.IDSlice) string {
 	}
 	sort.Strings(keys)
 
-	list := "<ul>\n"
+	list := "<table>\n"
 	for _, v := range keys {
 		if peersMap[v] == v {
-			list += "<li>" + v + "</li>\n"
+			list += "<tr><td span=2>" + v + "</td></tr>\n"
 		} else {
-			list += "<li>" + v + "(" + peersMap[v] + ")</li>\n"
+			list += "<tr><td>" + v + "</td><td>" + peersMap[v] + "</td></tr>\n"
 		}
 	}
-	list += "</ul>\n"
+	list += "</table>\n"
 	return list
 }

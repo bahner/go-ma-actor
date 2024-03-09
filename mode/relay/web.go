@@ -52,6 +52,8 @@ func webHandler(w http.ResponseWriter, _ *http.Request, p *p2p.P2P) {
 func (d *WebHandlerDocument) String() string {
 
 	html := "<!DOCTYPE html>\n<html>\n<head>\n"
+	html += "<style>table, th, td {border: 1px solid black;}</style>"
+
 	if d.Title != "" {
 		html += "<title>" + d.Title + "</title>\n"
 	}
@@ -65,11 +67,12 @@ func (d *WebHandlerDocument) String() string {
 	// Info leak? Not really important anyways.
 	// // Addresses
 	if len(d.Addrs) > 0 {
-		html += "<h2>Addresses</h2>\n<ul>"
+		html += "<h2>Addresses</h2>\n"
+		html += "<table>\n"
 		for _, addr := range d.Addrs {
-			html += "<li>" + addr.String() + "</li>"
+			html += "<tr><td>" + addr.String() + "</td></tr>"
 		}
-		html += "</ul>"
+		html += "</table>"
 	}
 
 	// Peers with Same Rendezvous
