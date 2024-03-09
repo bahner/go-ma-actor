@@ -81,11 +81,11 @@ func (d *WebHandlerDocument) String() string {
 	// Info leak? Not really important anyways.
 	// // Addresses
 	if len(d.Addrs) > 0 {
-		html += "<h2>Addresses</h2>\n<ul>"
+		html += "<h2>Addresses</h2>\n<ul>\n"
 		for _, addr := range d.Addrs {
-			html += "<li>" + addr.String() + "</li>"
+			html += "<li>" + addr.String() + "</li>\n"
 		}
-		html += "</ul>"
+		html += "</ul>\n"
 	}
 
 	// Peers with Same Rendezvous
