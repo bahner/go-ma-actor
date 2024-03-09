@@ -9,17 +9,10 @@ import (
 )
 
 const (
-	_LOOKUP_ID    = "SELECT id FROM peers WHERE nick = ? OR id = ?"
 	_LOOKUP_NICK  = "SELECT nick FROM peers WHERE nick = ? OR id = ?"
-	_SELECT_ID    = "SELECT id FROM peers WHERE nick = ?"
 	_SELECT_NICK  = "SELECT nick FROM peers WHERE id = ?"
 	_UPDATE_NICK  = "UPDATE peers SET nick = ? WHERE id = ?"
 	_SELECT_NICKS = "SELECT id, nick FROM peers"
-)
-
-var (
-	ErrPeerNotFoundInDB    = errors.New("peer not found in database")
-	ErrDBTransactionFailed = errors.New("database transaction failed")
 )
 
 // SetNickForID updates or inserts the nick for a given peer ID, using a transaction.
@@ -92,25 +85,6 @@ func GetIDForNick(nick string) (string, error) {
 	return id, nil
 }
 
-// LookupID finds a peer ID by its nickname or ID.
-func LookupID(q string) (string, error) {
-	db, err := db.Get()
-	if err != nil {
-		return "", err
-	}
-
-	var id string
-	err = db.QueryRow(_LOOKUP_ID, q, q).Scan(&id)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return "", ErrPeerNotFoundInDB
-		}
-		return "", err
-	}
-
-	return id, nil
-}
-
 // LookupNick finds a nickname for a peerby its ID or Nick.
 func LookupNick(id string) (string, error) {
 	db, err := db.Get()
@@ -129,43 +103,6 @@ func LookupNick(id string) (string, error) {
 
 	return nick, nil
 }
-
-// Lookup finds a peer nickname by its ID or Nick.
-// If the name is not found, it returns the input name.
-func Lookup(name string) (string, error) {
-
-	id, err := LookupID(name)
-	if err != nil {
-		return name, ErrPeerNotFoundInDB
-	}
-
-	return id, nil
-}
-
-// Return a boolean whther the peer is known not
-// This this should err on the side of caution and return false
-// The input can be a peer ID or a nickname.
-func IsKnown(id string) bool {
-	db, err := db.Get()
-	if err != nil {
-		return false
-	}
-
-	// We just need to know if the peer exists, so we select the id itself.
-	var peerID string
-	err = db.QueryRow(_LOOKUP_ID, id).Scan(&peerID)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return false
-		}
-		// Some other error occurred.
-		return false
-	}
-
-	// If we get here, it means the peer exists in the database.
-	return true
-}
-
 func Nicks() map[string]string {
 	db, err := db.Get()
 	if err != nil {
