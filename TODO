@@ -10,33 +10,9 @@ Add acl. So that if an ACL exists, then broadcast aren't used
 only acl members can send messages in and outgoing messages
 will be encrypted to all members. So - private actor, basically
 
-### merge aliases
-
-In terms of actors, the alias should be merged. Maybe to a did@node
-There should be some correlation. did@node is farily correct.
-Maybe publish node to DIDDocument? Eg, "lastKnownNode"
-
-This should be set manually. We can't really know this. Maybe we can
-trace the node, though ... all interestin. Trace where messages where
-sent from.
-
 ## Bugs
 
-/WHen setting a nick to an existing nick the message is OK, not an error. The change doesnæt go through, as is correct.
-
-### Bootstrap peers
-
-Make a list of host, ie. Multiaddrs or nodeIds configurable, so that these
-are all that's required for a successful bootup.
-
-### Connect
-
-Add a connect command to connect to a specific host directly, eg:
-
-/connect relay
+Nicks are reset every startup.
 
 ### Pinning
 We should probably handle pinning. Maybe not for DID Docs, as they have timestamp, so wont be reused.
-
-## Features
-En|disable discovery process
