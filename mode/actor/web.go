@@ -6,8 +6,9 @@ import (
 
 	"github.com/bahner/go-ma"
 	"github.com/bahner/go-ma-actor/config"
+	"github.com/bahner/go-ma-actor/entity"
+	"github.com/bahner/go-ma-actor/mode"
 	"github.com/bahner/go-ma-actor/p2p"
-	actorPeer "github.com/bahner/go-ma-actor/p2p/peer"
 	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/multiformats/go-multiaddr"
 )
@@ -16,7 +17,7 @@ import (
 
 type WebHandlerData struct {
 	P2P    *p2p.P2P
-	Entity *Entity
+	Entity *entity.Entity
 }
 
 type WebHandlerDocument struct {
@@ -36,7 +37,7 @@ func (data *WebHandlerData) WebHandler(w http.ResponseWriter, r *http.Request) {
 	webHandler(w, r, data.P2P, data.Entity)
 }
 
-func webHandler(w http.ResponseWriter, _ *http.Request, p *p2p.P2P, e *Entity) {
+func webHandler(w http.ResponseWriter, _ *http.Request, p *p2p.P2P, e *entity.Entity) {
 
 	doc := NewWebHandlerDocument()
 
@@ -89,25 +90,13 @@ func (d *WebHandlerDocument) String() string {
 
 	// Peers with Same Rendezvous
 	if len(d.PeersWithSameRendez) > 0 {
-		html += fmt.Sprintf("<h2>Discovered peers (%d):</h2>\n<ul>", len(d.PeersWithSameRendez))
-		for _, pr := range d.PeersWithSameRendez {
-			p, err := actorPeer.Get(pr.String())
-			if err == nil {
-				html += "<li>" + p.ID + "(" + p.Nick + ")</li>"
-			} else {
-				html += "<li>" + pr.String() + "</li>"
-			}
-
-		}
-		html += "</ul>"
+		html += fmt.Sprintf("<h2>Discovered peers (%d):</h2>\n", len(d.PeersWithSameRendez))
+		html += mode.UnorderedListFromPeerIDSlice(d.PeersWithSameRendez)
 	}
 	// All Connected Peers
 	if len(d.AllConnectedPeers) > 0 {
-		html += fmt.Sprintf("<h2>libp2p Network Peers (%d):</h2>\n<ul>", len(d.AllConnectedPeers))
-		for _, peer := range d.AllConnectedPeers {
-			html += "<li>" + peer.String() + "</li>"
-		}
-		html += "</ul>"
+		html += fmt.Sprintf("<h2>libp2p Network Peers (%d):</h2>\n", len(d.AllConnectedPeers))
+		html += mode.UnorderedListFromPeerIDSlice(d.AllConnectedPeers)
 	}
 
 	html += "</body>\n</html>"

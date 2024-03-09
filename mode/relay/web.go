@@ -3,12 +3,11 @@ package relay
 import (
 	"fmt"
 	"net/http"
-	"sort"
 
 	"github.com/bahner/go-ma"
 	"github.com/bahner/go-ma-actor/config"
+	"github.com/bahner/go-ma-actor/mode"
 	"github.com/bahner/go-ma-actor/p2p"
-	"github.com/bahner/go-ma-actor/p2p/peer"
 	p2peer "github.com/libp2p/go-libp2p/core/peer"
 	"github.com/multiformats/go-multiaddr"
 )
@@ -23,8 +22,8 @@ type WebHandlerDocument struct {
 	Title            string
 	H1               string
 	Addrs            []multiaddr.Multiaddr
-	ProtectedPeers   map[string]string
-	UnprotectedPeers map[string]string
+	ProtectedPeers   p2peer.IDSlice
+	UnprotectedPeers p2peer.IDSlice
 }
 
 func NewWebHandlerDocument() *WebHandlerDocument {
@@ -43,32 +42,11 @@ func webHandler(w http.ResponseWriter, _ *http.Request, p *p2p.P2P) {
 	doc.H1 = fmt.Sprintf("%s@%s", ma.RENDEZVOUS, (p.Host.ID().String()))
 	doc.H1 += fmt.Sprintf("<br>Found %d peers with rendezvous %s", len(p.ConnectedProtectedPeers()), ma.RENDEZVOUS)
 	doc.Addrs = p.Host.Addrs()
-	doc.ProtectedPeers = createSortedMapOfPeersNicks(p.ConnectedProtectedPeers())
-	doc.UnprotectedPeers = createSortedMapOfPeersNicks(p.ConnectedUnprotectedPeers())
+	doc.ProtectedPeers = p.ConnectedProtectedPeers()
+	doc.UnprotectedPeers = p.ConnectedUnprotectedPeers()
 	// doc.AllConnectedPeers = p.GetAllConnectedPeers()
 
 	fmt.Fprint(w, doc.String())
-}
-
-// Take peerIDslice and convert them to a map of map[id] = nick
-func createSortedMapOfPeersNicks(peers p2peer.IDSlice) map[string]string {
-	unsortedPeersMap := make(map[string]string)
-	for _, p := range peers {
-		id := p.String()
-		unsortedPeersMap[id] = peer.Lookup(id)
-	}
-
-	var keys []string
-	for _, p := range peers {
-		keys = append(keys, p.String())
-	}
-	sort.Strings(keys)
-
-	peersMap := make(map[string]string)
-	for _, k := range keys {
-		peersMap[k] = unsortedPeersMap[k]
-	}
-	return peersMap
 }
 
 func (d *WebHandlerDocument) String() string {
@@ -96,29 +74,16 @@ func (d *WebHandlerDocument) String() string {
 
 	// Peers with Same Rendezvous
 	if len(d.ProtectedPeers) > 0 {
-		html += fmt.Sprintf("<h2>Discovered peers (%d):</h2>\n<ul>", len(d.ProtectedPeers))
-		html += createListFromMap(d.ProtectedPeers)
-		html += "</ul>"
+		html += fmt.Sprintf("<h2>Discovered peers (%d):</h2>\n", len(d.ProtectedPeers))
+		html += mode.UnorderedListFromPeerIDSlice(d.ProtectedPeers)
 	}
 	// All Connected Peers
 	if len(d.UnprotectedPeers) > 0 {
-		html += fmt.Sprintf("<h2>libp2p Network Peers (%d):</h2>\n<ul>", len(d.UnprotectedPeers))
-		html += createListFromMap(d.UnprotectedPeers)
-		html += "</ul>"
+		html += fmt.Sprintf("<h2>libp2p Network Peers (%d):</h2>\n", len(d.UnprotectedPeers))
+
+		html += mode.UnorderedListFromPeerIDSlice(d.UnprotectedPeers)
 	}
 
 	html += "</body>\n</html>"
 	return html
-}
-
-func createListFromMap(m map[string]string) string {
-	list := ""
-	for k, v := range m {
-		if k == v {
-			list += "<li>" + k + "</li>"
-		} else {
-			list += "<li>" + k + "(" + v + ")</li>"
-		}
-	}
-	return list
 }
