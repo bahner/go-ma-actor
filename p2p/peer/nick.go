@@ -132,14 +132,38 @@ func LookupNick(id string) (string, error) {
 
 // Lookup finds a peer nickname by its ID or Nick.
 // If the name is not found, it returns the input name.
-func Lookup(name string) string {
+func Lookup(name string) (string, error) {
 
 	id, err := LookupID(name)
 	if err != nil {
-		return name
+		return name, ErrPeerNotFoundInDB
 	}
 
-	return id
+	return id, nil
+}
+
+// Return a boolean whther the peer is known not
+// This this should err on the side of caution and return false
+// The input can be a peer ID or a nickname.
+func IsKnown(id string) bool {
+	db, err := db.Get()
+	if err != nil {
+		return false
+	}
+
+	// We just need to know if the peer exists, so we select the id itself.
+	var peerID string
+	err = db.QueryRow(_LOOKUP_ID, id).Scan(&peerID)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return false
+		}
+		// Some other error occurred.
+		return false
+	}
+
+	// If we get here, it means the peer exists in the database.
+	return true
 }
 
 func Nicks() map[string]string {
@@ -166,4 +190,26 @@ func Nicks() map[string]string {
 	}
 
 	return peers
+}
+
+// Function is equiavalent to ShortString() in libp2p, but it also
+// checks if the peer is known in the database and returns the
+// node alias if it exists.
+// The ShortString() function returns the last 8 chars of the peer ID.
+// The input is a full peer ID string.
+// Returns the input in case of errors
+func getOrCreateNick(id string) (nodeAlias string) {
+
+	// If we find the ID, fetch the nick and return it.
+	id, err := LookupID(id)
+	if err == nil {
+		nodeAlias, err := LookupNick(id)
+		if err == nil {
+			return nodeAlias
+		}
+	}
+
+	// Else return the last 8 chars of the peer ID.
+	return id[len(id)-nodeAliasLength:]
+
 }

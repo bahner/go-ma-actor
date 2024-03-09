@@ -10,42 +10,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// Get or creates a peer from the ID String.
-// This might take sometime, but it's still very useful.
-// It should normally e pretty fast.
-func GetOrCreatePeerFromIDString(h host.Host, id string) (Peer, error) {
-
-	_p, err := Get(id)
-	if err == nil {
-		return _p, nil
-	}
-
-	addrInfo, err := GetPeerAddrInfoFromIDString(h, id)
-	if err != nil {
-		return Peer{}, err
-	}
-
-	return GetOrCreateFromAddrInfo(addrInfo)
-}
-
-func GetPeerAddrInfoFromIDString(h host.Host, id string) (p2peer.AddrInfo, error) {
-	pid, err := p2peer.Decode(id)
-	if err != nil {
-		return p2peer.AddrInfo{}, err
-	}
-
-	return GetPeerAddrInfoFromID(h, pid)
-}
-
-func GetPeerAddrInfoFromID(h host.Host, id p2peer.ID) (p2peer.AddrInfo, error) {
-	a := p2peer.AddrInfo{
-		ID:    id,
-		Addrs: h.Peerstore().Addrs(id),
-	}
-
-	return a, nil
-}
-
 func ConnectAndProtect(ctx context.Context, h host.Host, pai p2peer.AddrInfo) error {
 
 	var (
@@ -60,6 +24,7 @@ func ConnectAndProtect(ctx context.Context, h host.Host, pai p2peer.AddrInfo) er
 	if err != nil {
 		return err
 	}
+
 	if !IsAllowed(p.ID) { // Do an actual lookup in the database here
 		log.Debugf("Peer %s is explicitly denied", id)
 		UnprotectPeer(h, pai.ID)
