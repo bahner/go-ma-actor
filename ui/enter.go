@@ -45,18 +45,22 @@ func (ui *ChatUI) enterEntity(d string, reEntry bool) error {
 
 	err = ui.a.Verify()
 	if err != nil {
+		log.Debugf("Error verifying actor before entry: %s", err.Error())
 		return err
 	}
 
 	// If we have a cached entity for this nick, use it.
 	e, err = entity.GetOrCreate((entity.Lookup(d)))
 	if err != nil {
-		// If we don't have it stored, then create it.
-		e, err = entity.GetOrCreate(d)
+		log.Errorf("Error creating entity for entry: %s", err.Error())
+		// Without an entity, we can't do anything.
+		return err
 	}
 
-	// Without a valid entity, we can't do anything.
-	if err != nil || e.Verify() != nil {
+	err = e.Verify()
+	if err != nil {
+		log.Errorf("Error verifying entity for entry: %s", err.Error())
+		// Without an entity, we can't do anything.
 		return err
 	}
 
