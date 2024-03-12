@@ -12,7 +12,6 @@ import (
 )
 
 // ConnectionGater is a struct that implements the network.ConnectionGater interface.
-// It uses a sync.Map to store valid peer IDs that have been discovered using the correct rendezvous string.
 type ConnectionGater struct {
 	AllowAll bool
 	ConnMgr  *p2pConnmgr.BasicConnMgr

@@ -15,8 +15,10 @@ const (
 	_SELECT_NICKS = "SELECT id, nick FROM peers"
 )
 
+var nodeAliasLength = 8
+
 // SetNickForID updates or inserts the nick for a given peer ID, using a transaction.
-func SetNickForID(p Peer) error {
+func SetNickForID(id string, nick string) error {
 
 	var err error
 
@@ -43,7 +45,7 @@ func SetNickForID(p Peer) error {
 		}
 	}()
 
-	_, err = tx.Exec(_UPDATE_NICK, p.ID, p.Nick)
+	_, err = tx.Exec(_UPDATE_NICK, id, nick)
 	return err
 }
 
@@ -135,7 +137,7 @@ func Nicks() map[string]string {
 // The ShortString() function returns the last 8 chars of the peer ID.
 // The input is a full peer ID string.
 // Returns the input in case of errors
-func getOrCreateNick(id string) (nodeAlias string) {
+func GetOrCreateNick(id string) (nodeAlias string) {
 
 	// If we find the ID, fetch the nick and return it.
 	id, err := LookupID(id)

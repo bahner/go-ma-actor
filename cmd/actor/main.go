@@ -48,12 +48,9 @@ func main() {
 		panic(fmt.Sprintf("failed to initialize p2p: %v", err))
 	}
 
-	// Now that we have a p2p instance and the db make sure our own entry is in the db and updated.
-	p, err := peer.GetOrCreateFromAddrInfo(p2P.AddrInfo)
-	if err != nil {
-		panic(fmt.Sprintf("failed to get or create peer: %v", err))
-	}
-	peer.Set(p)
+	id := p2P.Host.ID().String()
+
+	peer.Set(id, peer.GetOrCreateNick(id), true) // Always protect ourselves
 
 	// P2P Relay mode
 	// Relay mode doesn't need either ui or an actor.

@@ -1,8 +1,6 @@
 package peer
 
 import (
-	"sync"
-
 	"github.com/bahner/go-ma-actor/config/db"
 	_ "github.com/mattn/go-sqlite3"
 	log "github.com/sirupsen/logrus"
@@ -15,34 +13,8 @@ const (
 	// SO we have to delete and insert instead of update
 )
 
-var peers sync.Map
-
-// Get retrieves a peer's information from the map by ID.
-func Get(id string) (Peer, error) {
-	value, ok := peers.Load(id)
-	if !ok {
-		return Peer{}, ErrPeerNotFound
-	}
-	p, ok := value.(Peer)
-	if !ok {
-		// This should not happen if all stored values are of type Peer
-		return Peer{}, ErrInvalidPeerType
-	}
-
-	var err error
-	p.Nick, err = GetNickForID(p.ID)
-	if err != nil {
-		return Peer{}, err
-	}
-	p.Allowed, err = GetAllowedForID(p.ID)
-	if err != nil {
-		return Peer{}, err
-	}
-	return p, nil
-}
-
 // Set modifies an existing peer's information in the map and the database.
-func Set(p Peer) error {
+func Set(id string, nick string, allowed bool) error {
 	d, err := db.Get()
 	if err != nil {
 		return err
@@ -53,17 +25,17 @@ func Set(p Peer) error {
 		return err
 	}
 
-	sqlAllowed := bool2int(p.Allowed)
+	sqlAllowed := bool2int(allowed)
 
-	_, err = tx.Exec(_DELETE_PEER, p.ID)
+	_, err = tx.Exec(_DELETE_PEER, id)
 	if err != nil {
-		log.Debugf("Failed to set peer %s: %s", p.ID, err.Error())
+		log.Debugf("Failed to set peer %s: %s", id, err.Error())
 		tx.Rollback()
 		return err
 	}
-	_, err = tx.Exec(_INSERT_PEER, p.ID, p.Nick, sqlAllowed)
+	_, err = tx.Exec(_INSERT_PEER, id, nick, sqlAllowed)
 	if err != nil {
-		log.Debugf("Failed to set peer %s: %s", p.ID, err.Error())
+		log.Debugf("Failed to set peer %s: %s", id, err.Error())
 		tx.Rollback()
 		return err
 	}
@@ -72,7 +44,6 @@ func Set(p Peer) error {
 		return err
 	}
 
-	peers.Store(p.ID, p)
 	return nil
 }
 
@@ -98,23 +69,5 @@ func Delete(id string) error {
 		return err
 	}
 
-	peers.Delete(id)
 	return nil
-}
-
-// Peers returns a slice of all peers in the the DB.
-// NB! This is not the database and should be used to check nick and allowed status.
-// It's just a cache.
-func Peers() ([]Peer, error) {
-	var pList []Peer
-	peers.Range(func(_, value interface{}) bool {
-		p, ok := value.(Peer)
-		if !ok {
-			// This should not happen if all stored values are of type Peer
-			return false // stop iteration
-		}
-		pList = append(pList, p)
-		return true // continue iteration
-	})
-	return pList, nil
 }

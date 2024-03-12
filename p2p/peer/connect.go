@@ -10,22 +10,18 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+const DEFAULT_TAG_VALUE = 100
+
 func ConnectAndProtect(ctx context.Context, h host.Host, pai p2peer.AddrInfo) error {
 
 	var (
-		p  Peer
 		id = pai.ID.String()
 	)
 	if len(pai.Addrs) == 0 {
 		return ErrAddrInfoAddrsEmpty
 	}
 
-	p, err := GetOrCreateFromAddrInfo(pai)
-	if err != nil {
-		return err
-	}
-
-	if !IsAllowed(p.ID) { // Do an actual lookup in the database here
+	if !IsAllowed(id) { // Do an actual lookup in the database here
 		log.Debugf("Peer %s is explicitly denied", id)
 		UnprotectPeer(h, pai.ID)
 		return ErrPeerDenied
@@ -36,7 +32,7 @@ func ConnectAndProtect(ctx context.Context, h host.Host, pai p2peer.AddrInfo) er
 		return ErrAlreadyConnected // This is not an error, but we'll return it as such for now.
 	}
 
-	err = Protect(h, pai.ID)
+	err := Protect(h, pai.ID)
 	if err != nil {
 		log.Warnf("Failed to protect peer %s: %v", id, err)
 	}
@@ -47,7 +43,7 @@ func ConnectAndProtect(ctx context.Context, h host.Host, pai p2peer.AddrInfo) er
 		return err
 	}
 
-	return Set(p)
+	return Set(id, GetOrCreateNick(id), true) // Protect the peer in the database as well
 }
 
 func Protect(h host.Host, id p2peer.ID) error {

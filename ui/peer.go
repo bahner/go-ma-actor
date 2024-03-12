@@ -63,16 +63,25 @@ func (ui *ChatUI) handlePeerCommand(args []string) {
 func (ui *ChatUI) handlePeerShowCommand(args []string) {
 
 	if len(args) == 3 {
-		id := args[2]
-		p, err := peer.Get(id)
+		id, err := peer.LookupID(args[2])
 		if err != nil {
 			ui.displaySystemMessage("Error: " + err.Error())
 			return
 		}
-		ui.displaySystemMessage("ID: " + p.ID)
-		ui.displaySystemMessage("Nick: " + p.Nick)
+		nick, err := peer.LookupNick(id)
+		if err != nil {
+			ui.displaySystemMessage("Error: " + err.Error())
+			return
+		}
+		pid, err := p2peer.Decode(id)
+		if err != nil {
+			ui.displaySystemMessage("Error: " + err.Error())
+			return
+		}
+		ui.displaySystemMessage("ID: " + id)
+		ui.displaySystemMessage("Nick: " + nick)
 		ui.displaySystemMessage("Maddrs:")
-		for _, maddr := range p.AddrInfo.Addrs {
+		for _, maddr := range ui.p.Host.Peerstore().Addrs(pid) {
 			ui.displaySystemMessage(maddr.String())
 		}
 	} else {
@@ -126,20 +135,17 @@ func (ui *ChatUI) handlePeerNickListCommand(args []string) {
 func (ui ChatUI) handlePeerNickSetCommand(args []string) {
 
 	if len(args) == 5 {
-		id := args[3]
-		nick := args[4]
-		p, err := peer.GetOrCreatePeerFromIDString(ui.p.Host, peer.Lookup(id))
+		id, err := peer.LookupID(args[3])
 		if err != nil {
 			ui.displaySystemMessage("Error: " + err.Error())
 			return
 		}
-		p.Nick = nick
-		err = peer.Set(p)
+		nick, err := peer.LookupNick(id)
 		if err != nil {
-			ui.displaySystemMessage("Error setting peer nick: " + err.Error())
+			ui.displaySystemMessage("Error: " + err.Error())
 			return
 		}
-		ui.displaySystemMessage(p.ID + " is now known as " + p.Nick)
+		ui.displaySystemMessage(id + " is now known as " + nick)
 	} else {
 		ui.handleHelpCommand(peerNickSetUsage, peerNickSetHelp)
 		return
@@ -150,13 +156,17 @@ func (ui ChatUI) handlePeerNickSetCommand(args []string) {
 func (ui *ChatUI) handlePeerNickShowCommand(args []string) {
 
 	if len(args) == 4 {
-		id := args[3]
-		p, err := peer.Get(id)
+		id, err := peer.LookupID(args[3])
 		if err != nil {
 			ui.displaySystemMessage("Error: " + err.Error())
 			return
 		}
-		peerInfo := fmt.Sprintf(p.ID + " is also known as " + p.Nick)
+		nick, err := peer.LookupNick(id)
+		if err != nil {
+			ui.displaySystemMessage("Error: " + err.Error())
+			return
+		}
+		peerInfo := fmt.Sprintf(id + " is also known as " + nick)
 		ui.displaySystemMessage(peerInfo)
 	} else {
 		ui.handleHelpCommand(peerNickShowUsage, peerNickShowHelp)
