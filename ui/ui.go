@@ -84,10 +84,11 @@ type ChatUI struct {
 	chatPanel *tview.Flex
 	screen    *tview.Flex
 
-	msgW      io.Writer
-	chInput   chan string
-	chMessage chan *msg.Message
-	chDone    chan struct{}
+	msgW              io.Writer
+	chInput           chan string
+	chMessages        chan *msg.Message
+	chPrivateMessages chan *msg.Message
+	chDone            chan struct{}
 }
 
 // New returns a new ChatUI struct that controls the text UI.
@@ -98,12 +99,12 @@ func New(p *p2p.P2P, a *actor.Actor) (*ChatUI, error) {
 	app := tview.NewApplication()
 
 	ui := &ChatUI{
-		a:         a,
-		p:         p,
-		app:       app,
-		chInput:   make(chan string, 32),
-		chMessage: make(chan *msg.Message, UI_MESSAGES_CHANNEL_BUFFERSIZE),
-		chDone:    make(chan struct{}, 1),
+		a:          a,
+		p:          p,
+		app:        app,
+		chInput:    make(chan string, 32),
+		chMessages: make(chan *msg.Message, UI_MESSAGES_CHANNEL_BUFFERSIZE),
+		chDone:     make(chan struct{}, 1),
 	}
 
 	// Start the broadcast subscription first, so

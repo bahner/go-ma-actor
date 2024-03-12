@@ -14,8 +14,7 @@ func (ui *ChatUI) Run() error {
 	defer ui.end()
 
 	// Now we can start continuous discovery in the background.
-	fmt.Println("Starting discovery loop...")
-	ui.discoveryLoopCtx, ui.discoveryLoopCancel = context.WithCancel(context.Background())
+	fmt.Println("Starting discovery loop in the background....")
 	go ui.p.StartDiscoveryLoop(context.Background())
 
 	// The actor should just run in the background for ever.
@@ -31,6 +30,9 @@ func (ui *ChatUI) Run() error {
 		ui.displayStatusMessage(err.Error())
 	}
 	fmt.Printf("Entered %s\n", config.ActorLocation())
+
+	// Subscribe to incoming messages
+	go ui.handleIncomingMessages(context.Background())
 
 	fmt.Println("Starting event loop...")
 	go ui.handleEvents()

@@ -113,7 +113,3 @@ func P2PDiscoveryRetryInterval() time.Duration {
 func P2PPortString() string {
 	return strconv.Itoa(P2PPort())
 }
-
-func P2PDiscoveryRetryIntervalString() string {
-	return strconv.Itoa(int(P2PDiscoveryRetryInterval()))
-}

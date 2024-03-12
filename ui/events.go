@@ -52,7 +52,7 @@ func (ui *ChatUI) handleEvents() {
 			}
 			ui.handleChatMessage(input)
 
-		case m := <-ui.chMessage:
+		case m := <-ui.chMessages:
 			if m.Type == ma.BROADCAST_MESSAGE_TYPE {
 				ui.displayBroadcastMessage(m)
 				continue

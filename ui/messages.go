@@ -3,38 +3,35 @@ package ui
 import (
 	"context"
 
-	"github.com/bahner/go-ma-actor/entity"
 	log "github.com/sirupsen/logrus"
 )
 
-// Handle incoming messages to an entity. Also adds a reject to be able to filter self.
-// If reject is nil, no filtering is done.
-func (ui *ChatUI) handleIncomingMessages(ctx context.Context, e *entity.Entity) {
-	t := e.Topic.String()
-	me := ui.a.Entity.DID.Id
-
-	log.Debugf("Handling incoming messages to %s", t)
-
+// Handle incoming messages to an entity. The message are recieved in the entity's message channel.
+// And delivered to a channel of your choice.
+func (ui *ChatUI) handleIncomingMessages(ctx context.Context) {
 	for {
 		select {
 		case <-ctx.Done():
 			log.Debug("Context cancelled, exiting handleIncomingMessages...")
 			return
-		case m, ok := <-e.Messages:
+		case m, ok := <-ui.chMessages:
 			if !ok {
 				log.Debug("Message channel closed, exiting...")
 				return
 			}
-			log.Debugf("Received message from %s to %s", m.From, m.To)
+			log.Debugf("UI received message from %s to %s", m.From, m.To)
 
-			// Accept messages to the general topic or to the actor.
-			if m.To == t || m.To == me {
-				log.Debugf("handleIncomingMessages: Accepted message of type %s from %s to %s", m.Type, m.From, m.To)
-				ui.chMessage <- m
-				continue
+			// No need to verify at this point, as the message has already been verified by the actor.
+			ui.displayChatMessage(m)
+		case m, ok := <-ui.chPrivateMessages:
+			if !ok {
+				log.Debug("Private message channel closed, exiting...")
+				return
 			}
+			log.Debugf("UI received private message from %s to %s", m.From, m.To)
 
-			log.Debugf("handleIncomingMessages: Received message to %s. Expected %s. Ignoring...", m.To, t)
+			// No need to verify at this point, as the message has already been verified by the actor.
+			ui.displayPrivateMessage(m)
 		}
 	}
 }

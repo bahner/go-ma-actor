@@ -106,10 +106,10 @@ func (ui *ChatUI) enterEntity(d string, reEntry bool) error {
 		// Only an actor can decrypt and handle envelopes.
 
 		// Don't listen for envelopes when entering self.
-		go ui.handleIncomingEnvelopes(ui.currentEntityCtx, ui.e, ui.a)
+		go ui.a.HandleIncomingEnvelopes(ui.currentEntityCtx, ui.chPrivateMessages)
 
 		// Handle incoming messages to the entity, also accept messages from self.
-		go ui.handleIncomingMessages(ui.currentEntityCtx, ui.e)
+		go ui.e.HandleIncomingMessages(ui.currentEntityCtx, ui.chMessages)
 
 	}
 

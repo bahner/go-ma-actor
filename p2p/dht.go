@@ -84,9 +84,10 @@ func discover(ctx context.Context, peerChan <-chan p2peer.AddrInfo, d *DHT) erro
 			}
 
 			if err := peer.ConnectAndProtect(context.Background(), d.Host, p); err != nil {
-				log.Warnf("Failed to connect to discovered peer: %s: %v", p.ID.String(), err)
+				log.Warnf("Failed to connect to discovered DHT peer: %s: %v", p.ID.String(), err)
 			}
 		case <-ctx.Done():
+			log.Debug("DHT discovery loop cancelled")
 			return nil
 		}
 	}
