@@ -41,8 +41,6 @@ func (ui *ChatUI) handleCommands(input string) {
 		ui.handleSetCommand(args)
 	case "/status":
 		ui.handleStatusCommand(args)
-	case "/whereis":
-		ui.handleWhereisCommand(args)
 	default:
 		ui.displaySystemMessage("Unknown command: " + args[0])
 	}

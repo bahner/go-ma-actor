@@ -117,9 +117,5 @@ func (ui *ChatUI) enterEntity(d string, reEntry bool) error {
 
 	}
 
-	// Update the location
-	// If this fails - 🤷🏽
-	go ui.a.UpdateLastKnowLocation(e.DID.Id)
-
 	return nil
 }

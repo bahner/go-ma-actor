@@ -51,7 +51,6 @@ func (ui *ChatUI) handleHelpCommands(args []string) {
 		ui.displaySystemMessage("/help set")
 		ui.displaySystemMessage("/help status")
 		ui.displaySystemMessage("/help toggle")
-		ui.displaySystemMessage("/help whereis")
 		ui.displaySystemMessage("/help")
 	} else {
 		switch args[1] {
@@ -75,8 +74,6 @@ func (ui *ChatUI) handleHelpCommands(args []string) {
 			ui.handleHelpCommand(setUsage, setHelp)
 		case "status":
 			ui.handleHelpCommand(statusUsage, statusHelp)
-		case "whereis":
-			ui.handleHelpCommand(whereisUsage, whereisHelp)
 		case "quit":
 			ui.handleHelpCommand(quitUsage, quitText)
 		default:

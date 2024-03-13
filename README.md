@@ -58,7 +58,6 @@ To quit, hit `Ctrl-C`, or type `/quit` into the input field.
 - /discover
 - /alias [node|entity] set [DID|NAME] NAME
 - /aliases
-- /whereis [DID|NAME]
 - /msg Name Message
 - /enter room
 - /refresh
