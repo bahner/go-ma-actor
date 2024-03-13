@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/bahner/go-ma-actor/config"
+	"github.com/bahner/go-ma-actor/entity"
 )
 
 // Run starts the chat event loop in the background, then starts
@@ -25,7 +26,11 @@ func (ui *ChatUI) Run() error {
 
 	// We must wait for this to finish.
 	fmt.Printf("Entering %s ...\n", config.ActorLocation())
-	err := ui.enterEntity(config.ActorLocation(), true)
+	e, err := entity.GetOrCreate(config.ActorLocation())
+	if err != nil {
+		return fmt.Errorf("ui/run: %w", err)
+	}
+	err = ui.enterEntity(e, true)
 	if err != nil {
 		ui.displayStatusMessage(err.Error())
 	}

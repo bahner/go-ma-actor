@@ -34,7 +34,7 @@ func (ui *ChatUI) handleReset() {
 	// Reenter the current entity
 	ui.displaySystemMessage("Reentering entity...")
 	ui.currentEntityCancel()
-	ui.enterEntity(ui.e.DID.Id, true)
+	ui.enterEntity(ui.e, true) // True because reentry
 
 	ui.app.Draw()
 

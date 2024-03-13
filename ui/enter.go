@@ -2,6 +2,7 @@ package ui
 
 import (
 	"context"
+	"strings"
 
 	"github.com/bahner/go-ma-actor/entity"
 	log "github.com/sirupsen/logrus"
@@ -17,12 +18,18 @@ NB! use /msg to send encrypted messages to any recipient.`
 
 func (ui *ChatUI) handleEnterCommand(args []string) {
 
-	if len(args) == 2 {
+	if len(args) >= 2 {
 
-		_did := args[1]
+		id := strings.Join(args[1:], separator)
+
+		e, err := entity.GetOrCreate(id)
+		if err != nil {
+			ui.displaySystemMessage("Error getting entity: " + err.Error())
+			return
+		}
 
 		// This function handles the verification of the entity
-		err := ui.enterEntity(_did, false) // force = false
+		err = ui.enterEntity(e, false) // force = false
 		if err != nil {
 			ui.displaySystemMessage("Error entering entity: " + err.Error())
 			return
@@ -35,31 +42,12 @@ func (ui *ChatUI) handleEnterCommand(args []string) {
 
 // This is *the* function that changes the entity. Do Everything™ here.
 // Do *not* use this to change the actor.
-// INput is the nick or DID of the entity.
-func (ui *ChatUI) enterEntity(d string, reEntry bool) error {
+// Input is a did, so we know it's a valid entity.
+func (ui *ChatUI) enterEntity(e *entity.Entity, reEntry bool) error {
 
 	var (
-		e   *entity.Entity
 		err error
 	)
-
-	err = ui.a.Verify()
-	if err != nil {
-		log.Debugf("Error verifying actor before entry: %s", err.Error())
-		return err
-	}
-
-	// If we have a cached entity for this nick, use it.
-	id, err := entity.LookupID(d)
-	if err == nil {
-		return err
-	}
-	e, err = entity.GetOrCreate((id))
-	if err != nil {
-		log.Errorf("Error creating entity for entry: %s", err.Error())
-		// Without an entity, we can't do anything.
-		return err
-	}
 
 	err = e.Verify()
 	if err != nil {
@@ -68,10 +56,8 @@ func (ui *ChatUI) enterEntity(d string, reEntry bool) error {
 		return err
 	}
 
-	// FIXEME: hm. Why not?
-	// If this is not the same as the last known location, then
-	// update the last known location
-	if ui.e != nil && d == ui.e.DID.Id && !reEntry {
+	// Warn if we're already here and not re-entering.
+	if ui.e != nil && e.DID.Id == ui.e.DID.Id && !reEntry {
 		return errAlreadyHereWarning
 	}
 
