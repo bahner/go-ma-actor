@@ -171,10 +171,7 @@ func publishIdentityFromKeyset(k set.Keyset) error {
 	}
 	d.Sign(k.SigningKey, assertionMethod)
 
-	// Publication options
-	opts := docPublishOptions()
-
-	_, err = d.Publish(opts)
+	_, err = d.Publish()
 	if err != nil {
 		return fmt.Errorf("config.publishIdentityFromKeyset: %w", err)
 

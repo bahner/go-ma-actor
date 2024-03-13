@@ -13,7 +13,7 @@ import (
 // makes the design simpler and easier to understand /methinks.
 // Sent the messages to the message channel in the input. Then you can handle the messages in the
 // UI or wherever you want to handle them and you know they were private messages.
-func (a *Actor) HandleIncomingEnvelopes(ctx context.Context, messages chan<- *msg.Message) {
+func (a *Actor) HandleIncomingEnvelopes(ctx context.Context, messages chan *msg.Message) {
 
 	mesg := fmt.Sprintf("Handling incoming envelopes to " + a.Entity.DID.Id)
 	log.Info(mesg)

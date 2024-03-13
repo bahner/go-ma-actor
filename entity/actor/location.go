@@ -2,8 +2,6 @@ package actor
 
 import (
 	"fmt"
-
-	"github.com/bahner/go-ma/did/doc"
 )
 
 func (e *Actor) GetLastKnownLocation() string {
@@ -31,9 +29,7 @@ func (e *Actor) UpdateLastKnowLocation(location string) error {
 
 	// Spawn the publish in a goroutine so we don't block
 	// It can take a while to publish
-	opts := doc.DefaultPublishOptions()
-	opts.Force = true
-	go e.Entity.Doc.Publish(opts)
+	go e.Entity.Doc.Publish()
 
 	return nil
 }

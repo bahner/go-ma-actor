@@ -76,6 +76,8 @@ func (a *Actor) Subscribe(ctx context.Context, e *entity.Entity) {
 				log.Debugf("handleSubscriptionMessages: Received message: %v\n", m)
 				e.Messages <- m
 				continue
+			} else {
+				log.Debugf("handleSubscriptionMessages: Received message that is not a verified message: %v\n", err)
 			}
 
 			// If it's not a public message, it might be an envelope.
@@ -84,7 +86,11 @@ func (a *Actor) Subscribe(ctx context.Context, e *entity.Entity) {
 				log.Debugf("handleSubscriptionMessages: Received envelope: %v\n", env)
 				a.Envelopes <- env
 				continue
+			} else {
+				log.Debugf("handleSubscriptionMessages: Received message that is not a verified envelope: %v\n", err)
 			}
+
+			log.Errorf("handleSubscriptionMessages: Received message that is neither a message nor an envelope: %v\n", message)
 		}
 	}
 }

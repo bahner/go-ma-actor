@@ -12,7 +12,7 @@ func (e *Entity) FetchDocument(cached bool) (*doc.Document, error) {
 
 	if e.Doc == nil {
 		// Fetch the document
-		d, err = doc.FetchFromDID(e.DID, cached)
+		d, _, err = doc.FetchFromDID(e.DID, cached)
 		if err != nil {
 			return d, err
 		}
@@ -32,7 +32,7 @@ func (e *Entity) FetchAndSetDocument(cached bool) error {
 
 	if e.Doc == nil {
 		// Fetch the document
-		e.Doc, err = doc.FetchFromDID(e.DID, cached)
+		e.Doc, _, err = doc.FetchFromDID(e.DID, cached)
 		if err != nil {
 			return err
 		}

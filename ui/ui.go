@@ -99,12 +99,13 @@ func New(p *p2p.P2P, a *actor.Actor) (*ChatUI, error) {
 	app := tview.NewApplication()
 
 	ui := &ChatUI{
-		a:          a,
-		p:          p,
-		app:        app,
-		chInput:    make(chan string, 32),
-		chMessages: make(chan *msg.Message, UI_MESSAGES_CHANNEL_BUFFERSIZE),
-		chDone:     make(chan struct{}, 1),
+		a:                 a,
+		p:                 p,
+		app:               app,
+		chInput:           make(chan string, 32),
+		chMessages:        make(chan *msg.Message, UI_MESSAGES_CHANNEL_BUFFERSIZE),
+		chPrivateMessages: make(chan *msg.Message, UI_MESSAGES_CHANNEL_BUFFERSIZE),
+		chDone:            make(chan struct{}, 1),
 	}
 
 	// Start the broadcast subscription first, so

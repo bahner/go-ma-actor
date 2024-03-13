@@ -22,7 +22,7 @@ func (ui *ChatUI) handleWhereisCommand(args []string) {
 			return
 		}
 
-		d, err := doc.Fetch(e.DID.Id, false) // Don't accept cached version
+		d, _, err := doc.Fetch(e.DID.Id, false) // Don't accept cached version
 		if err != nil {
 			ui.displaySystemMessage("Error fetching DID Document: " + err.Error())
 			return

@@ -9,6 +9,9 @@ import (
 // Handle incoming messages to an entity. The message are recieved in the entity's message channel.
 // And delivered to a channel of your choice.
 func (ui *ChatUI) handleIncomingMessages(ctx context.Context) {
+
+	log.Info("Handling incoming messages to UI...")
+
 	for {
 		select {
 		case <-ctx.Done():

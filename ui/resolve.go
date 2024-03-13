@@ -2,7 +2,6 @@ package ui
 
 import (
 	"github.com/bahner/go-ma-actor/entity"
-	"github.com/bahner/go-ma/api"
 	"github.com/bahner/go-ma/did/doc"
 )
 
@@ -23,17 +22,11 @@ func (ui *ChatUI) handleResolveCommand(args []string) {
 		}
 
 		ui.displaySystemMessage("Resolving DID Document for " + e.DID.Id + "...")
-		d, err := doc.Fetch(id, false)
+		d, c, err := doc.Fetch(id, false)
 		if err != nil {
 			ui.displaySystemMessage("Error fetching DID Document: " + err.Error())
 			return
 		}
-		c, err := api.RootCID(e.DID.Identifier, true)
-		if err != nil {
-			ui.displaySystemMessage("Error fetching Root CID: " + err.Error())
-			return
-		}
-
 		ui.displaySystemMessage("Resolved DID Document for " + e.DID.Id + " (CID: " + c.String() + ")")
 		e.Doc = d
 

@@ -50,7 +50,11 @@ func (ui *ChatUI) enterEntity(d string, reEntry bool) error {
 	}
 
 	// If we have a cached entity for this nick, use it.
-	e, err = entity.GetOrCreate((entity.Lookup(d)))
+	id, err := entity.LookupID(d)
+	if err == nil {
+		return err
+	}
+	e, err = entity.GetOrCreate((id))
 	if err != nil {
 		log.Errorf("Error creating entity for entry: %s", err.Error())
 		// Without an entity, we can't do anything.

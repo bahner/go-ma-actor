@@ -9,7 +9,7 @@ import (
 
 // Handle incoming messages to an entity. The message are recieved in the entity's message channel.
 // And delivered to a channel of your choice.
-func (e *Entity) HandleIncomingMessages(ctx context.Context, msgChan chan<- *msg.Message) {
+func (e *Entity) HandleIncomingMessages(ctx context.Context, msgChan chan *msg.Message) {
 	me := e.DID.Id
 
 	log.Debugf("Handling incoming messages to %s", me)

@@ -43,7 +43,8 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		c, err := d.Publish(nil)
+
+		c, err := d.Publish()
 		if err != nil {
 			panic(err)
 		}
