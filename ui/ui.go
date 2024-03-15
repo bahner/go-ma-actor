@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"time"
 
 	"github.com/bahner/go-ma-actor/entity"
 	"github.com/bahner/go-ma-actor/entity/actor"
@@ -22,9 +21,8 @@ const (
 
 	defaultLimbo = "closet"
 
-	defaultPeerslistWidth   = 10
-	defaultPeerslistRefresh = time.Second * 3
-	defaultHistorySize      = 50
+	defaultPeerslistWidth = 10
+	defaultHistorySize    = 50
 
 	separator = " "
 )
@@ -32,14 +30,11 @@ const (
 func init() {
 
 	// UI
-	pflag.Int("ui-peerslist-width", defaultPeerslistWidth, "Sets the width of the peerslist pane in the UI")
-	viper.BindPFlag("ui.peerslist-width", pflag.Lookup("ui-peerslist-width"))
+	pflag.Int("peerslist-width", defaultPeerslistWidth, "Sets the width of the peerslist pane in the UI")
+	viper.BindPFlag("ui.peerslist-width", pflag.Lookup("peerslist-width"))
 
-	pflag.Duration("ui-refresh", defaultPeerslistRefresh, "Sets the update frequency of the peerslist pane in the UI")
-	viper.BindPFlag("ui.refresh", pflag.Lookup("ui-refresh"))
-
-	pflag.Int("ui-history-size", defaultHistorySize, "Sets the update frequency of the peerslist pane in the UI")
-	viper.BindPFlag("ui.history-size", pflag.Lookup("ui-history-size"))
+	pflag.Int("history-size", defaultHistorySize, "Sets the size of the history buffer in the UI.")
+	viper.BindPFlag("ui.history-size", pflag.Lookup("history-size"))
 
 }
 

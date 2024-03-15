@@ -15,7 +15,7 @@ import (
 const (
 	dbMaxConnections  = 1 // Required for serialized access to the database
 	defaultDBFilename = "ma.db"
-	defaultDbTimeout  = 10000
+	DB_TIMEOUT        = 10000
 )
 
 var (
@@ -26,11 +26,9 @@ var (
 
 func init() {
 
-	pflag.String("db-file", defaultDbFile, "File to *write* node peers and entities to. If the file does not exist, it will be created.")
-	pflag.Int("db-timeout", defaultDbTimeout, "Timeout for serialized access to the database in milliseconds.")
+	pflag.String("db", defaultDbFile, "File for sqlite database.")
 
-	viper.BindPFlag("db.file", pflag.Lookup("db-file"))
-	viper.BindPFlag("db.timeout", pflag.Lookup("db-timeout"))
+	viper.BindPFlag("db.file", pflag.Lookup("db"))
 
 }
 
@@ -93,7 +91,7 @@ func Get() (*sql.DB, error) {
 	return Init()
 }
 
-// Returns expanded path to the db-file file
+// Returns expanded path to the dbfile file
 // If the expansion fails it returns an empty string
 func dbfile() (string, error) {
 

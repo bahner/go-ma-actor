@@ -20,7 +20,7 @@ type ConnectionGater struct {
 // New creates a new CustomConnectionGater instance.
 func NewConnectionGater(connMgr *p2pConnmgr.BasicConnMgr) *ConnectionGater {
 	return &ConnectionGater{
-		AllowAll: config.P2PDiscoveryAllowAll(), // Here we use a lookup, not the constant
+		AllowAll: config.ALLOW_ALL_PEERS, // Here we use a lookup, not the constant
 		ConnMgr:  connMgr,
 	}
 }
@@ -67,7 +67,7 @@ func (cg *ConnectionGater) InterceptUpgraded(_ network.Conn) (allow bool, reason
 
 func (cg *ConnectionGater) isAllowed(p p2peer.ID) bool {
 
-	if config.P2PDiscoveryAllowAll() || cg.AllowAll { // This is an appriprotiate place to use the function
+	if cg.AllowAll {
 		return true
 	}
 

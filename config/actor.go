@@ -1,7 +1,6 @@
 package config
 
 import (
-	"context"
 	"fmt"
 	"os"
 
@@ -200,11 +199,4 @@ func initActorKeyset() {
 		os.Exit(70) // EX_SOFTWARE
 	}
 
-}
-
-func docPublishOptions() *doc.PublishOptions {
-	return &doc.PublishOptions{
-		Ctx:   context.Background(),
-		Force: forceFlag(),
-	}
 }

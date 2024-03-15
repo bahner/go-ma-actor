@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/bahner/go-ma"
-	"github.com/bahner/go-ma-actor/config"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -31,7 +30,7 @@ func (ui *ChatUI) displayDebugMessage(m string) {
 // refreshes the list of peers in the UI.
 
 func (ui *ChatUI) handleEvents() {
-	peerRefreshTicker := time.NewTicker(config.UIPeersRefreshInterval())
+	peerRefreshTicker := time.NewTicker(time.Second)
 	defer peerRefreshTicker.Stop()
 
 	for {
