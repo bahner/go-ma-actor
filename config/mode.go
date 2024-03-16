@@ -8,6 +8,7 @@ import (
 const (
 	DEFAULT_PONG_REPLY        = "Pong!"
 	DEFAULT_PONG_FORTUNE_MODE = false
+	DEFAULT_PONG_FORTUNE_ARGS = "-s"
 
 	defaultPongMode  = false
 	defaultRelayMode = false
@@ -74,5 +75,9 @@ func Mode() string {
 }
 
 func PongFortuneMode() bool {
-	return viper.GetBool("mode.pong.fortune") && PongMode()
+	return viper.GetBool("mode.pong.fortune.enable") && PongMode()
+}
+
+func PongFortuneArgs() string {
+	return viper.GetString("mode.pong.fortune.args")
 }

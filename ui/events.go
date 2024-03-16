@@ -39,6 +39,11 @@ func (ui *ChatUI) handleEvents() {
 
 			input = strings.TrimSpace(input)
 
+			if input == "" {
+				ui.handleEditorCommand()
+				continue
+			}
+
 			if strings.HasPrefix(input, "/") {
 				log.Debug("handleEvents got command: ", input)
 				ui.handleCommands(input)
@@ -47,6 +52,11 @@ func (ui *ChatUI) handleEvents() {
 			if strings.HasPrefix(input, "@") {
 				log.Debug("handleEvents got command: ", input)
 				ui.handleMsgCommand(input)
+				continue
+			}
+			if strings.HasPrefix(input, "'") {
+				log.Debug("handleEvents got command: ", input)
+				ui.handleEditorCommand()
 				continue
 			}
 			ui.handleChatMessage(input)

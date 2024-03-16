@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	defaultLocation   string = "did:ma:k2k4r8lprgw7fl8inpau5d05mnhw2cq5srex1rihptz0bbg8fzu7b5mm#pong"
+	defaultLocation   string = "did:ma:k2k4r8p5sxlnznc9ral4fueapazs36hqoj3go1g0o7662gnk9skhfrik#pong"
 	fakeActorIdentity string = "NO_DEFAULT_ACTOR_IDENITY"
 )
 

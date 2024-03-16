@@ -142,7 +142,11 @@ func generatePongConfigFile(identity string, node string) {
 		},
 		"mode": map[string]interface{}{
 			"pong": map[string]interface{}{
-				"reply": DEFAULT_PONG_REPLY,
+				"reply": PongReply(),
+				"fortune": map[string]interface{}{
+					"enable": PongFortuneMode(),
+					"args":   PongFortuneArgs(),
+				},
 			},
 		},
 	}

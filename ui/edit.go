@@ -2,12 +2,18 @@ package ui
 
 import (
 	"bytes"
+	"errors"
 	"os"
 	"os/exec"
 
 	"github.com/bahner/go-ma-actor/config"
 	log "github.com/sirupsen/logrus"
 )
+
+const editorUsage = "'"
+const editorHelp = "Opens the default editor to edit a message"
+
+var ErrEmptyEdit = errors.New("empty edit")
 
 func (ui *ChatUI) invokeEditor() ([]byte, error) {
 	tmpfile, err := os.CreateTemp("", "edit")
@@ -18,58 +24,61 @@ func (ui *ChatUI) invokeEditor() ([]byte, error) {
 
 	var editorErr error
 	var contents []byte
-
-	// Use Suspend to stop the TUI and run the external editor
 	ui.app.Suspend(func() {
-		// Launch external editor
 		cmd := exec.Command(config.GetEditor(), tmpfile.Name())
 		cmd.Stdin = os.Stdin
 		cmd.Stdout = os.Stdout
 		editorErr = cmd.Run() // This will wait until the editor is closed
-
-		if editorErr == nil {
-			// Read the file only if there was no error with the editor
-			contents, editorErr = os.ReadFile(tmpfile.Name())
+		if editorErr != nil {
+			return
 		}
+
+		// Check if the file was modified by comparing modification times
+		fi, err := os.Stat(tmpfile.Name())
+		if err != nil {
+			editorErr = err
+			return
+		}
+
+		if fi.Size() == 0 {
+			editorErr = ErrEmptyEdit
+			return
+		}
+
+		contents, editorErr = os.ReadFile(tmpfile.Name())
 	})
 
-	// Check if there was an error with the editor or reading the file
 	if editorErr != nil {
 		return nil, editorErr
+	}
+
+	if contents == nil {
+		// It's unusual for contents to be nil without an error, but handle gracefully
+		return nil, ErrEmptyEdit
 	}
 
 	// Remove newlies, We want this to be a single line
 	// Trim right to remove trailing newlines
 	contents = bytes.TrimRight(contents, "\n")
-	// Replace all newlines with spaces (or another character if preferred)
-	contents = bytes.ReplaceAll(contents, []byte("\n"), []byte(separator))
+
+	// // Replace all newlines with spaces (or another character if preferred)
+	// contents = bytes.ReplaceAll(contents, []byte("\n"), []byte(separator))
+
 	// Append a single newline at the end if desired
 	contents = append(contents, '\n')
 
 	return contents, nil
 }
 
-func (ui *ChatUI) handleEditCommand() {
+func (ui *ChatUI) handleEditorCommand() {
 
 	m, err := ui.invokeEditor()
 	if err != nil {
-		ui.displaySystemMessage("Error invoking editor: " + err.Error())
+		ui.displaySystemMessage("editor: " + err.Error())
 		return
 	}
 
-	if len(m) == 0 {
-		ui.displaySystemMessage("No changes made")
-		return
-	}
-
-	log.Debugf("Editor returned: %s", m)
-
-	ui.app.QueueUpdateDraw(func() {
-		ui.inputField = ui.setupInputField()
-		ui.updateRoot()
-		ui.inputField.SetText(string(m))
-		ui.app.SetFocus(ui.inputField)
-	})
+	ui.chInput <- string(m)
 
 	log.Debug("Editor command handled")
 

@@ -77,9 +77,9 @@ func (ui *ChatUI) handleEntityListCommand(args []string) {
 		} else {
 			ui.displaySystemMessage("No entities found")
 		}
-	} else {
-		ui.handleHelpCommand(entityListUsage, entityListHelp)
+		return
 	}
+	ui.handleHelpCommand(entityListUsage, entityListHelp)
 
 }
 
@@ -104,10 +104,8 @@ func (ui *ChatUI) handleEntityNickCommand(args []string) {
 			ui.msgBox.SetTitle(nick)
 		}
 		ui.displaySystemMessage(e.DID.Id + aliasSeparator + e.Nick)
-	} else {
-		ui.handleHelpCommand(entityNickUsage, entityNickHelp)
+		return
 	}
-
 	ui.handleHelpCommand(entityNickUsage, entityNickHelp)
 }
 
@@ -123,9 +121,9 @@ func (ui *ChatUI) handleEntityShowCommand(args []string) {
 		}
 		entityInfo := fmt.Sprintf(e.DID.Id + aliasSeparator + e.Nick)
 		ui.displaySystemMessage(entityInfo)
-	} else {
-		ui.handleHelpCommand(entityShowUsage, entityShowHelp)
+		return
 	}
+	ui.handleHelpCommand(entityShowUsage, entityShowHelp)
 
 }
 
@@ -137,9 +135,9 @@ func (ui *ChatUI) handleEntityRemoveCommand(args []string) {
 		id = entity.Lookup(id)
 		entity.RemoveNick(id)
 		ui.displaySystemMessage("Nick removed for " + id + " if it existed")
-	} else {
-		ui.handleHelpCommand(entityRemoveUsage, entityRemoveHelp)
+		return
 	}
+	ui.handleHelpCommand(entityRemoveUsage, entityRemoveHelp)
 
 }
 
@@ -160,9 +158,9 @@ func (ui *ChatUI) handleEntityConnectCommand(args []string) {
 			return
 		}
 		ui.displaySystemMessage("Connected to " + id + aliasSeparator + pai.ID.String())
-	} else {
-		ui.handleHelpCommand(entityConnectUsage, entityConnectHelp)
+		return
 	}
+	ui.handleHelpCommand(entityConnectUsage, entityConnectHelp)
 }
 
 func (ui *ChatUI) handleEntityResolveCommand(args []string) {
@@ -194,8 +192,9 @@ func (ui *ChatUI) handleEntityResolveCommand(args []string) {
 		ui.displaySystemMessage("Resolved DID Document for " + e.DID.Id + " (CID: " + c.String() + ")")
 		e.Doc = d
 
-	} else {
-		ui.handleHelpCommand(entityResolveUsage, entityResolveHelp)
+		return
+
 	}
+	ui.handleHelpCommand(entityResolveUsage, entityResolveHelp)
 
 }
