@@ -14,16 +14,16 @@ const PUBSUB_MESSAGES_BUFFERSIZE = 32
 // Subscribe to the entity's topic and handle incoming messages.
 // the actor is the entity that will receive the messages.
 // It may well be the entity itself.
-// The context sho
+// Takes a channel for message delivery.
 func (a *Actor) Subscribe(ctx context.Context, e *entity.Entity) {
 
 	// WHen an actor subscribes to an entity, it will receive messages and envelopes.
 	// Messages should sent to the entity, whereas envelopes should be sent to the actor.
 
-	they := e.DID.Id
+	them := e.DID.Id
 	me := a.Entity.DID.Id
 
-	log.Infof("Subscribing to %s as %s: ", they, me)
+	log.Infof("Subscribing to %s as %s: ", them, me)
 
 	// ctx, cancel := context.WithCancel(ctx)
 	// defer cancel()
@@ -48,7 +48,7 @@ func (a *Actor) Subscribe(ctx context.Context, e *entity.Entity) {
 				log.Errorf("Error getting next message: %v", err)
 				return // or continue based on your error handling policy
 			}
-			log.Debugf("handleSubscriptionMessages: Received message: %s", message.Data)
+			log.Debugf("actor.Subscribe: Received message: %s", message.Data)
 
 			// Assuming message is of the type you need; otherwise, adapt as necessary.
 			select {
@@ -62,35 +62,47 @@ func (a *Actor) Subscribe(ctx context.Context, e *entity.Entity) {
 	for {
 		select {
 		case <-ctx.Done():
-			log.Debugf("Entity %s is cancelled, exiting subscription loop...", they)
+			log.Debugf("actor.Subscribe: Entity %s is cancelled, exiting subscription loop...", them)
 			return
 		case message, ok := <-messages:
 			if !ok {
-				log.Debugf("Message channel %s closed, exiting...", they)
+				log.Debugf("actor.Subscribe: Message channel %s closed, exiting...", them)
 				return
 			}
 
 			// Firstly check if this is a public message. Its quicker.
 			m, err := msg.UnmarshalAndVerifyMessageFromCBOR(message.Data)
-			if err == nil {
-				log.Debugf("handleSubscriptionMessages: Received message: %v\n", m)
-				e.Messages <- m
-				continue
+			if err == nil && m != nil {
+				log.Debugf("actor.Subscribe: Received message %s to %s\n", m.Id, m.To)
+				log.Debugf("actor.Subscribe: Delivering message %s to entity: %s\n", m.Id, them)
+				if m.To == me {
+					log.Debugf("actor.Subscribe: Received message for actor: %s\n", me)
+					a.Entity.Messages <- m
+					continue
+				}
+
+				if m.To == them {
+					e.Messages <- m
+					continue
+				}
+
+				log.Debugf("actor.Subscribe: Received message to %s. Expected %s or %s. Ignoring...", m.To, me, them)
 			} else {
-				log.Debugf("handleSubscriptionMessages: Received message that is not a verified message: %v\n", err)
+				log.Debugf("actor.Subscribe: Received message that is not a verified message: %v\n", err)
 			}
 
 			// If it's not a public message, it might be an envelope.
 			env, err := msg.UnmarshalAndVerifyEnvelopeFromCBOR(message.Data)
 			if err == nil {
-				log.Debugf("handleSubscriptionMessages: Received envelope: %v\n", env)
+				log.Debugf("actor.Subscribe: Received envelope: %v\n", env)
+				log.Debugf("actor.Subscribe: Delivering envelope to actor: %s\n", me)
 				a.Envelopes <- env
 				continue
 			} else {
-				log.Debugf("handleSubscriptionMessages: Received message that is not a verified envelope: %v\n", err)
+				log.Debugf("actor.Subscribe: Received message that is not a verified envelope: %v\n", err)
 			}
 
-			log.Errorf("handleSubscriptionMessages: Received message that is neither a message nor an envelope: %v\n", message.Data)
+			log.Errorf("actor.Subscribe: Received message that is neither a message nor an envelope: %v\n", message.Data)
 		}
 	}
 }

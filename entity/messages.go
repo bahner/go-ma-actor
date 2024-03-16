@@ -17,7 +17,7 @@ func (e *Entity) HandleIncomingMessages(ctx context.Context, msgChan chan *msg.M
 	for {
 		select {
 		case <-ctx.Done():
-			log.Debug("Context cancelled, exiting handleIncomingMessages...")
+			log.Debug("Context cancelled, exiting entity.HandleIncomingMessages...")
 			return
 		case m, ok := <-e.Messages:
 			if !ok {
@@ -28,17 +28,17 @@ func (e *Entity) HandleIncomingMessages(ctx context.Context, msgChan chan *msg.M
 
 			err := m.Verify()
 			if err != nil {
-				log.Errorf("handleIncominngMessage: %s: %v", me, err)
+				log.Errorf("handleIncomingMessage: %s: %v", me, err)
 				continue
 			}
 
 			if m.To == me {
-				log.Debugf("handleIncomingMessages: Accepted message of type %s from %s to %s", m.Type, m.From, m.To)
+				log.Debugf("entity.HandleIncomingMessages: Accepted message of type %s from %s to %s", m.Type, m.From, m.To)
 				msgChan <- m
 				continue
 			}
 
-			log.Debugf("handleIncomingMessages: Received message to %s. Expected %s. Ignoring...", m.To, me)
+			log.Debugf("entity.HandleIncomingMessages: Received message to %s. Expected %s. Ignoring...", m.To, me)
 		}
 	}
 }

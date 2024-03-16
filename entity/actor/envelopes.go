@@ -21,37 +21,36 @@ func (a *Actor) HandleIncomingEnvelopes(ctx context.Context, messages chan *msg.
 	for {
 		select {
 		case <-ctx.Done():
-			log.Debug("Context cancelled, exiting handleIncomingEnvelopes...")
+			log.Debug("actor.HandleIncomingEnvelopes: Context cancelled, exiting handleIncomingEnvelopes...")
 			return
 		case envelope, ok := <-a.Envelopes:
 			if !ok {
-				log.Debug("Actor envelope channel closed, exiting...")
+				log.Debug("actor.HandleIncomingEnvelopes: Actor envelope channel closed, exiting...")
 				return
 			}
-			log.Debugf("Received actor envelope: %v", envelope)
+			log.Debugf("actor.HandleIncomingEnvelopes: Received actor envelope: %v", envelope)
 
 			err := a.Keyset.Verify()
 			if err != nil {
-				log.Errorf("handleIncomingEnvelope: %s: %v", a.Entity.DID.Id, err)
+				log.Errorf("actor.HandleIncomingEnvelopes: : %s: %v", a.Entity.DID.Id, err)
 				continue
 			}
 
 			// Process the envelope and send a pong response
 			m, err := envelope.Open(a.Keyset.EncryptionKey.PrivKey[:])
 			if err != nil {
-				log.Errorf("Error opening actor envelope: %v\n", err)
+				log.Errorf("actor.HandleIncomingEnvelopes: Error opening actor envelope: %v\n", err)
 				continue
 			}
 
-			log.Debugf("Opened envelope and found message: %v\n", string(m.Content))
-
 			// Deliver message to our message channel.
 			if m.To == a.Entity.DID.Id {
+				log.Debugf("actor.HandleIncomingEnvelopes: Accepted message %s from %s to %s", m.Id, m.From, m.To)
 				messages <- m
 				continue
 			}
 
-			log.Errorf("handleIncomingEnvelopes: Received message to %s. Expected %s. Ignoring...", m.To, a.Entity.DID.Id)
+			log.Errorf("actor.HandleIncomingEnvelopes: Received message to %s. Expected %s. Ignoring...", m.To, a.Entity.DID.Id)
 		}
 	}
 }

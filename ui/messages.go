@@ -15,14 +15,14 @@ func (ui *ChatUI) handleIncomingMessages(ctx context.Context) {
 	for {
 		select {
 		case <-ctx.Done():
-			log.Debug("Context cancelled, exiting handleIncomingMessages...")
+			log.Debug("Context cancelled, exiting ui.handleIncomingMessages...")
 			return
 		case m, ok := <-ui.chMessages:
 			if !ok {
 				log.Debug("Message channel closed, exiting...")
 				return
 			}
-			log.Debugf("UI received message from %s to %s", m.From, m.To)
+			log.Debugf("UI received message %v from %s to %s", m.Content, m.From, m.To)
 
 			// No need to verify at this point, as the message has already been verified by the actor.
 			ui.displayChatMessage(m)

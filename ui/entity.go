@@ -27,8 +27,7 @@ The nick after the entity to set nick for doesn't need to be quoted.
 	entityResolveHelp  = "Tries to resolve the most recent version of the DID Document for the given DID or NICK."
 	entityShowUsage    = "/entity show <id|nick>"
 	entityShowHelp     = "Show info about the entity"
-
-	aliasSeparator = " => "
+	aliasSeparator     = "\t => "
 )
 
 func (ui *ChatUI) handleEntityCommand(args []string) {

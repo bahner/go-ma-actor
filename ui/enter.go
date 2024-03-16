@@ -93,9 +93,6 @@ func (ui *ChatUI) enterEntity(e *entity.Entity, reEntry bool) error {
 		// that envelopes are passed on correctly.
 		go ui.a.Subscribe(ui.currentEntityCtx, ui.e)
 
-		// Handle incoming envelopes to the entity as the actor.
-		// Only an actor can decrypt and handle envelopes.
-
 		// Don't listen for envelopes when entering self.
 		go ui.a.HandleIncomingEnvelopes(ui.currentEntityCtx, ui.chPrivateMessages)
 
