@@ -11,7 +11,6 @@ import (
 	"github.com/bahner/go-ma-actor/entity/actor"
 	"github.com/bahner/go-ma-actor/mode/pong"
 	"github.com/bahner/go-ma-actor/p2p"
-	"github.com/bahner/go-ma-actor/p2p/peer"
 	"github.com/bahner/go-ma-actor/ui"
 	"github.com/spf13/pflag"
 
@@ -48,9 +47,12 @@ func main() {
 		panic(fmt.Sprintf("failed to initialize p2p: %v", err))
 	}
 
-	id := p2P.Host.ID().String()
-
-	peer.Set(id, peer.GetOrCreateNick(id), true) // Always protect ourselves
+	// PEER
+	fmt.Println("Initialising peer ...")
+	err = initPeer(p2P.Host.ID().String())
+	if err != nil {
+		panic(fmt.Sprintf("failed to initialize peer: %v", err))
+	}
 
 	// P2P Relay mode
 	// Relay mode doesn't need either ui or an actor.

@@ -1,73 +1,48 @@
 package peer
 
-import (
-	"github.com/bahner/go-ma-actor/config/db"
-	_ "github.com/mattn/go-sqlite3"
-	log "github.com/sirupsen/logrus"
-)
+import "github.com/bahner/go-ma-actor/config/db"
 
-const (
-	_DELETE_PEER = "DELETE FROM peers WHERE id = ?"
-	_INSERT_PEER = "INSERT INTO peers (id, nick, allowed) VALUES (?, ?, ?)"
-	// NB! UPSERT doesn't work properly with TEXT columns in sqlite3 it seems
-	// SO we have to delete and insert instead of update
-)
+const _SELECT_IDS = "SELECT id FROM peers"
 
-// Set modifies an existing peer's information in the map and the database.
-func Set(id string, nick string, allowed bool) error {
-	d, err := db.Get()
+// Returns a slic of all known peer IDs.
+func IDS() ([]string, error) {
+	db, err := db.Get()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	tx, err := d.Begin()
+	rows, err := db.Query(_SELECT_IDS)
 	if err != nil {
-		return err
+		return nil, err
+	}
+	defer rows.Close()
+
+	var ids []string
+	for rows.Next() {
+		var id string
+		err = rows.Scan(&id)
+		if err != nil {
+			return nil, err
+		}
+		ids = append(ids, id)
 	}
 
-	sqlAllowed := bool2int(allowed)
-
-	_, err = tx.Exec(_DELETE_PEER, id)
-	if err != nil {
-		log.Debugf("Failed to set peer %s: %s", id, err.Error())
-		tx.Rollback()
-		return err
-	}
-	_, err = tx.Exec(_INSERT_PEER, id, nick, sqlAllowed)
-	if err != nil {
-		log.Debugf("Failed to set peer %s: %s", id, err.Error())
-		tx.Rollback()
-		return err
-	}
-
-	if err := tx.Commit(); err != nil {
-		return err
-	}
-
-	return nil
+	return ids, nil
 }
+func Peers() []Peer {
 
-// Delete removes a peer from the map and the database by ID.
-func Delete(id string) error {
-	d, err := db.Get()
+	peers := []Peer{}
+	ids, err := IDS()
 	if err != nil {
-		return err
+		return nil
+	}
+	for _, id := range ids {
+		p, err := Get(id)
+		if err != nil {
+			return nil
+		}
+		peers = append(peers, p)
 	}
 
-	tx, err := d.Begin()
-	if err != nil {
-		return err
-	}
-
-	_, err = tx.Exec(_DELETE_PEER, id)
-	if err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	if err := tx.Commit(); err != nil {
-		return err
-	}
-
-	return nil
+	return peers
 }

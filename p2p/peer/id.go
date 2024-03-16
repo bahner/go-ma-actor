@@ -9,9 +9,8 @@ import (
 )
 
 const (
-	_LOOKUP_ID  = "SELECT id FROM peers WHERE nick = ? OR id = ?"
-	_SELECT_ID  = "SELECT id FROM peers WHERE nick = ?"
-	_SELECT_IDS = "SELECT id FROM peers"
+	_LOOKUP_ID = "SELECT id FROM peers WHERE nick = ? OR id = ?"
+	_SELECT_ID = "SELECT id FROM peers WHERE nick = ?"
 )
 
 var (
@@ -19,15 +18,15 @@ var (
 	ErrDBTransactionFailed = errors.New("database transaction failed")
 )
 
-// LookupID finds a peer ID by its nickname or ID.
-func LookupID(q string) (string, error) {
+// GetIDForNick retrieves a peer's ID by its nickname.
+func GetIDForNick(nick string) (string, error) {
 	db, err := db.Get()
 	if err != nil {
 		return "", err
 	}
 
 	var id string
-	err = db.QueryRow(_LOOKUP_ID, q, q).Scan(&id)
+	err = db.QueryRow(_SELECT_ID, nick).Scan(&id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return "", ErrPeerNotFoundInDB
@@ -38,30 +37,24 @@ func LookupID(q string) (string, error) {
 	return id, nil
 }
 
-// Returns a slic of all known peer IDs.
-func IDS() ([]string, error) {
+// LookupID finds a peer ID by its nickname or ID.
+// Returns the input string if the peer is not found.
+func LookupID(q string) (string, error) {
 	db, err := db.Get()
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	rows, err := db.Query(_SELECT_IDS)
+	var id string
+	err = db.QueryRow(_LOOKUP_ID, q, q).Scan(&id)
 	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var ids []string
-	for rows.Next() {
-		var id string
-		err = rows.Scan(&id)
-		if err != nil {
-			return nil, err
+		if errors.Is(err, sql.ErrNoRows) {
+			return q, ErrPeerNotFoundInDB
 		}
-		ids = append(ids, id)
+		return q, err
 	}
 
-	return ids, nil
+	return id, nil
 }
 
 // Lookup finds a peer nickname by its ID or Nick.

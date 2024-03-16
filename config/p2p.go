@@ -9,9 +9,9 @@ import (
 )
 
 const (
-	defaultConnmgrLowWatermark  int           = 50
-	defaultConnmgrHighWatermark int           = 100
-	defaultConnmgrGracePeriod   time.Duration = time.Minute * 1
+	defaultConnmgrLowWatermark  int           = 512
+	defaultConnmgrHighWatermark int           = 768
+	defaultConnmgrGracePeriod   time.Duration = time.Minute * 2
 
 	defaultDiscoveryAdvertiseInterval time.Duration = time.Minute * 5
 	defaultDiscoveryAdvertiseTTL      time.Duration = time.Minute * 60

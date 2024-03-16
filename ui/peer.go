@@ -3,6 +3,7 @@ package ui
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/bahner/go-ma-actor/p2p/peer"
 
@@ -134,13 +135,14 @@ func (ui *ChatUI) handlePeerNickListCommand(args []string) {
 // SET
 func (ui ChatUI) handlePeerNickSetCommand(args []string) {
 
-	if len(args) == 5 {
+	if len(args) >= 5 {
 		id, err := peer.LookupID(args[3])
 		if err != nil {
 			ui.displaySystemMessage("Error: " + err.Error())
 			return
 		}
-		nick, err := peer.LookupNick(id)
+		nick := strings.Join(args[4:], separator)
+		err = peer.SetNickForID(id, nick)
 		if err != nil {
 			ui.displaySystemMessage("Error: " + err.Error())
 			return
@@ -156,7 +158,8 @@ func (ui ChatUI) handlePeerNickSetCommand(args []string) {
 func (ui *ChatUI) handlePeerNickShowCommand(args []string) {
 
 	if len(args) == 4 {
-		id, err := peer.LookupID(args[3])
+		id := strings.Join(args[3:], separator)
+		id, err := peer.LookupID(id)
 		if err != nil {
 			ui.displaySystemMessage("Error: " + err.Error())
 			return
@@ -219,8 +222,9 @@ func (ui *ChatUI) handlePeerFindCommand(args []string) {
 
 func (ui *ChatUI) handlePeerDeleteCommand(args []string) {
 
-	if len(args) == 3 {
-		id, err := peer.LookupID(args[2])
+	if len(args) >= 3 {
+		id := strings.Join(args[2:], separator)
+		id, err := peer.LookupID(id)
 		if err != nil {
 			ui.displaySystemMessage("Error: " + err.Error())
 			return

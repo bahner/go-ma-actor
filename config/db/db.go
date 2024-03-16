@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"github.com/bahner/go-ma-actor/config"
+	"github.com/bahner/go-ma-actor/internal"
 	"github.com/mitchellh/go-homedir"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/pflag"
@@ -22,6 +23,18 @@ var (
 	once          sync.Once
 	db            *sql.DB
 	defaultDbFile = config.DefaultDbFile
+
+	peersSQL = fmt.Sprintf(`
+	CREATE TABLE IF NOT EXISTS peers (
+		id VARCHAR(60) PRIMARY KEY,
+		nick TEXT,
+		allowed BOOLEAN NOT NULL CHECK (allowed IN (0, 1)) DEFAULT %d,
+		UNIQUE(nick))`, internal.Bool2int(config.ALLOW_ALL_PEERS))
+	entitiesSQL = `
+	CREATE TABLE IF NOT EXISTS entities (
+		did VARCHAR(80) PRIMARY KEY,
+		nick TEXT,
+		UNIQUE(nick) )`
 )
 
 func init() {
@@ -51,22 +64,13 @@ func Init() (*sql.DB, error) {
 			return
 		}
 
-		_, err = db.Exec(`
-CREATE TABLE IF NOT EXISTS entities (
-	did VARCHAR(80) PRIMARY KEY,
-	nick TEXT,
-	UNIQUE(nick) )`)
+		_, err = db.Exec(entitiesSQL)
 		if err != nil {
 			onceErr = fmt.Errorf("error creating entities table: %s", err)
 			return
 		}
 
-		_, err = db.Exec(`
-CREATE TABLE IF NOT EXISTS peers (
-	id VARCHAR(60) PRIMARY KEY,
-	nick TEXT,
-	allowed BOOLEAN NOT NULL CHECK (allowed IN (0, 1)),
-	UNIQUE(nick))`)
+		_, err = db.Exec(peersSQL)
 		if err != nil {
 			onceErr = fmt.Errorf("error creating peers table: %s", err)
 			return

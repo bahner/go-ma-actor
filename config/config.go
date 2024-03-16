@@ -49,6 +49,8 @@ func init() {
 // The name parameter is the name of the config file to search for without the extension.
 func Init(mode string) error {
 
+	var err error
+
 	//VIPER CONFIGURATION
 
 	// Read the config file and environment variables.
@@ -67,11 +69,13 @@ func Init(mode string) error {
 
 	// We *must* read the config file after we have generated the identity.
 	// Otherwise: Unforeseen consequences.
-	log.Infof("Using config file: %s", configFile()) // This one goes to STDERR
-	viper.SetConfigFile(configFile())
-	err := viper.ReadInConfig()
-	if err != nil {
-		log.Warnf("No config file found: %s", err)
+	if !generateFlag() && !showDefaultsFlag() {
+		log.Infof("Using config file: %s", configFile()) // This one goes to STDERR
+		viper.SetConfigFile(configFile())
+		err = viper.ReadInConfig()
+		if err != nil {
+			log.Warnf("No config file found: %s", err)
+		}
 	}
 
 	// Logging
@@ -88,7 +92,17 @@ func Init(mode string) error {
 
 	if showDefaultsFlag() {
 		// Print the YAML to stdout or write it to a template file
-		generateActorConfigFile(fakeActorIdentity, fakeP2PIdentity)
+		if PongMode() {
+			generatePongConfigFile(fakeActorIdentity, fakeP2PIdentity)
+		}
+
+		if RelayMode() {
+			generateRelayConfigFile(fakeP2PIdentity)
+		}
+
+		if !PongMode() && !RelayMode() {
+			generateActorConfigFile(fakeActorIdentity, fakeP2PIdentity)
+		}
 		os.Exit(0)
 	}
 

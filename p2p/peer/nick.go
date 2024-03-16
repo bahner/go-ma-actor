@@ -11,7 +11,7 @@ import (
 const (
 	_LOOKUP_NICK  = "SELECT nick FROM peers WHERE nick = ? OR id = ?"
 	_SELECT_NICK  = "SELECT nick FROM peers WHERE id = ?"
-	_UPDATE_NICK  = "UPDATE peers SET nick = ? WHERE id = ?"
+	_UPSERT_NICK  = "INSERT INTO peers (id, nick) VALUES (?, ?) ON CONFLICT(id) DO UPDATE SET nick = excluded.nick;"
 	_SELECT_NICKS = "SELECT id, nick FROM peers"
 )
 
@@ -45,7 +45,7 @@ func SetNickForID(id string, nick string) error {
 		}
 	}()
 
-	_, err = tx.Exec(_UPDATE_NICK, id, nick)
+	_, err = tx.Exec(_UPSERT_NICK, id, nick)
 	return err
 }
 
@@ -66,25 +66,6 @@ func GetNickForID(id string) (string, error) {
 	}
 
 	return nick, nil
-}
-
-// GetIDForNick retrieves a peer's ID by its nickname.
-func GetIDForNick(nick string) (string, error) {
-	db, err := db.Get()
-	if err != nil {
-		return "", err
-	}
-
-	var id string
-	err = db.QueryRow(_SELECT_ID, nick).Scan(&id)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return "", ErrPeerNotFoundInDB
-		}
-		return "", err
-	}
-
-	return id, nil
 }
 
 // LookupNick finds a nickname for a peerby its ID or Nick.
@@ -143,7 +124,7 @@ func GetOrCreateNick(id string) (nodeAlias string) {
 	id, err := LookupID(id)
 	if err == nil {
 		nodeAlias, err := LookupNick(id)
-		if err == nil {
+		if err == nil && nodeAlias != "" {
 			return nodeAlias
 		}
 	}

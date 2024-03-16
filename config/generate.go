@@ -48,7 +48,6 @@ func generateActorConfigFile(identity string, node string) {
 				"advertise-ttl":      P2PDiscoveryAdvertiseTTL(),
 				"advertise-limit":    P2PDiscoveryAdvertiseLimit(),
 				"advertise-interval": P2PDiscoveryAdvertiseInterval(),
-				"allow-all":          ALLOW_ALL_PEERS,
 			},
 		},
 	}
@@ -139,7 +138,6 @@ func generatePongConfigFile(identity string, node string) {
 				"advertise-ttl":      P2PDiscoveryAdvertiseTTL(),
 				"advertise-limit":    P2PDiscoveryAdvertiseLimit(),
 				"advertise-interval": P2PDiscoveryAdvertiseInterval(),
-				"allow-all":          ALLOW_ALL_PEERS,
 			},
 		},
 		"mode": map[string]interface{}{
@@ -190,7 +188,6 @@ func generateRelayConfigFile(node string) {
 				"advertise-ttl":      P2PDiscoveryAdvertiseTTL(),
 				"advertise-interval": P2PDiscoveryAdvertiseInterval(),
 				"advertise-limit":    P2PDiscoveryAdvertiseLimit(),
-				"allow-all":          ALLOW_ALL_PEERS,
 			},
 		},
 	}

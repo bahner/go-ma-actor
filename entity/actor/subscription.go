@@ -90,7 +90,7 @@ func (a *Actor) Subscribe(ctx context.Context, e *entity.Entity) {
 				log.Debugf("handleSubscriptionMessages: Received message that is not a verified envelope: %v\n", err)
 			}
 
-			log.Errorf("handleSubscriptionMessages: Received message that is neither a message nor an envelope: %v\n", message)
+			log.Errorf("handleSubscriptionMessages: Received message that is neither a message nor an envelope: %v\n", message.Data)
 		}
 	}
 }

@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"github.com/bahner/go-ma-actor/config/db"
+	"github.com/bahner/go-ma-actor/internal"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -19,7 +20,7 @@ const (
 // This implies whther the peer is blacklisted or not.
 func GetAllowedForID(id string) (bool, error) {
 
-	allowed := bool2int(defaultAllowed)
+	allowed := internal.Bool2int(defaultAllowed)
 
 	db, err := db.Get()
 	if err != nil {
@@ -34,7 +35,7 @@ func GetAllowedForID(id string) (bool, error) {
 		return defaultAllowed, err
 	}
 
-	return int2bool(allowed), nil
+	return internal.Int2bool(allowed), nil
 }
 
 func SetAllowed(id string, allowed bool) error {
@@ -56,7 +57,7 @@ func SetAllowed(id string, allowed bool) error {
 		}
 	}()
 
-	_, err = tx.Exec(_UPDATE_ALLOWED, id, bool2int(allowed))
+	_, err = tx.Exec(_UPDATE_ALLOWED, id, internal.Bool2int(allowed))
 	return err
 }
 
@@ -66,17 +67,4 @@ func IsAllowed(id string) bool {
 		return defaultAllowed
 	}
 	return allowed
-}
-
-// bool2int converts a bool to an int. true is 1, false is 0.
-func bool2int(b bool) int {
-	if b {
-		return 1
-	}
-	return 0
-}
-
-// Converts an int to a bool. 1 is true, anything else is false.
-func int2bool(a int) bool {
-	return a == 1
 }
