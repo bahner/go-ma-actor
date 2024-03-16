@@ -50,7 +50,7 @@ func (ui *ChatUI) handleMsgCommand(input string) {
 			ui.displaySystemMessage(fmt.Sprintf("envelope creation error: %s", err))
 		}
 
-		recp, err := entity.GetOrCreate(recipient)
+		recp, err := entity.GetOrCreate(recipient, false)
 		if err != nil {
 			ui.displaySystemMessage(fmt.Sprintf("entity creation error: %s", err))
 		}

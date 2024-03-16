@@ -5,28 +5,30 @@ import (
 	"strings"
 
 	"github.com/bahner/go-ma-actor/entity"
+	"github.com/bahner/go-ma/did/doc"
 	log "github.com/sirupsen/logrus"
 )
 
 const (
-	entityUsage = "/entity nick|show"
-	entityHelp  = `Manages info on seen entities
-At this point only nicks are handled`
-	entityConnectUsage  = "/entity connect <id|nick>"
-	entityConnectHelp   = "Connects to an entity's libp2p node"
-	entityNickUsage     = "/entity nick list|set|remove|show"
-	entityNickHelp      = "Manages nicks for entities"
-	entityNickListUsage = "/entity nick list"
-	entityNickListHelp  = "Lists nicks for entities"
-	entityNickSetUsage  = "/entity nick set <id|nick> <nick>"
-	entityNickSetHelp   = `Sets a nick for an entity
+	entityUsage        = "/entity list|nick|resolve|show"
+	entityHelp         = "Manages info on seen entities"
+	entityConnectUsage = "/entity connect <id|nick>"
+	entityConnectHelp  = "Connects to an entity's libp2p node"
+	entityListUsage    = "/entity list"
+	entityListHelp     = "Lists nicks for entities"
+	entityNickUsage    = "/entity nick <id|nick> <nick>"
+	entityNickHelp     = `Sets or shows a nick for an entity
 The entity to set nick for *MUST* be quoted if it contains spaces.
 The nick after the entity to set nick for doesn't need to be quoted.
 `
-	entityNickRemoveUsage = "/entity nick remove <id|nick>"
-	entityNickRemoveHelp  = "Removes a nick for an entity"
-	entityNickShowUsage   = "/entity nick show <id|nick>"
-	entityNickShowHelp    = "Shows the entity info"
+	entityRemoveUsage  = "/entity remove <id|nick>"
+	entityRemoveHelp   = "Removes an entity from the database"
+	entityResolveUsage = "/entity resolve <DID|NICK>"
+	entityResolveHelp  = "Tries to resolve the most recent version of the DID Document for the given DID or NICK."
+	entityShowUsage    = "/entity show <id|nick>"
+	entityShowHelp     = "Show info about the entity"
+
+	aliasSeparator = " => "
 )
 
 func (ui *ChatUI) handleEntityCommand(args []string) {
@@ -34,14 +36,23 @@ func (ui *ChatUI) handleEntityCommand(args []string) {
 	if len(args) >= 2 {
 		command := args[1]
 		switch command {
+		case "connect":
+			ui.handleEntityConnectCommand(args)
+			return
+		case "list":
+			ui.handleEntityListCommand(args)
+			return
 		case "nick":
 			ui.handleEntityNickCommand(args)
 			return
-		case "show":
-			ui.handleEntityNickShowCommand(args)
+		case "resolve":
+			go ui.handleEntityResolveCommand(args) // This make take some time. No need to block the UI
 			return
-		case "connect":
-			ui.handleEntityConnectCommand(args)
+		case "remove":
+			ui.handleEntityRemoveCommand(args)
+			return
+		case "show":
+			ui.handleEntityShowCommand(args)
 			return
 		default:
 			ui.displaySystemMessage("Unknown alias entity command: " + command)
@@ -52,64 +63,34 @@ func (ui *ChatUI) handleEntityCommand(args []string) {
 
 }
 
-func (ui *ChatUI) handleEntityNickListCommand(args []string) {
+func (ui *ChatUI) handleEntityListCommand(args []string) {
 
 	log.Debugf("entity list command: %v", args)
-	if len(args) == 3 {
+	if len(args) == 2 {
 
 		nicks := entity.ListNicks()
 		log.Debugf("entities: %v", nicks)
 
 		if len(nicks) > 0 {
 			for k, v := range nicks {
-				ui.displaySystemMessage(fmt.Sprintf("%s: %s", k, v))
+				ui.displaySystemMessage(k + aliasSeparator + v)
 			}
 		} else {
 			ui.displaySystemMessage("No entities found")
 		}
 	} else {
-		ui.handleHelpCommand(entityNickListUsage, entityNickListHelp)
+		ui.handleHelpCommand(entityListUsage, entityListHelp)
 	}
 
 }
-
-// case "remove":
-// 	ui.handleEntityRemoveCommand(args)
-// 	return
 
 func (ui *ChatUI) handleEntityNickCommand(args []string) {
 
-	if len(args) >= 3 {
-		command := args[2]
-		switch command {
-		case "list":
-			ui.handleEntityNickListCommand(args)
-			return
-		case "set":
-			ui.handleEntityNickSetCommand(args)
-			return
-		case "remove":
-			ui.handleEntityNickRemoveCommand(args)
-			return
-		case "show":
-			ui.handleEntityNickShowCommand(args)
-			return
-		default:
-			ui.displaySystemMessage("Unknown alias entity command: " + command)
-		}
-	}
+	if len(args) >= 4 {
+		id := entity.Lookup(args[2])
+		nick := strings.Join(args[3:], separator)
 
-	ui.handleHelpCommand(entityNickUsage, entityNickHelp)
-}
-
-// SET
-func (ui ChatUI) handleEntityNickSetCommand(args []string) {
-
-	if len(args) == 5 {
-		id := entity.Lookup(args[3])
-		nick := strings.Join(args[4:], separator)
-
-		e, err := entity.GetOrCreate(id)
+		e, err := entity.GetOrCreate(id, true)
 		if err != nil {
 			ui.displaySystemMessage("Error: " + err.Error())
 			return
@@ -123,41 +104,42 @@ func (ui ChatUI) handleEntityNickSetCommand(args []string) {
 		if id == ui.e.DID.Id {
 			ui.msgBox.SetTitle(nick)
 		}
-		ui.displaySystemMessage(e.DID.Id + " is now known as " + e.Nick)
+		ui.displaySystemMessage(e.DID.Id + aliasSeparator + e.Nick)
 	} else {
-		ui.handleHelpCommand(entityNickSetUsage, entityNickSetHelp)
+		ui.handleHelpCommand(entityNickUsage, entityNickHelp)
 	}
 
+	ui.handleHelpCommand(entityNickUsage, entityNickHelp)
 }
 
 // SHOW
-func (ui *ChatUI) handleEntityNickShowCommand(args []string) {
+func (ui *ChatUI) handleEntityShowCommand(args []string) {
 
-	if len(args) == 4 {
-		id := strings.Join(args[3:], separator)
-		e, err := entity.GetOrCreate(entity.Lookup(id))
+	if len(args) >= 3 {
+		id := strings.Join(args[2:], separator)
+		e, err := entity.GetOrCreate(entity.Lookup(id), true)
 		if err != nil {
 			ui.displaySystemMessage("Error: " + err.Error())
 			return
 		}
-		entityInfo := fmt.Sprintf(e.DID.Id + " is also known as " + e.Nick)
+		entityInfo := fmt.Sprintf(e.DID.Id + aliasSeparator + e.Nick)
 		ui.displaySystemMessage(entityInfo)
 	} else {
-		ui.handleHelpCommand(entityNickShowUsage, entityNickShowHelp)
+		ui.handleHelpCommand(entityShowUsage, entityShowHelp)
 	}
 
 }
 
 // REMOVE
-func (ui *ChatUI) handleEntityNickRemoveCommand(args []string) {
+func (ui *ChatUI) handleEntityRemoveCommand(args []string) {
 
-	if len(args) == 4 {
-		id := strings.Join(args[3:], separator)
+	if len(args) >= 3 {
+		id := strings.Join(args[2:], separator)
 		id = entity.Lookup(id)
 		entity.RemoveNick(id)
 		ui.displaySystemMessage("Nick removed for " + id + " if it existed")
 	} else {
-		ui.handleHelpCommand(entityNickRemoveUsage, entityNickRemoveHelp)
+		ui.handleHelpCommand(entityRemoveUsage, entityRemoveHelp)
 	}
 
 }
@@ -167,7 +149,7 @@ func (ui *ChatUI) handleEntityConnectCommand(args []string) {
 	if len(args) >= 3 {
 		id := strings.Join(args[2:], separator)
 		id = entity.Lookup(id)
-		e, err := entity.GetOrCreate(id)
+		e, err := entity.GetOrCreate(id, false) // Lookup up the entity document properly.
 		if err != nil {
 			ui.displaySystemMessage("Error: " + err.Error())
 			return
@@ -178,8 +160,43 @@ func (ui *ChatUI) handleEntityConnectCommand(args []string) {
 			ui.displaySystemMessage("Error connecting to entity peer: " + err.Error())
 			return
 		}
-		ui.displaySystemMessage("Connected to " + id + ": " + pai.ID.String())
+		ui.displaySystemMessage("Connected to " + id + aliasSeparator + pai.ID.String())
 	} else {
 		ui.handleHelpCommand(entityConnectUsage, entityConnectHelp)
 	}
+}
+
+func (ui *ChatUI) handleEntityResolveCommand(args []string) {
+
+	if len(args) >= 3 {
+
+		// We must absolutely get the entity, so we can get the DID Document.
+		// So no caching.
+		CACHED := false
+
+		id := strings.Join(args[2:], separator)
+		id, err := entity.LookupID(id)
+		if err != nil {
+			ui.displaySystemMessage("Error: " + err.Error())
+			return
+		}
+		e, err := entity.GetOrCreate(id, CACHED)
+		if err != nil {
+			ui.displaySystemMessage("Error fetching entity: " + err.Error())
+			return
+		}
+
+		ui.displaySystemMessage("Resolving DID Document for " + e.DID.Id + "...")
+		d, c, err := doc.Fetch(id, false)
+		if err != nil {
+			ui.displaySystemMessage("Error fetching DID Document: " + err.Error())
+			return
+		}
+		ui.displaySystemMessage("Resolved DID Document for " + e.DID.Id + " (CID: " + c.String() + ")")
+		e.Doc = d
+
+	} else {
+		ui.handleHelpCommand(entityResolveUsage, entityResolveHelp)
+	}
+
 }

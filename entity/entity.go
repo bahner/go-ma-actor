@@ -68,44 +68,36 @@ func NewFromDID(d did.DID) (*Entity, error) {
 		Messages: make(chan *msg.Message, MESSAGES_BUFFERSIZE),
 	}
 
-	err = e.getOrCreateAndSetNick()
+	// Check if we are known from before
+	nick, err := LookupNick(d.Id)
 	if err != nil {
-		log.Debugf("entity/new: failed to get and set nick: %s", err)
+		log.Debugf("NewFromDID: LookupNick failed: %v", err)
 	}
 
-	// Cache the entity
-	entities.Store(d.Id, e)
+	err = e.SetNick(nick)
+	if err != nil {
+		return nil, fmt.Errorf("NewFromDID: failed to set nick: %w", err)
+	}
 
 	return e, nil
 }
 
-// Get an entity from the global map.
-func GetOrCreate(id string) (*Entity, error) {
-
-	// Check if we have one cached
-	e := load(GetDID(id)) // Be nice and see if this is a nick.
-	if e != nil {
-		err := e.getOrCreateAndSetNick() // If this fails nothing should happen.
-		if err != nil {
-			log.Debugf("GetOrCreate: failed to find existing nick: %s", err)
-		}
-		return e, nil
-	}
+func GetOrCreate(id string, cached bool) (*Entity, error) {
 
 	d, err := did.New(id)
 	if err != nil {
-		return nil, fmt.Errorf("GetOrCreate: %w", err)
+		return nil, fmt.Errorf("entity/getorcreate: %w", err)
 	}
 
-	return GetOrCreateFromDID(d)
-
+	return GetOrCreateFromDID(d, cached)
 }
 
 // Get an entity from the global map.
 // The input is a full did string. If one is created it will have no Nick.
 // The function should do the required lookups to get the nick.
 // And verify the entity.
-func GetOrCreateFromDID(id did.DID) (*Entity, error) {
+// Cached is whether or not to use the cached copy of the entity document in IPFS
+func GetOrCreateFromDID(id did.DID, cached bool) (*Entity, error) {
 
 	e, err := NewFromDID(id)
 	if err != nil {
@@ -113,7 +105,7 @@ func GetOrCreateFromDID(id did.DID) (*Entity, error) {
 	}
 
 	// Fetch the document
-	err = e.FetchAndSetDocument(false)
+	err = e.FetchAndSetDocument(cached)
 	if err != nil {
 		return nil, fmt.Errorf("GetOrCreateFromDID: %w", err)
 	}

@@ -27,8 +27,6 @@ func (ui *ChatUI) handleCommands(input string) {
 		ui.handleHelpCommands(args)
 	case "/me":
 		ui.handleMeCommands(args)
-	case "/resolve":
-		go ui.handleResolveCommand(args) // This make take some time. No need to block the UI
 	case "/peer":
 		ui.handlePeerCommand(args)
 	case "/reset":

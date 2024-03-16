@@ -122,7 +122,7 @@ func (ui *ChatUI) handlePeerNickListCommand(args []string) {
 
 		if len(nicks) > 0 {
 			for k, v := range nicks {
-				ui.displaySystemMessage(k + " : " + v)
+				ui.displaySystemMessage(k + aliasSeparator + v)
 			}
 		} else {
 			ui.displaySystemMessage("No peers found")
@@ -179,7 +179,12 @@ func (ui *ChatUI) handlePeerNickShowCommand(args []string) {
 func (ui *ChatUI) handlePeerConnectCommand(args []string) {
 
 	if len(args) == 3 {
-		id := peer.Lookup(args[2])
+		id := strings.Join(args[2:], separator)
+		id, err := peer.LookupID(id)
+		if err != nil {
+			ui.displaySystemMessage("Error: " + err.Error())
+			return
+		}
 
 		addrInfo, err := peer.PeerAddrInfoFromPeerIDString(ui.p.Host, id)
 		if err != nil {
@@ -200,13 +205,19 @@ func (ui *ChatUI) handlePeerConnectCommand(args []string) {
 func (ui *ChatUI) handlePeerFindCommand(args []string) {
 
 	if len(args) == 3 {
-		id, err := p2peer.Decode(args[2])
+		id := strings.Join(args[2:], separator)
+		id, err := peer.LookupID(id)
+		if err != nil {
+			ui.displaySystemMessage("Error: " + err.Error())
+			return
+		}
+		pid, err := p2peer.Decode(id)
 		if err != nil {
 			ui.displaySystemMessage("Error: " + err.Error())
 			return
 		}
 
-		ai, err := ui.p.DHT.FindPeer(context.Background(), id)
+		ai, err := ui.p.DHT.FindPeer(context.Background(), pid)
 		if err != nil {
 			ui.displaySystemMessage("Error: " + err.Error())
 			return

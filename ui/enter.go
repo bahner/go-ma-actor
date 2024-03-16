@@ -21,15 +21,16 @@ func (ui *ChatUI) handleEnterCommand(args []string) {
 	if len(args) >= 2 {
 
 		id := strings.Join(args[1:], separator)
+		id = entity.Lookup(id)
 
-		e, err := entity.GetOrCreate(id)
+		e, err := entity.GetOrCreate(id, false)
 		if err != nil {
 			ui.displaySystemMessage("Error getting entity: " + err.Error())
 			return
 		}
 
 		// This function handles the verification of the entity
-		err = ui.enterEntity(e, false) // force = false
+		err = ui.enterEntity(e, true)
 		if err != nil {
 			ui.displaySystemMessage("Error entering entity: " + err.Error())
 			return

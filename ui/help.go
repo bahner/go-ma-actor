@@ -69,7 +69,7 @@ func (ui *ChatUI) handleHelpCommands(args []string) {
 		case "refresh":
 			ui.handleHelpCommand(refreshUsage, refreshHelp)
 		case "resolve":
-			ui.handleHelpCommand(resolveUsage, resolveHelp)
+			ui.handleHelpCommand(entityResolveUsage, entityResolveHelp)
 		case "set":
 			ui.handleHelpCommand(setUsage, setHelp)
 		case "status":

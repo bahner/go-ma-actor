@@ -115,7 +115,7 @@ func initActorOrPanic() *actor.Actor {
 		panic(fmt.Sprintf("%s is not a valid actor: %v", id, err))
 	}
 
-	_, err = entity.GetOrCreate(a.Entity.DID.Id)
+	_, err = entity.GetOrCreateFromDID(a.Entity.DID, false)
 	if err != nil {
 		panic(fmt.Sprintf("error getting or creating entity: %s", err))
 	}

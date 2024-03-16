@@ -22,17 +22,13 @@ const (
 
 func (ui *ChatUI) handleBroadcastCommand(args []string) {
 
-	if len(args) > 1 {
+	if len(args) >= 2 {
 
 		me := ui.a.Entity.DID.Id
 
-		var message string
-		if len(args) > 2 {
-			message = strings.Join(args[1:], separator)
-		} else {
-			message = args[1]
-		}
+		message := strings.Join(args[1:], separator)
 		msgBytes := []byte(message)
+
 		if log.GetLevel() == log.DebugLevel {
 			ui.displayDebugMessage(fmt.Sprintf("Broadcasting %s", message))
 		}

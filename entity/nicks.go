@@ -4,18 +4,18 @@ import (
 	"errors"
 
 	"github.com/bahner/go-ma-actor/config/db"
-	nanoid "github.com/matoous/go-nanoid/v2"
 	_ "github.com/mattn/go-sqlite3"
 )
 
 const (
 	_SELECT_NICK = "SELECT nick FROM entities WHERE did =?"
 	_SELECT_DID  = "SELECT did FROM entities WHERE nick =?"
-	_UPSERT      = "INSERT INTO entities (did, nick) VALUES (?, ?) ON CONFLICT(did) DO UPDATE SET nick = ?"
+	_UPSERT      = "INSERT INTO entities (did, nick) VALUES (?, ?) ON CONFLICT(did) DO UPDATE SET nick = excluded.nick;"
+	_UPDATE      = "UPDATE entities SET nick = ? WHERE did = ?"
 	_DELETE      = "DELETE FROM entities WHERE did = ?"
 )
 
-var ErrFailedToSetNick = errors.New("failed to set entity nick")
+var ErrFailedToCreateNick = errors.New("failed to set entity nick")
 
 // Returns the DID . Returns the input if the node does not exist
 // This is used before we know in an Entity exists or not. It can be used anywhere.
@@ -114,8 +114,6 @@ func RemoveNick(id string) error {
 
 	id = GetDID(id) // Check if the reuested ID is a nick
 
-	entities.Delete(id)
-
 	d, err := db.Get()
 	if err != nil {
 		return err
@@ -133,44 +131,17 @@ func RemoveNick(id string) error {
 // The key is the node's ID
 func (e *Entity) SetNick(nick string) error {
 
-	e.Nick = nick
-
 	d, err := db.Get()
 	if err != nil {
 		return err
 	}
-	_, err = d.Exec(_UPSERT, e.DID.Id, nick, nick)
+	_, err = d.Exec(_UPSERT, e.DID.Id, nick)
 	if err != nil {
 		return err
 	}
 
+	// Wait to update the entity until we know the database is updated
+	e.Nick = nick
+
 	return nil
-}
-
-// Fetches a nick from the database or uses the fragment of the DID
-func (e *Entity) getOrCreateAndSetNick() error {
-
-	var (
-		err error
-	)
-
-	// Nicks should be unique. If we have a nick, we're done.
-	// Also they must be random initially, so others can't overwrite them.
-	db, err := db.Get()
-	if err == nil {
-
-		err = db.QueryRow(_SELECT_NICK, e.DID.Id).Scan(&e.Nick)
-		if err == nil {
-			e.SetNick(e.Nick)
-			return nil
-		}
-	}
-
-	e.Nick, err = nanoid.New()
-	if err == nil {
-		e.SetNick(e.Nick)
-		return nil
-	}
-
-	return ErrFailedToSetNick
 }
