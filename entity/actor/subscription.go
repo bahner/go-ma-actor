@@ -33,6 +33,7 @@ func (a *Actor) Subscribe(ctx context.Context, e *entity.Entity) {
 		log.Errorf("Failed to subscribe to topic: %v", err)
 		return
 	}
+	// Enable relay
 	cancelRelay, err := e.Topic.Relay()
 	if err != nil {
 		log.Errorf("actorSubscribe: failed to relay to topic: %v", err)

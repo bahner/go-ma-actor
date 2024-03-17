@@ -21,7 +21,7 @@ const (
 
 	defaultLimbo = "closet"
 
-	defaultPeerslistWidth = 10
+	defaultPeerslistWidth = 20
 	defaultHistorySize    = 50
 
 	separator = " "

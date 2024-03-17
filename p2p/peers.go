@@ -51,13 +51,13 @@ func (p *P2P) ConnectedUnprotectedPeers() p2peer.IDSlice {
 }
 
 // ConnectedProtectedPeersAddrInfo returns a map of p2peer.ID to AddrInfo for all protected connected peers.
-func (p *P2P) ConnectedProtectedPeersAddrInfo() map[string]*p2peer.AddrInfo {
+func (p *P2P) ConnectedProtectedPeersAddrInfo() map[string]p2peer.AddrInfo {
 	h := p.Host
-	connectedPeersAddrInfo := make(map[string]*p2peer.AddrInfo)
+	connectedPeersAddrInfo := make(map[string]p2peer.AddrInfo)
 
 	for _, connectedPeer := range p.ConnectedProtectedPeers() {
 		peerAddrInfo := h.Peerstore().PeerInfo(connectedPeer)
-		connectedPeersAddrInfo[connectedPeer.String()] = &peerAddrInfo
+		connectedPeersAddrInfo[connectedPeer.String()] = peerAddrInfo
 	}
 
 	return connectedPeersAddrInfo

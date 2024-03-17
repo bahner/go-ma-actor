@@ -21,6 +21,8 @@ const (
 
 	defaultListenPort int    = 0
 	fakeP2PIdentity   string = "NO_DEFAULT_NODE_IDENITY"
+	defaultDHT        bool   = true
+	defaultMDNS       bool   = true
 )
 
 func init() {
@@ -57,6 +59,12 @@ func init() {
 	pflag.Int("port", defaultListenPort, "Port for libp2p node to listen on.")
 	viper.BindPFlag("p2p.port", pflag.Lookup("port"))
 	viper.SetDefault("p2p.port", defaultListenPort)
+	pflag.Bool("dht", defaultDHT, "Whether to discover using DHT")
+	viper.BindPFlag("p2p.discovery.dht", pflag.Lookup("dht"))
+	viper.SetDefault("p2p.discovery.dht", defaultDHT)
+	pflag.Bool("mdns", defaultMDNS, "Whether to discover using MDNS")
+	viper.BindPFlag("p2p.discovery.mdns", pflag.Lookup("mdns"))
+	viper.SetDefault("p2p.discovery.mdns", defaultMDNS)
 
 	// Identity
 	viper.SetDefault("p2p.identity", fakeP2PIdentity)
@@ -92,6 +100,14 @@ func P2PConnmgrHighWatermark() int {
 
 func P2PConnMgrGracePeriod() time.Duration {
 	return viper.GetDuration("p2p.connmgr.grace-period")
+}
+
+func P2PDiscoveryDHT() bool {
+	return viper.GetBool("p2p.discovery.dht")
+}
+
+func P2PDiscoveryMDNS() bool {
+	return viper.GetBool("p2p.discovery.mdns")
 }
 
 func P2PPort() int {

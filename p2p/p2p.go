@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/bahner/go-ma-actor/config"
 	"github.com/bahner/go-ma-actor/p2p/pubsub"
 	libp2p "github.com/libp2p/go-libp2p"
 	p2ppubsub "github.com/libp2p/go-libp2p-pubsub"
@@ -76,9 +77,13 @@ func Get() *P2P {
 
 func (p *P2P) StartDiscoveryLoop(ctx context.Context) error {
 
-	go p.MDNS.discoveryLoop(ctx)
+	if config.P2PDiscoveryMDNS() {
+		p.MDNS.discoveryLoop(ctx)
+	}
 
-	go p.DHT.discoveryLoop(ctx)
+	if config.P2PDiscoveryDHT() {
+		go p.DHT.discoveryLoop(ctx)
+	}
 
 	return nil
 }

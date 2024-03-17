@@ -18,6 +18,9 @@ func (ui *ChatUI) Run() error {
 	fmt.Println("Starting discovery loop in the background....")
 	go ui.p.StartDiscoveryLoop(context.Background())
 
+	fmt.Println("Starting pubsub peers loop in the background....")
+	go ui.pubsubPeersLoop(context.Background())
+
 	// The actor should just run in the background for ever.
 	// It will handle incoming messages and envelopes.
 	// It shouldn't change - ever.

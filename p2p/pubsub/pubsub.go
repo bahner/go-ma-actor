@@ -17,12 +17,15 @@ var (
 
 // Start the pubsub service. If ctx is nil a background context is used.
 // n is the libp2p host.
-func New(ctx context.Context, n host.Host) (*pubsub.PubSub, error) {
+func New(ctx context.Context, h host.Host) (*pubsub.PubSub, error) {
 	if ctx == nil {
 		ctx = context.Background()
 	}
 
-	ps, err = pubsub.NewGossipSub(ctx, n)
+	r = newRouter(h)
+
+	// ps, err = pubsub.NewGossipSub(ctx, n)
+	ps, err = pubsub.NewGossipSubWithRouter(ctx, h, r)
 	if err != nil {
 		return nil, fmt.Errorf("p2p: failed to create pubsub service: %w", err)
 	}
