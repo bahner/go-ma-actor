@@ -1,4 +1,4 @@
-package mode
+package main
 
 import (
 	"sort"

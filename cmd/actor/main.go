@@ -1,15 +1,12 @@
 package main
 
 import (
-	"context"
 	"fmt"
-	"os"
 
 	"github.com/bahner/go-ma-actor/config"
 	"github.com/bahner/go-ma-actor/config/db"
 	"github.com/bahner/go-ma-actor/entity"
 	"github.com/bahner/go-ma-actor/entity/actor"
-	"github.com/bahner/go-ma-actor/mode/pong"
 	"github.com/bahner/go-ma-actor/p2p"
 	"github.com/bahner/go-ma-actor/ui"
 	"github.com/spf13/pflag"
@@ -24,15 +21,10 @@ func main() {
 	)
 
 	// Always parse the flags first
+	config.InitCommonFlags()
+	config.InitActorFlags()
 	pflag.Parse()
-
-	// MODE
-
-	// Then init the config
-	// There's a lot of stuff going on in here.
-	mode := config.Mode()
-	config.Init(mode)
-	fmt.Printf("Starting in %s mode.\n", mode)
+	config.Init()
 
 	// DB
 	fmt.Println("Initialising DB ...")
@@ -54,32 +46,11 @@ func main() {
 		panic(fmt.Sprintf("failed to initialize peer: %v", err))
 	}
 
-	// P2P Relay mode
-	// Relay mode doesn't need either ui or an actor.
-	// So let's just start it quickly and stop here.
-	if config.RelayMode() {
-		fmt.Println("Starting relay mode...")
-		go p2P.StartDiscoveryLoop(context.Background())
-		startWebServer(p2P, nil)
-		os.Exit(0) // This won't be reached.
-	}
-
 	// ACTOR
 	a := initActorOrPanic()
 
 	// Start the webserver in the background. Ignore - but log - errors.
 	go startWebServer(p2P, a)
-
-	// Pong mode needs the
-	if config.PongMode() {
-		// In Pong we can just stop here. We dont' need to display anything.
-		// or handle input events. Hence this is a blocking call.
-		log.Infof("Running in Pong mode")
-		pong.Run(a, p2P)
-		log.Warnf("Pong run loop ended, exiting...")
-		os.Exit(0)
-
-	}
 
 	// We have a valid actor, but for it to be useful, we need to discover peers.
 	// discoverPeersOrPanic(p2P)

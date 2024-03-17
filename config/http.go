@@ -10,17 +10,21 @@ const (
 	defaultHttpRefresh int    = 10
 )
 
-func InitHTTP() {
+func InitHTTPFlags() {
+
 	pflag.String("http-socket", defaultHttpSocket, "Address for webserver to listen on")
 	pflag.Int("http-refresh", defaultHttpRefresh, "Number of seconds for webpages to wait before refresh")
 
 	viper.BindPFlag("http.socket", pflag.Lookup("http-socket"))
 	viper.BindPFlag("http.refresh", pflag.Lookup("http-refresh"))
 
+}
+
+func InitHTTP() {
+
 	viper.SetDefault("http.socket", defaultHttpSocket)
 	viper.SetDefault("http.refresh", defaultHttpRefresh)
 
-	// This function is empty, but it is used to make sure that the init function is called.
 }
 
 func HttpSocket() string {

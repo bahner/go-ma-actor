@@ -25,26 +25,22 @@ var (
 	ErrEmptyNick     = fmt.Errorf("nick is empty")
 )
 
-func init() {
-	pflag.Bool("generate", false, "Generates a new keyset")
-	pflag.Bool("publish", false, "Publishes keyset to IPFS")
-	pflag.Bool("force", false, "Forces regneration of config keyset and publishing")
+func InitActorFlags() {
+
+	pflag.StringP("nick", "n", "", "Nickname to use in character creation")
+	pflag.StringP("location", "l", defaultLocation, "DID of the location to visit")
+
+	viper.BindPFlag("actor.nick", pflag.Lookup("nick"))
+	viper.BindPFlag("actor.location", pflag.Lookup("location"))
+
+	viper.SetDefault("actor.location", defaultLocation)
+	viper.SetDefault("actor.nick", defaultNick)
 
 }
 
 // Load a keyset from string and initiate an Actor.
 // This is optional, but if you want to use the actor package, you need to call this.
 func InitActor() {
-
-	pflag.StringP("nick", "n", defaultNick, "Nickname to use in character creation")
-	pflag.StringP("location", "l", defaultLocation, "DID of the location to visit")
-
-	// Settings required for config file generation.
-	viper.BindPFlag("actor.nick", pflag.Lookup("nick"))
-	viper.SetDefault("actor.nick", defaultNick)
-
-	viper.BindPFlag("actor.location", pflag.Lookup("location"))
-	viper.SetDefault("actor.location", defaultLocation)
 
 	keyset_string := actorIdentity()
 	if keyset_string == fakeActorIdentity {

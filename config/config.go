@@ -17,37 +17,23 @@ import (
 
 const (
 	NAME       string = "go-ma-actor"
-	VERSION    string = "v0.2.4"
+	VERSION    string = "v0.3.1"
 	ENV_PREFIX string = "GO_MA_ACTOR"
 
 	configFileMode os.FileMode = 0600
 	configDirMode  os.FileMode = 0700
 	dataHomeMode   os.FileMode = 0755
-
-	defaultProfile string = "actor"
 )
 
 var (
 	configHome        string = xdg.ConfigHome + "/" + ma.NAME + "/"
 	dataHome          string = xdg.DataHome + "/" + ma.NAME + "/"
-	defaultConfigFile string = NormalisePath(configHome + defaultProfile + ".yaml")
+	defaultConfigFile string = NormalisePath(configHome + Profile() + ".yaml")
 )
 
-func init() {
-
-	// Allow to set config file via command line flag.
-	pflag.StringP("config", "c", defaultConfigFile, "Config file to use.")
-	pflag.StringP("profile", "p", defaultProfile, "Config profile (name) to use.")
-
-	pflag.Bool("show-config", false, "Whether to print the config.")
-	pflag.Bool("show-defaults", false, "Whether to print the config.")
-
-	pflag.BoolP("version", "v", false, "Print version and exit.")
-}
-
 // This should be called after pflag.Parse() in main.
-// The name parameter is the name of the config file to search for without the extension.
-func Init(mode string) error {
+// If you want to use a specific config file, you need to call SetProfile() before Init().
+func Init() error {
 
 	var err error
 
@@ -69,7 +55,7 @@ func Init(mode string) error {
 
 	// We *must* read the config file after we have generated the identity.
 	// Otherwise: Unforeseen consequences.
-	if !generateFlag() && !showDefaultsFlag() {
+	if !generateFlag() {
 		log.Infof("Using config file: %s", configFile()) // This one goes to STDERR
 		viper.SetConfigFile(configFile())
 		err = viper.ReadInConfig()
@@ -77,6 +63,9 @@ func Init(mode string) error {
 			log.Warnf("No config file found: %s", err)
 		}
 	}
+
+	// API
+	viper.SetDefault("api.maddr", ma.DEFAULT_IPFS_API_MULTIADDR)
 
 	// Logging
 	viper.SetDefault("log.file", genDefaultLogFileName(Profile()))
@@ -90,22 +79,6 @@ func Init(mode string) error {
 		os.Exit(0)
 	}
 
-	if showDefaultsFlag() {
-		// Print the YAML to stdout or write it to a template file
-		if PongMode() {
-			generatePongConfigFile(fakeActorIdentity, fakeP2PIdentity)
-		}
-
-		if RelayMode() {
-			generateRelayConfigFile(fakeP2PIdentity)
-		}
-
-		if !PongMode() && !RelayMode() {
-			generateActorConfigFile(fakeActorIdentity, fakeP2PIdentity)
-		}
-		os.Exit(0)
-	}
-
 	// Make sure the XDG directories exist before we start writing to them.
 	err = createXDGDirectories()
 	if err != nil {
@@ -116,30 +89,15 @@ func Init(mode string) error {
 
 		// Reinit logging to STDOUT
 		log.SetOutput(os.Stdout)
-		switch Mode() {
-		case "actor":
-			log.Info("Generating new actor and node identity")
-			actor, node := handleGenerateOrExit()
-			generateActorConfigFile(actor, node)
-		case "pong":
-			viper.Set("actor.nick", "pong")
-			log.Info("Generating new pong actor and node identity")
-			actor, node := handleGenerateOrExit()
-			generatePongConfigFile(actor, node)
-		case "relay":
-			viper.Set("actor.nick", "relay")
-			log.Info("Generating new relay node identity")
-			_, node := handleGenerateOrExit()
-			generateRelayConfigFile(node)
-		}
+		log.Info("Generating new actor and node identity")
+		actor, node := handleGenerateOrExit()
+		generateActorConfigFile(actor, node)
 		os.Exit(0)
 	}
 
-	if !RelayMode() { // No need for an actor in relay mode
-		InitActor()
-	}
+	InitActor()
 
-	// This flag is dependent on the actor or relay mode being initialized to make sense.
+	// This flag is dependent on the actor to be initialized to make sense.
 	if showConfigFlag() {
 		Print()
 		os.Exit(0)
@@ -191,8 +149,8 @@ func configFile() string {
 		panic(err)
 	}
 
-	// Prefer explcitly requested config. If not, use the name of the actor or mode.
-	if config != defaultConfigFile {
+	// Prefer explicitly requested config. If not, use the name of the profile name.
+	if config != defaultConfigFile && config != "" {
 		filename, err = homedir.Expand(config)
 		if err != nil {
 			panic(err)
@@ -224,16 +182,6 @@ func publishFlag() bool {
 	}
 
 	return publishFlag
-}
-
-func showDefaultsFlag() bool {
-	showDefaultsFlag, err := pflag.CommandLine.GetBool("show-defaults")
-	if err != nil {
-		log.Warnf("config.init: %v", err)
-		return false
-	}
-
-	return showDefaultsFlag
 }
 
 func showConfigFlag() bool {

@@ -1,4 +1,4 @@
-package entity
+package main
 
 import (
 	"fmt"
@@ -7,7 +7,6 @@ import (
 	"github.com/bahner/go-ma"
 	"github.com/bahner/go-ma-actor/config"
 	"github.com/bahner/go-ma-actor/entity"
-	"github.com/bahner/go-ma-actor/mode"
 	"github.com/bahner/go-ma-actor/p2p"
 	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/multiformats/go-multiaddr"
@@ -43,15 +42,6 @@ func webHandler(w http.ResponseWriter, _ *http.Request, p *p2p.P2P, e *entity.En
 
 	titleStr := fmt.Sprintf("Entity: %s", e.DID.Id)
 	h1str := titleStr
-
-	if config.PongMode() {
-		h1str = fmt.Sprintf("%s (Pong mode)", titleStr)
-	}
-
-	if config.PongFortuneMode() {
-		h1str = fmt.Sprintf("%s (Pong mode with fortune cookies)", titleStr)
-	}
-
 	doc.Title = titleStr
 	doc.H1 = h1str
 	doc.H2 = fmt.Sprintf("%s@%s", ma.RENDEZVOUS, (p.Host.ID().String()))
@@ -93,12 +83,12 @@ func (d *WebHandlerDocument) String() string {
 	// Peers with Same Rendezvous
 	if len(d.PeersWithSameRendez) > 0 {
 		html += fmt.Sprintf("<h2>Discovered peers (%d):</h2>\n", len(d.PeersWithSameRendez))
-		html += mode.UnorderedListFromPeerIDSlice(d.PeersWithSameRendez)
+		html += UnorderedListFromPeerIDSlice(d.PeersWithSameRendez)
 	}
 	// All Connected Peers
 	if len(d.AllConnectedPeers) > 0 {
 		html += fmt.Sprintf("<h2>libp2p Network Peers (%d):</h2>\n", len(d.AllConnectedPeers))
-		html += mode.UnorderedListFromPeerIDSlice(d.AllConnectedPeers)
+		html += UnorderedListFromPeerIDSlice(d.AllConnectedPeers)
 	}
 
 	html += "</body>\n</html>"

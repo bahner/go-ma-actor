@@ -54,7 +54,7 @@ func generateActorConfigFile(identity string, node string) {
 		},
 	}
 
-	// Convert the map of defaults to YAML
+	// Convert the config map to YAML
 	configYAML, err := yaml.Marshal(config)
 	if err != nil {
 		panic(err)
@@ -101,116 +101,4 @@ func writeGeneratedConfigFile(content []byte) {
 	}
 
 	log.Printf("Generated config file %s", filePath)
-}
-
-func generatePongConfigFile(identity string, node string) {
-
-	// Get the default settings as a map
-	// Note: Viper does not have a built-in way to directly extract only the config
-	// so we manually recreate the structure based on the config we have set.
-	config := map[string]interface{}{
-		"actor": map[string]interface{}{
-			"identity": identity,
-			"nick":     pong,
-		},
-		"db": map[string]interface{}{
-			"file": DefaultDbFile,
-		},
-		"log": map[string]interface{}{
-			"level": LogLevel(),
-			"file":  LogFile(),
-		},
-		// NB! This is a cross over from go-ma
-		"api": map[string]interface{}{
-			// This must be set corretly for generation to work
-			"maddr": viper.GetString("api.maddr"),
-		},
-		"http": map[string]interface{}{
-			"socket": HttpSocket(),
-		},
-		"p2p": map[string]interface{}{
-			"identity": node,
-			"port":     P2PPort(),
-			"connmgr": map[string]interface{}{
-				"low-watermark":  P2PConnmgrLowWatermark(),
-				"high-watermark": P2PConnmgrHighWatermark(),
-				"grace-period":   P2PConnMgrGracePeriod(),
-			},
-			"discovery": map[string]interface{}{
-				"advertise-ttl":      P2PDiscoveryAdvertiseTTL(),
-				"advertise-limit":    P2PDiscoveryAdvertiseLimit(),
-				"advertise-interval": P2PDiscoveryAdvertiseInterval(),
-				"dht":                P2PDiscoveryDHT(),
-				"mdns":               P2PDiscoveryMDNS(),
-			},
-		},
-		"mode": map[string]interface{}{
-			"pong": map[string]interface{}{
-				"reply": PongReply(),
-				"fortune": map[string]interface{}{
-					"enable": PongFortuneMode(),
-					"args":   PongFortuneArgs(),
-				},
-			},
-		},
-	}
-
-	// Convert the map of defaults to YAML
-	configYAML, err := yaml.Marshal(config)
-	if err != nil {
-		panic(err)
-	}
-
-	if generateFlag() {
-		writeGeneratedConfigFile(configYAML)
-	} else {
-		fmt.Println(string(configYAML))
-	}
-}
-
-func generateRelayConfigFile(node string) {
-
-	// Get the default settings as a map
-	// Note: Viper does not have a built-in way to directly extract only the config
-	// so we manually recreate the structure based on the config we have set.
-	config := map[string]interface{}{
-		"db": map[string]interface{}{
-			"file": DefaultDbFile,
-		},
-		"log": map[string]interface{}{
-			"level": LogLevel(),
-			"file":  LogFile(),
-		},
-		"http": map[string]interface{}{
-			"socket": HttpSocket(),
-		},
-		"p2p": map[string]interface{}{
-			"identity": node,
-			"port":     P2PPort(),
-			"connmgr": map[string]interface{}{
-				"low-watermark":  P2PConnmgrLowWatermark(),
-				"high-watermark": P2PConnmgrHighWatermark(),
-				"grace-period":   P2PConnMgrGracePeriod(),
-			},
-			"discovery": map[string]interface{}{
-				"advertise-ttl":      P2PDiscoveryAdvertiseTTL(),
-				"advertise-interval": P2PDiscoveryAdvertiseInterval(),
-				"advertise-limit":    P2PDiscoveryAdvertiseLimit(),
-				"dht":                P2PDiscoveryDHT(),
-				"mdns":               P2PDiscoveryMDNS(),
-			},
-		},
-	}
-
-	// Convert the map of defaults to YAML
-	configYAML, err := yaml.Marshal(config)
-	if err != nil {
-		panic(err)
-	}
-
-	if generateFlag() {
-		writeGeneratedConfigFile(configYAML)
-	} else {
-		fmt.Println(string(configYAML))
-	}
 }

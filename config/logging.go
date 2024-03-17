@@ -19,7 +19,7 @@ const (
 
 var defaultLogfile string = NormalisePath(dataHome + defaultNick + ".log")
 
-func init() {
+func InitLogFlags() {
 
 	pflag.String("loglevel", defaultLogLevel, "Loglevel to use for application.")
 	pflag.String("logfile", defaultLogfile, "Logfile to use for application. Accepts 'STDERR' and 'STDOUT' as such.")
@@ -27,11 +27,11 @@ func init() {
 	viper.BindPFlag("log.file", pflag.Lookup("logfile"))
 	viper.BindPFlag("log.level", pflag.Lookup("loglevel"))
 
-	viper.SetDefault("log.level", defaultLogLevel)
-
 }
 
 func InitLogging() {
+
+	viper.SetDefault("log.level", defaultLogLevel)
 
 	// Init logger
 	ll, err := log.ParseLevel(viper.GetString("log.level"))

@@ -4,10 +4,8 @@ import (
 	"context"
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/bahner/go-ma"
-	"github.com/bahner/go-ma-actor/config"
 	"github.com/bahner/go-ma/msg"
 	p2ppubsub "github.com/libp2p/go-libp2p-pubsub"
 	log "github.com/sirupsen/logrus"
@@ -64,13 +62,6 @@ func (ui *ChatUI) initBroadcast() error {
 	ui.b, err = ui.p.PubSub.Join(ma.BROADCAST_TOPIC)
 	if err != nil {
 		return fmt.Errorf("initBroadcast: failed to join broadcast topic: %v", err)
-	}
-
-	// We don't want to respond to broadcasts in pong mode.
-	// That would create a broadcast loop.
-	if !config.PongMode() {
-		go ui.subscribeBroadcasts()
-		time.Sleep(1 * time.Second) // Just to allow it to start. Nothing else.
 	}
 
 	return nil

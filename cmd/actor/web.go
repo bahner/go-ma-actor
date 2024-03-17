@@ -7,8 +7,6 @@ import (
 
 	"github.com/bahner/go-ma-actor/config"
 	"github.com/bahner/go-ma-actor/entity/actor"
-	mactor "github.com/bahner/go-ma-actor/mode/actor"
-	"github.com/bahner/go-ma-actor/mode/relay"
 
 	"github.com/bahner/go-ma-actor/p2p"
 	log "github.com/sirupsen/logrus"
@@ -25,21 +23,11 @@ func startWebServer(p *p2p.P2P, a *actor.Actor) {
 	// Start a simple web server to handle incoming requests.
 	// This is defined in web.go. It makes it possible to add extra parameters to the handler.
 	mux := http.NewServeMux()
-
-	// Different handlers for diiferent modes.
-	if config.RelayMode() {
-		h := &relay.WebHandlerData{
-			P2P: p,
-		}
-		mux.HandleFunc("/", h.WebHandler)
-
-	} else {
-		h := &mactor.WebHandlerData{
-			P2P:    p,
-			Entity: a.Entity,
-		}
-		mux.HandleFunc("/", h.WebHandler)
+	h := &WebHandlerData{
+		P2P:    p,
+		Entity: a.Entity,
 	}
+	mux.HandleFunc("/", h.WebHandler)
 
 	log.Infof("Listening on %s", config.HttpSocket())
 
