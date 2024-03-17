@@ -4,63 +4,26 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/bahner/go-ma/key/set"
+	"github.com/libp2p/go-libp2p/core/crypto"
+	mb "github.com/multiformats/go-multibase"
 	log "github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 	"gopkg.in/yaml.v2"
 )
 
-func generateActorConfigFile(identity string, node string) {
+func Generate(configMap map[string]interface{}) {
 
-	// Get the default settings as a map
-	// Note: Viper does not have a built-in way to directly extract only the config
-	// so we manually recreate the structure based on the config we have set.
-	config := map[string]interface{}{
-		"actor": map[string]interface{}{
-			"identity": identity,
-			"location": ActorLocation(),
-			"nick":     ActorNick(),
-		},
-		"db": map[string]interface{}{
-			"file": DefaultDbFile,
-		},
-		// Use default log settings, so as not to pick up debug log settings
-		"log": map[string]interface{}{
-			"level": viper.GetString("log.level"),
-			"file":  viper.GetString("log.file"),
-		},
-		// NB! This is a cross over from go-ma
-		"api": map[string]interface{}{
-			// This must be set corretly for generation to work
-			"maddr": viper.GetString("api.maddr"),
-		},
-		"http": map[string]interface{}{
-			"socket": HttpSocket(),
-		},
-		"p2p": map[string]interface{}{
-			"identity": node,
-			"port":     P2PPort(),
-			"connmgr": map[string]interface{}{
-				"low-watermark":  P2PConnmgrLowWatermark(),
-				"high-watermark": P2PConnmgrHighWatermark(),
-				"grace-period":   P2PConnMgrGracePeriod(),
-			},
-			"discovery": map[string]interface{}{
-				"advertise-ttl":      P2PDiscoveryAdvertiseTTL(),
-				"advertise-limit":    P2PDiscoveryAdvertiseLimit(),
-				"advertise-interval": P2PDiscoveryAdvertiseInterval(),
-				"dht":                P2PDiscoveryDHT(),
-				"mdns":               P2PDiscoveryMDNS(),
-			},
-		},
+	if configMap == nil {
+		log.Fatalf("No template set.")
 	}
 
 	// Convert the config map to YAML
-	configYAML, err := yaml.Marshal(config)
+	configYAML, err := yaml.Marshal(configMap)
 	if err != nil {
 		panic(err)
 	}
 
-	if generateFlag() {
+	if GenerateFlag() {
 		writeGeneratedConfigFile(configYAML)
 	} else {
 		fmt.Println(string(configYAML))
@@ -70,12 +33,12 @@ func generateActorConfigFile(identity string, node string) {
 // Write the generated config to the correct file
 // NB! This fails fatally in case of an error.
 func writeGeneratedConfigFile(content []byte) {
-	filePath := configFile()
+	filePath := File()
 	var errMsg string
 
 	// Determine the file open flags based on the forceFlag
 	var flags int
-	if forceFlag() {
+	if ForceFlag() {
 		// Allow overwrite
 		log.Warnf("Force flag set, overwriting existing config file %s", filePath)
 		flags = os.O_WRONLY | os.O_CREATE | os.O_TRUNC
@@ -101,4 +64,98 @@ func writeGeneratedConfigFile(content []byte) {
 	}
 
 	log.Printf("Generated config file %s", filePath)
+}
+
+// Genreates a libp2p and actor identity and returns the keyset and the actor identity
+// These are imperative, so failure to generate them is a fatal error.
+func GenerateActorIdentitiesOrPanic() (string, string) {
+
+	keyset_string, err := GenerateActorIdentity()
+	if err != nil {
+		panic(err)
+	}
+
+	ni, err := GenerateNodeIdentity()
+	if err != nil {
+		panic(err)
+	}
+
+	return keyset_string, ni
+}
+func GenerateActorIdentity() (string, error) {
+
+	// Generate a new keysets if requested
+	nick := ActorNick()
+	log.Debugf("Generating new keyset for %s", nick)
+	keyset_string, err := generateKeysetString(nick)
+	if err != nil {
+		log.Errorf("handleGenerateOrExit: %v", err)
+		return "", err
+	}
+
+	if PublishFlag() {
+		err = publishActorIdentityFromString(keyset_string)
+		if err != nil {
+			log.Warnf("handleGenerateOrExit: %v", err)
+			return "", err
+		}
+	}
+
+	return keyset_string, nil
+}
+
+func GenerateNodeIdentity() (string, error) {
+	pk, _, err := crypto.GenerateKeyPair(crypto.Ed25519, -1)
+	if err != nil {
+		log.Errorf("failed to generate node identity: %s", err)
+		return "", err
+	}
+
+	pkBytes, err := crypto.MarshalPrivateKey(pk)
+	if err != nil {
+		log.Errorf("failed to generate node identity: %s", err)
+		return "", err
+	}
+
+	ni, err := mb.Encode(mb.Base58BTC, pkBytes)
+	if err != nil {
+		log.Errorf("failed to encode node identity: %s", err)
+		return "", err
+	}
+
+	return ni, nil
+
+}
+
+// Generates a new keyset and returns the keyset as a string
+func generateKeysetString(nick string) (string, error) {
+
+	ks, err := set.GetOrCreate(nick)
+	if err != nil {
+		return "", fmt.Errorf("failed to generate new keyset: %w", err)
+	}
+	log.Debugf("Created new keyset: %v", ks)
+
+	pks, err := ks.Pack()
+	if err != nil {
+		return "", fmt.Errorf("failed to pack keyset: %w", err)
+	}
+	log.Debugf("Packed keyset: %v", pks)
+
+	return pks, nil
+}
+
+func publishActorIdentityFromString(keyset_string string) error {
+
+	keyset, err := set.Unpack(keyset_string)
+	if err != nil {
+		log.Errorf("publishActorIdentityFromString: Failed to unpack keyset: %v", err)
+	}
+
+	err = PublishIdentityFromKeyset(keyset)
+	if err != nil {
+		return fmt.Errorf("publishActorIdentityFromString: Failed to publish keyset: %v", err)
+	}
+
+	return nil
 }

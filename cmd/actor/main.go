@@ -3,13 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/bahner/go-ma-actor/config"
 	"github.com/bahner/go-ma-actor/config/db"
-	"github.com/bahner/go-ma-actor/entity"
-	"github.com/bahner/go-ma-actor/entity/actor"
-	"github.com/bahner/go-ma-actor/p2p"
-	"github.com/bahner/go-ma-actor/ui"
-	"github.com/spf13/pflag"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -20,11 +14,7 @@ func main() {
 		err error
 	)
 
-	// Always parse the flags first
-	config.InitCommonFlags()
-	config.InitActorFlags()
-	pflag.Parse()
-	config.Init()
+	initConfig()
 
 	// DB
 	fmt.Println("Initialising DB ...")
@@ -62,43 +52,4 @@ func main() {
 	if err := ui.Run(); err != nil {
 		log.Errorf("error running text UI: %s", err)
 	}
-}
-
-func initActorOrPanic() *actor.Actor {
-	// The actor is needed for initialisation of the WebHandler.
-	fmt.Println("Creating actor from keyset...")
-	a, err := actor.NewFromKeyset(config.ActorKeyset())
-	if err != nil {
-		log.Debugf("error creating actor: %s", err)
-	}
-
-	id := a.Entity.DID.Id
-
-	fmt.Println("Creating and setting DID Document for actor...")
-	err = a.CreateAndSetDocument(id)
-	if err != nil {
-		panic(fmt.Sprintf("error creating document: %s", err))
-	}
-
-	// Better safe than sorry.
-	// Without a valid actor, we can't do anything.
-	if a == nil || a.Verify() != nil {
-		panic(fmt.Sprintf("%s is not a valid actor: %v", id, err))
-	}
-
-	_, err = entity.GetOrCreateFromDID(a.Entity.DID, false)
-	if err != nil {
-		panic(fmt.Sprintf("error getting or creating entity: %s", err))
-	}
-
-	return a
-}
-
-func initUiOrPanic(p2P *p2p.P2P, a *actor.Actor) *ui.ChatUI {
-	fmt.Println("Creating text UI...")
-	ui, err := ui.New(p2P, a)
-	if err != nil {
-		panic(fmt.Sprintf("error creating text UI: %s", err))
-	}
-	return ui
 }

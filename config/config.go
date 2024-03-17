@@ -20,8 +20,8 @@ const (
 	VERSION    string = "v0.3.1"
 	ENV_PREFIX string = "GO_MA_ACTOR"
 
-	configFileMode os.FileMode = 0600
 	configDirMode  os.FileMode = 0700
+	configFileMode os.FileMode = 0600
 	dataHomeMode   os.FileMode = 0755
 )
 
@@ -55,9 +55,9 @@ func Init() error {
 
 	// We *must* read the config file after we have generated the identity.
 	// Otherwise: Unforeseen consequences.
-	if !generateFlag() {
-		log.Infof("Using config file: %s", configFile()) // This one goes to STDERR
-		viper.SetConfigFile(configFile())
+	if !GenerateFlag() {
+		log.Infof("Using config file: %s", File()) // This one goes to STDERR
+		viper.SetConfigFile(File())
 		err = viper.ReadInConfig()
 		if err != nil {
 			log.Warnf("No config file found: %s", err)
@@ -85,20 +85,26 @@ func Init() error {
 		panic(err)
 	}
 
-	if generateFlag() {
+	// if Generate() {
 
-		// Reinit logging to STDOUT
-		log.SetOutput(os.Stdout)
-		log.Info("Generating new actor and node identity")
-		actor, node := handleGenerateOrExit()
-		generateActorConfigFile(actor, node)
-		os.Exit(0)
+	// 	// Reinit logging to STDOUT
+	// 	log.SetOutput(os.Stdout)
+	// 	log.Info("Generating new actor and node identity")
+	// 	actor, node := handleGenerateOrExit()
+	// 	actorConfig := ActorConfig(actor, node)
+	// 	GenerateConfigFile(actorConfig)
+	// 	os.Exit(0)
+	// }
+
+	// Return and make the calling programme generate a config to pass to the Generate funcion.
+	if GenerateFlag() {
+		return nil
 	}
 
 	InitActor()
 
 	// This flag is dependent on the actor to be initialized to make sense.
-	if showConfigFlag() {
+	if ShowConfigFlag() {
 		Print()
 		os.Exit(0)
 	}
@@ -137,7 +143,7 @@ func ConfigHome() string {
 // Returns the configfile name to use.
 // The preferred value is the explcitily requested config file on the command line.
 // Else it uses the nick of the actor or the mode.
-func configFile() string {
+func File() string {
 
 	var (
 		filename string
@@ -163,7 +169,7 @@ func configFile() string {
 
 }
 
-func generateFlag() bool {
+func GenerateFlag() bool {
 	// This will exit when done. It will also publish if applicable.
 	generateFlag, err := pflag.CommandLine.GetBool("generate")
 	if err != nil {
@@ -174,7 +180,7 @@ func generateFlag() bool {
 	return generateFlag
 }
 
-func publishFlag() bool {
+func PublishFlag() bool {
 	publishFlag, err := pflag.CommandLine.GetBool("publish")
 	if err != nil {
 		log.Warnf("config.init: %v", err)
@@ -184,7 +190,7 @@ func publishFlag() bool {
 	return publishFlag
 }
 
-func showConfigFlag() bool {
+func ShowConfigFlag() bool {
 	showConfigFlag, err := pflag.CommandLine.GetBool("show-config")
 	if err != nil {
 		log.Warnf("config.init: %v", err)
@@ -204,7 +210,7 @@ func versionFlag() bool {
 	return versionFlag
 }
 
-func forceFlag() bool {
+func ForceFlag() bool {
 	forceFlag, err := pflag.CommandLine.GetBool("force")
 	if err != nil {
 		log.Warnf("config.init: %v", err)
