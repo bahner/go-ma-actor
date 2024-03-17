@@ -24,6 +24,7 @@ ARM64=android-arm64 darwin-arm64 netbsd-arm64 openbsd-arm64
 ALL =  $(FETCH) $(KEYSET) $(NAME) $(DEBUG)
 BINDIR = $(PREFIX)/bin
 RELEASES = releases
+CMDS = actor relay pong
 
 ifneq (,$(wildcard ./.env))
     include .env
@@ -39,8 +40,8 @@ local: clean tidy install
 $(BINDIR):
 	test -d $(BINDIR)
 
-install: $(BINDIR) $(NAME)
-	sudo install -m755 -T $(NAME) $(DESTDIR)$(BINDIR)/ma
+install: $(BINDIR) $(CMDS)
+	sudo install -m755 $(CMDS) $(DESTDIR)$(BINDIR)/
 	
 $(DEBUG): BUILDFLAGS = -tags=debug
 $(DEBUG): tidy
@@ -78,6 +79,14 @@ release: VERSION = $(shell ./.version)
 release: clean $(RELEASES) $(PLATFORMS)
 	git tag -a $(VERSION) -m "Release $(VERSION)"
 
+actor: tidy
+	$(GO) build $(BUILDFLAGS) ./cmd/actor
+
+pong: tidy
+	$(GO) build $(BUILDFLAGS) ./cmd/pong
+
+relay: tidy
+	$(GO) build $(BUILDFLAGS) ./cmd/relay
 
 $(RELEASES): 
 	mkdir -p $(RELEASES)

@@ -18,7 +18,7 @@ func main() {
 	flag.Parse()
 	_level, err := log.ParseLevel(*logLevel)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	log.SetLevel(_level)
 	log.Debugf("main: log level set to %v", _level)

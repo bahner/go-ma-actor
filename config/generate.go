@@ -1,9 +1,11 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
+	"github.com/bahner/go-ma/did/doc"
 	"github.com/bahner/go-ma/key/set"
 	"github.com/libp2p/go-libp2p/core/crypto"
 	mb "github.com/multiformats/go-multibase"
@@ -20,7 +22,7 @@ func Generate(configMap map[string]interface{}) {
 	// Convert the config map to YAML
 	configYAML, err := yaml.Marshal(configMap)
 	if err != nil {
-		panic(err)
+		log.Fatalf("Failed to marshal config to YAML: %v", err)
 	}
 
 	if GenerateFlag() {
@@ -54,13 +56,13 @@ func writeGeneratedConfigFile(content []byte) {
 		} else {
 			errMsg = fmt.Sprintf("Failed to open file: %v", err)
 		}
-		panic(errMsg)
+		log.Fatalf(errMsg)
 	}
 	defer file.Close()
 
 	// Write content to file.
 	if _, err := file.Write(content); err != nil {
-		panic(fmt.Sprintf("Failed to write to file: %v", err))
+		log.Fatalf("Failed to write to file: %v", err)
 	}
 
 	log.Printf("Generated config file %s", filePath)
@@ -68,36 +70,39 @@ func writeGeneratedConfigFile(content []byte) {
 
 // Genreates a libp2p and actor identity and returns the keyset and the actor identity
 // These are imperative, so failure to generate them is a fatal error.
-func GenerateActorIdentitiesOrPanic() (string, string) {
+func GenerateActorIdentities(name string) (string, string, error) {
 
-	keyset_string, err := GenerateActorIdentity()
+	keyset_string, err := GenerateActorIdentity(name)
 	if err != nil {
-		panic(err)
+		return "", "", fmt.Errorf("failed to generate actor identity: %w", err)
 	}
 
 	ni, err := GenerateNodeIdentity()
 	if err != nil {
-		panic(err)
+		return "", "", fmt.Errorf("failed to generate node identity: %w", err)
 	}
 
-	return keyset_string, ni
+	return keyset_string, ni, nil
 }
-func GenerateActorIdentity() (string, error) {
+func GenerateActorIdentity(nick string) (string, error) {
 
-	// Generate a new keysets if requested
-	nick := ActorNick()
 	log.Debugf("Generating new keyset for %s", nick)
 	keyset_string, err := generateKeysetString(nick)
 	if err != nil {
-		log.Errorf("handleGenerateOrExit: %v", err)
-		return "", err
+		log.Errorf("Failed to generate new keyset: %s", err)
+		return "", fmt.Errorf("failed to generate new keyset: %w", err)
 	}
 
+	// Ignore already published error. That's a good thing.
 	if PublishFlag() {
 		err = publishActorIdentityFromString(keyset_string)
+
 		if err != nil {
-			log.Warnf("handleGenerateOrExit: %v", err)
-			return "", err
+			if errors.Is(err, doc.ErrAlreadyPublished) {
+				log.Warnf("Actor document already published: %v", err)
+			} else {
+				return "", fmt.Errorf("failed to publish actor identity: %w", err)
+			}
 		}
 	}
 
@@ -154,7 +159,7 @@ func publishActorIdentityFromString(keyset_string string) error {
 
 	err = PublishIdentityFromKeyset(keyset)
 	if err != nil {
-		return fmt.Errorf("publishActorIdentityFromString: Failed to publish keyset: %v", err)
+		return fmt.Errorf("publishActorIdentityFromString: Failed to publish keyset: %w", err)
 	}
 
 	return nil

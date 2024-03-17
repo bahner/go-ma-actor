@@ -29,3 +29,6 @@ go-ma-*
 releases
 *.tar
 go.work
+actor
+pong
+relay

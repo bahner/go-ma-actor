@@ -17,7 +17,6 @@ const (
 )
 
 var (
-	defaultNick      string = os.Getenv("USER")
 	keyset           set.Keyset
 	ErrEmptyIdentity = fmt.Errorf("identity is empty")
 	ErrFakeIdentity  = fmt.Errorf("your identity is fake. You need to define actorKeyset or generate a new one")
@@ -33,8 +32,18 @@ func InitActorFlags() {
 	viper.BindPFlag("actor.location", pflag.Lookup("location"))
 
 	viper.SetDefault("actor.location", defaultLocation)
-	viper.SetDefault("actor.nick", defaultNick)
+	viper.SetDefault("actor.nick", defaultNick())
 
+}
+
+// Set the default nick to the user's username, unless a profile is set.
+func defaultNick() string {
+
+	if Profile() == defaultProfile {
+		return os.Getenv("USER")
+	}
+
+	return Profile()
 }
 
 // Load a keyset from string and initiate an Actor.
@@ -53,7 +62,7 @@ func InitActor() {
 	}
 
 	// This function fails fatally, so no return value
-	initActorKeyset()
+	initActorKeyset(keyset_string)
 
 	if PublishFlag() && keyset_string != "" {
 		fmt.Println("Publishing identity to IPFS...")
@@ -89,9 +98,7 @@ func actorIdentity() string {
 
 }
 
-func initActorKeyset() {
-
-	keyset_string := viper.GetString("actor.identity")
+func initActorKeyset(keyset_string string) {
 
 	log.Debugf("config.initActor: %s", keyset_string)
 	// Create the actor keyset

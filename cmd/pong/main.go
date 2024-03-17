@@ -13,13 +13,14 @@ func main() {
 	ctx := context.Background()
 	initConfig(pong)
 
-	a := initActorOrPanic()
-
 	p, err := initP2P()
 	if err != nil {
 		fmt.Printf("Failed to initialize p2p: %v\n", err)
 		return
 	}
+
+	// Init of actor requires P2P to be initialized
+	a := initActorOrPanic()
 
 	fmt.Printf("Starting pong mode as %s\n", a.Entity.DID.Id)
 	go p.StartDiscoveryLoop(ctx)

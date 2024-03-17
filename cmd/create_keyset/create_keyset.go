@@ -26,7 +26,7 @@ func main() {
 	flag.Parse()
 	_level, err := log.ParseLevel(*logLevel)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	log.SetLevel(_level)
 	log.Debugf("main: log level set to %v", _level)
@@ -34,19 +34,19 @@ func main() {
 	// Create a new keyset for the entity
 	keyset, err := keyset.GetOrCreate(*name)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	log.Debugf("main: keyset: %v", keyset)
 
 	if *publish {
 		d, err := doc.NewFromKeyset(keyset)
 		if err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 
 		c, err := d.Publish()
 		if err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 
 		log.Debugf("main: published document: %v to %v", d, c)
@@ -54,7 +54,7 @@ func main() {
 
 	packedKeyset, err := keyset.Pack()
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	fmt.Println(packedKeyset)
 

@@ -82,7 +82,7 @@ func Init() error {
 	// Make sure the XDG directories exist before we start writing to them.
 	err = createXDGDirectories()
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	return nil
@@ -95,7 +95,7 @@ func Print() (int, error) {
 
 	configYAML, err := yaml.Marshal(configMap)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	fmt.Println("# " + ActorKeyset().DID.Id)
@@ -129,14 +129,14 @@ func File() string {
 
 	config, err := pflag.CommandLine.GetString("config")
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	// Prefer explicitly requested config. If not, use the name of the profile name.
 	if config != defaultConfigFile && config != "" {
 		filename, err = homedir.Expand(config)
 		if err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 	} else {
 		filename = configHome + Profile() + ".yaml"

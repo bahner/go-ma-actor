@@ -17,7 +17,7 @@ const (
 	logFilePerm     os.FileMode = 0640
 )
 
-var defaultLogfile string = NormalisePath(dataHome + defaultNick + ".log")
+var defaultLogfile string = NormalisePath(dataHome + Profile() + ".log")
 
 func InitLogFlags() {
 

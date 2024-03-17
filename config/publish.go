@@ -12,7 +12,7 @@ func PublishIdentityFromKeyset(k set.Keyset) error {
 
 	d, err := doc.NewFromKeyset(k)
 	if err != nil {
-		return fmt.Errorf("config.publishIdentityFromKeyset: failed to create DOC: %v", err)
+		return fmt.Errorf("config.publishIdentityFromKeyset: failed to create DOC: %w", err)
 	}
 
 	assertionMethod, err := d.GetAssertionMethod()
