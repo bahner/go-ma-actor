@@ -78,6 +78,8 @@ func PongFortuneMode() bool {
 	return viper.GetBool("mode.pong.fortune.enable") && PongMode()
 }
 
-func PongFortuneArgs() string {
-	return viper.GetString("mode.pong.fortune.args")
+func PongFortuneArgs() []string {
+	args := viper.GetString("mode.pong.fortune.args")
+
+	return []string{args}
 }

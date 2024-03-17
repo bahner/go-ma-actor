@@ -11,8 +11,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-var fortuneArgs = []string{"-o"}
-
 func reply(m *msg.Message) []byte {
 
 	if string(m.Content) == string(replyBytes()) {
@@ -20,7 +18,7 @@ func reply(m *msg.Message) []byte {
 	}
 
 	if config.PongFortuneMode() {
-		return getFortuneCookie(fortuneArgs)
+		return getFortuneCookie()
 	}
 
 	return replyBytes()
@@ -37,7 +35,9 @@ func angryBytes() []byte {
 }
 
 // Returns a fortune cookie if the pong-fortune mode is enabled, otherwise the default reply.
-func getFortuneCookie(args []string) []byte {
+func getFortuneCookie() []byte {
+
+	args := config.PongFortuneArgs()
 	// Check if the fortune command is available in the PATH
 	_, err := exec.LookPath("fortune")
 	if err != nil {
