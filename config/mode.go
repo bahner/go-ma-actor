@@ -54,10 +54,16 @@ func Mode() string {
 	}
 
 	if PongMode() {
+
+		// This only sets fallback when not specified on command line
+		SetProfile(pong)
 		return pong
 	}
 
 	if RelayMode() {
+
+		// This only sets fallback when not specified on command line
+		SetProfile(relay)
 		return relay
 	}
 

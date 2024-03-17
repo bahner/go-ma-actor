@@ -4,6 +4,8 @@ import "github.com/spf13/pflag"
 
 // NB! This file is used early in the initialization process, so it can't depend on other packages.
 
+var profile string = "actor"
+
 // Profile is the mode unless overridden by the profile flag.
 func Profile() string {
 
@@ -14,5 +16,9 @@ func Profile() string {
 		}
 	}
 
-	return Mode()
+	return profile
+}
+
+func SetProfile(p string) {
+	profile = p
 }
