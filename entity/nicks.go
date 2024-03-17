@@ -109,10 +109,8 @@ func Lookup(name string) string {
 	return id
 }
 
-// Removes a node from the database if it exists
-func RemoveNick(id string) error {
-
-	id = GetDID(id) // Check if the reuested ID is a nick
+// Removes a node from the database if it exists. Must be a DID
+func Delete(id string) error {
 
 	d, err := db.Get()
 	if err != nil {

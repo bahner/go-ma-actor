@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	entityUsage        = "/entity list|nick|resolve|show"
+	entityUsage        = "/entity delete|list|nick|resolve|show"
 	entityHelp         = "Manages info on seen entities"
 	entityConnectUsage = "/entity connect <id|nick>"
 	entityConnectHelp  = "Connects to an entity's libp2p node"
@@ -21,8 +21,8 @@ const (
 The entity to set nick for *MUST* be quoted if it contains spaces.
 The nick after the entity to set nick for doesn't need to be quoted.
 `
-	entityRemoveUsage  = "/entity remove <id|nick>"
-	entityRemoveHelp   = "Removes an entity from the database"
+	entityDeleteUsage  = "/entity delete <id|nick>"
+	entityDeleteHelp   = "Deletes an entity from the database"
 	entityResolveUsage = "/entity resolve <DID|NICK>"
 	entityResolveHelp  = "Tries to resolve the most recent version of the DID Document for the given DID or NICK."
 	entityShowUsage    = "/entity show <id|nick>"
@@ -38,6 +38,9 @@ func (ui *ChatUI) handleEntityCommand(args []string) {
 		case "connect":
 			ui.handleEntityConnectCommand(args)
 			return
+		case "delete":
+			ui.handleEntityDeleteCommand(args)
+			return
 		case "list":
 			ui.handleEntityListCommand(args)
 			return
@@ -46,9 +49,6 @@ func (ui *ChatUI) handleEntityCommand(args []string) {
 			return
 		case "resolve":
 			go ui.handleEntityResolveCommand(args) // This make take some time. No need to block the UI
-			return
-		case "remove":
-			ui.handleEntityRemoveCommand(args)
 			return
 		case "show":
 			ui.handleEntityShowCommand(args)
@@ -128,16 +128,16 @@ func (ui *ChatUI) handleEntityShowCommand(args []string) {
 }
 
 // REMOVE
-func (ui *ChatUI) handleEntityRemoveCommand(args []string) {
+func (ui *ChatUI) handleEntityDeleteCommand(args []string) {
 
 	if len(args) >= 3 {
 		id := strings.Join(args[2:], separator)
 		id = entity.Lookup(id)
-		entity.RemoveNick(id)
-		ui.displaySystemMessage("Nick removed for " + id + " if it existed")
+		entity.Delete(id)
+		ui.displaySystemMessage("Nick deleted for " + id + " if it existed")
 		return
 	}
-	ui.handleHelpCommand(entityRemoveUsage, entityRemoveHelp)
+	ui.handleHelpCommand(entityDeleteUsage, entityDeleteHelp)
 
 }
 
