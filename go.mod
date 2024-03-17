@@ -4,8 +4,9 @@ go 1.22
 
 require (
 	github.com/adrg/xdg v0.4.0
-	github.com/bahner/go-ma v0.7.5-0.20240313175747-90773c2e6216
+	github.com/bahner/go-ma v0.7.5
 	github.com/gdamore/tcell/v2 v2.7.4
+	github.com/ipfs/boxo v0.18.0
 	github.com/libp2p/go-libp2p v0.32.2
 	github.com/libp2p/go-libp2p-kad-dht v0.24.4
 	github.com/libp2p/go-libp2p-pubsub v0.10.0
@@ -56,7 +57,6 @@ require (
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/huin/goupnp v1.3.0 // indirect
 	github.com/ipfs/bbloom v0.0.4 // indirect
-	github.com/ipfs/boxo v0.18.0 // indirect
 	github.com/ipfs/go-block-format v0.2.0 // indirect
 	github.com/ipfs/go-cid v0.4.1 // indirect
 	github.com/ipfs/go-datastore v0.6.0 // indirect
