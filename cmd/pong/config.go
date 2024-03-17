@@ -41,12 +41,13 @@ func pongReply() string {
 	return viper.GetString("mode.pong.reply")
 }
 
-func initConfig() {
+func initConfig(profile string) {
 
 	// Always parse the flags first
 	config.InitCommonFlags()
 	config.InitActorFlags()
 	pflag.Parse()
+	config.SetProfile(profile)
 	config.Init()
 
 	if config.GenerateFlag() {
@@ -58,4 +59,13 @@ func initConfig() {
 		config.Generate(actorConfig)
 		os.Exit(0)
 	}
+
+	config.InitActor()
+
+	// This flag is dependent on the actor to be initialized to make sense.
+	if config.ShowConfigFlag() {
+		config.Print()
+		os.Exit(0)
+	}
+
 }

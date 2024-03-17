@@ -8,30 +8,24 @@ import (
 	"github.com/spf13/pflag"
 )
 
-func initConfig() {
+func initConfig(profile string) {
 
 	// Always parse the flags first
 	config.InitCommonFlags()
-	config.InitActorFlags()
 	pflag.Parse()
+	config.SetProfile(profile)
 	config.Init()
 
 	if config.GenerateFlag() {
 		// Reinit logging to STDOUT
 		log.SetOutput(os.Stdout)
 		log.Info("Generating new actor and node identity")
-		actor, node := config.GenerateActorIdentitiesOrPanic()
-		actorConfig := configTemplate(actor, node)
-		config.Generate(actorConfig)
+		node, err := config.GenerateNodeIdentity()
+		if err != nil {
+			log.Fatalf("Failed to generate node identity: %v", err)
+		}
+		relayConfig := configTemplate(node)
+		config.Generate(relayConfig)
 		os.Exit(0)
 	}
-
-	config.InitActor()
-
-	// This flag is dependent on the actor to be initialized to make sense.
-	if config.ShowConfigFlag() {
-		config.Print()
-		os.Exit(0)
-	}
-
 }

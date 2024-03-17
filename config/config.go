@@ -85,29 +85,6 @@ func Init() error {
 		panic(err)
 	}
 
-	// if Generate() {
-
-	// 	// Reinit logging to STDOUT
-	// 	log.SetOutput(os.Stdout)
-	// 	log.Info("Generating new actor and node identity")
-	// 	actor, node := handleGenerateOrExit()
-	// 	actorConfig := ActorConfig(actor, node)
-	// 	GenerateConfigFile(actorConfig)
-	// 	os.Exit(0)
-	// }
-
-	// Return and make the calling programme generate a config to pass to the Generate funcion.
-	if GenerateFlag() {
-		return nil
-	}
-
-	InitActor()
-
-	// This flag is dependent on the actor to be initialized to make sense.
-	if ShowConfigFlag() {
-		Print()
-		os.Exit(0)
-	}
 	return nil
 
 }
