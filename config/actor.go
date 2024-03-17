@@ -30,6 +30,12 @@ func init() {
 	pflag.Bool("publish", false, "Publishes keyset to IPFS")
 	pflag.Bool("force", false, "Forces regneration of config keyset and publishing")
 
+}
+
+// Load a keyset from string and initiate an Actor.
+// This is optional, but if you want to use the actor package, you need to call this.
+func InitActor() {
+
 	pflag.StringP("nick", "n", defaultNick, "Nickname to use in character creation")
 	pflag.StringP("location", "l", defaultLocation, "DID of the location to visit")
 
@@ -39,12 +45,6 @@ func init() {
 
 	viper.BindPFlag("actor.location", pflag.Lookup("location"))
 	viper.SetDefault("actor.location", defaultLocation)
-
-}
-
-// Load a keyset from string and initiate an Actor.
-// This is optional, but if you want to use the actor package, you need to call this.
-func InitActor() {
 
 	keyset_string := actorIdentity()
 	if keyset_string == fakeActorIdentity {

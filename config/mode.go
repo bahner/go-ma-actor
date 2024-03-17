@@ -10,9 +10,6 @@ const (
 	DEFAULT_PONG_FORTUNE_MODE = false
 	DEFAULT_PONG_FORTUNE_ARGS = "-s"
 
-	defaultPongMode  = false
-	defaultRelayMode = false
-
 	pong  = "pong"
 	relay = "relay"
 
@@ -22,13 +19,6 @@ const (
 var ErrConflictingModes = "Can't have both pong and relay mode enabled at the same time."
 
 // NB! This file is used early in the initialization process, so it can't depend on other packages.
-
-func init() {
-	// NB! Other mode pflags are in the proper mode packages.
-	pflag.Bool("pong", defaultPongMode, "Pong mode with automatic replies and no UI.")
-	pflag.Bool("pong-fortune", DEFAULT_PONG_FORTUNE_MODE, "Reply with a fortune cookie, instead of a static message, if availble.")
-	pflag.Bool("relay", defaultRelayMode, "Relay mode with no actor, to just listen and relay messages.")
-}
 
 // If actor.home is set to pong, then we are in pong mode.
 // THIs means that we don't render the ui and reply automatically to messages.
