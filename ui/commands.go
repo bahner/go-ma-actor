@@ -17,6 +17,8 @@ func (ui *ChatUI) handleCommands(input string) {
 	switch args[0] {
 	case "/broadcast":
 		ui.handleBroadcastCommand(args)
+	case "/cat":
+		ui.handleCatCommand(args)
 	case "/enter":
 		ui.handleEnterCommand(args)
 	case "/entity":
