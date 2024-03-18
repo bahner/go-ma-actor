@@ -24,7 +24,8 @@ ARM64=android-arm64 darwin-arm64 netbsd-arm64 openbsd-arm64
 ALL =  $(FETCH) $(KEYSET) $(NAME) $(DEBUG)
 BINDIR = $(PREFIX)/bin
 RELEASES = releases
-CMDS = actor relay pong
+CMDS = actor relay pong node
+VAULT_TOKEN ?= space
 
 ifneq (,$(wildcard ./.env))
     include .env
@@ -82,11 +83,19 @@ release: clean $(RELEASES) $(PLATFORMS)
 actor: tidy
 	$(GO) build $(BUILDFLAGS) ./cmd/actor
 
+node: tidy
+	$(GO) build $(BUILDFLAGS) ./cmd/node
+
 pong: tidy
 	$(GO) build $(BUILDFLAGS) ./cmd/pong
 
 relay: tidy
 	$(GO) build $(BUILDFLAGS) ./cmd/relay
+
+vault:
+	# docker-compose up -d vault
+	vault server --dev -dev-root-token-id=$(VAULT_TOKEN) &
+
 
 $(RELEASES): 
 	mkdir -p $(RELEASES)
