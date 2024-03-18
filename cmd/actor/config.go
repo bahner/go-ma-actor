@@ -16,6 +16,7 @@ func initConfig() {
 	config.InitCommonFlags()
 	config.InitActorFlags()
 	pflag.Parse()
+	config.SetProfile(config.Profile())
 	config.Init()
 
 	if config.GenerateFlag() {
