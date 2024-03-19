@@ -1,4 +1,4 @@
-package main
+package web
 
 import (
 	"sort"
@@ -7,7 +7,7 @@ import (
 	p2peer "github.com/libp2p/go-libp2p/core/peer"
 )
 
-func UnorderedListFromPeerIDSlice(peers p2peer.IDSlice) string {
+func unorderedListFromPeerIDSlice(peers p2peer.IDSlice) string {
 	peersMap := make(map[string]string)
 	for _, p := range peers {
 		id := p.String()
@@ -36,10 +36,11 @@ func UnorderedListFromPeerIDSlice(peers p2peer.IDSlice) string {
 	list += "</table>\n"
 	return list
 }
-func UnorderedListFromTopicsSlice(topics []string) string {
+
+func unorderedListFromStringSlice(s []string) string {
 
 	list := "<table>\n"
-	for _, v := range topics {
+	for _, v := range s {
 		list += "<tr><td>" + v + "</td></tr>\n"
 	}
 	list += "</table>\n"

@@ -5,6 +5,8 @@ import (
 	"fmt"
 
 	"github.com/bahner/go-ma-actor/entity/actor"
+
+	"github.com/bahner/go-ma-actor/p2p"
 )
 
 // Run the pong actor. Cancel it from outside to stop it.
@@ -13,14 +15,16 @@ func main() {
 	ctx := context.Background()
 	initConfig(pong)
 
-	p, err := initP2P()
+	// THese are the relay specific parts.
+
+	p, err := p2p.Init(p2pOptions())
 	if err != nil {
 		fmt.Printf("Failed to initialize p2p: %v\n", err)
 		return
 	}
 
 	// Init of actor requires P2P to be initialized
-	a := initActorOrPanic()
+	a := actor.Init()
 
 	fmt.Printf("Starting pong mode as %s\n", a.Entity.DID.Id)
 	go p.StartDiscoveryLoop(ctx)

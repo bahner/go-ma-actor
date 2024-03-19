@@ -3,25 +3,32 @@ package main
 import (
 	"context"
 
+	"github.com/bahner/go-ma-actor/config"
+	"github.com/bahner/go-ma-actor/entity/actor"
+	"github.com/bahner/go-ma-actor/p2p"
+	"github.com/bahner/go-ma-actor/ui/web"
 	log "github.com/sirupsen/logrus"
 )
+
+const name = "node"
 
 func main() {
 
 	ctx := context.Background()
 
 	// Init config and logger
-	initConfig()
+	config.SetProfile(name)
+	actor.InitConfig(config.Profile())
 
-	p, err := initP2P()
+	p, err := p2p.Init(p2p.DefaultOptions())
 	if err != nil {
 		log.Fatalf("Error initialising P2P: %v", err)
 	}
 
 	// Init of actor requires P2P to be initialized
-	a := initActorOrPanic()
+	a := actor.Init()
 
-	go startWebServer(p, a)
+	go web.Start(web.NewEntityHandler(p, a.Entity))
 	go p.StartDiscoveryLoop(ctx)
 	go a.Subscribe(ctx, a.Entity)
 

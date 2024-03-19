@@ -11,20 +11,20 @@ import (
 	"github.com/spf13/viper"
 )
 
-func InitConfig() {
+func InitConfig(name string) {
 
 	// Always parse the flags first
 	config.InitCommonFlags()
 	config.InitActorFlags()
 	pflag.Parse()
-	config.SetProfile(config.Profile())
+	config.SetProfile(name)
 	config.Init()
 
 	if config.GenerateFlag() {
 		// Reinit logging to STDOUT
 		log.SetOutput(os.Stdout)
 		log.Info("Generating new actor and node identity")
-		actor, node := generateActorIdentitiesOrPanic(config.Profile())
+		actor, node := generateActorIdentitiesOrPanic(name)
 		actorConfig := configTemplate(actor, node)
 		config.Generate(actorConfig)
 		os.Exit(0)

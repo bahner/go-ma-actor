@@ -1,4 +1,4 @@
-package main
+package web
 
 import (
 	"fmt"
@@ -11,13 +11,10 @@ import (
 	"github.com/multiformats/go-multiaddr"
 )
 
-// Assuming you have initialized variables like `h` and `rendezvous` somewhere in your main function or globally
-
-type WebEntity struct {
+type Relay struct {
 	P2P *p2p.P2P
 }
-
-type WebEntityDocument struct {
+type RelayDocument struct {
 	Title            string
 	H1               string
 	Addrs            []multiaddr.Multiaddr
@@ -25,30 +22,21 @@ type WebEntityDocument struct {
 	UnprotectedPeers p2peer.IDSlice
 }
 
-func NewWebEntityDocument() *WebEntityDocument {
-	return &WebEntityDocument{}
+// NewWebHandler creates a new Relay instance.
+func NewRelayHandler(p *p2p.P2P) *Relay {
+	return &Relay{
+		P2P: p,
+	}
 }
 
-func (data *WebEntity) WebHandler(w http.ResponseWriter, r *http.Request) {
-	webHandler(w, r, data.P2P)
+// ServeHTTP implements the http.Handler interface for Relay.
+// This allows Relay to be directly used as an HTTP handler.
+func (data *Relay) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	// Delegate the actual handling to the WebHandler method.
+	data.WebHandler(w, r)
 }
 
-func webHandler(w http.ResponseWriter, _ *http.Request, p *p2p.P2P) {
-
-	doc := NewWebEntityDocument()
-
-	doc.Title = fmt.Sprintf("Bootstrap peer for rendezvous %s.", ma.RENDEZVOUS)
-	doc.H1 = fmt.Sprintf("%s@%s", ma.RENDEZVOUS, (p.Host.ID().String()))
-	doc.H1 += fmt.Sprintf("<br>Found %d peers with rendezvous %s", len(p.ConnectedProtectedPeers()), ma.RENDEZVOUS)
-	doc.Addrs = p.Host.Addrs()
-	doc.ProtectedPeers = p.ConnectedProtectedPeers()
-	doc.UnprotectedPeers = p.ConnectedUnprotectedPeers()
-	// doc.AllConnectedPeers = p.GetAllConnectedPeers()
-
-	fmt.Fprint(w, doc.String())
-}
-
-func (d *WebEntityDocument) String() string {
+func (d *RelayDocument) String() string {
 
 	html := "<!DOCTYPE html>\n<html>\n<head>\n"
 	html += "<style>table, th, td {border: 1px solid black;}</style>"
@@ -77,15 +65,38 @@ func (d *WebEntityDocument) String() string {
 	// Peers with Same Rendezvous
 	if len(d.ProtectedPeers) > 0 {
 		html += fmt.Sprintf("<h2>Discovered peers (%d):</h2>\n", len(d.ProtectedPeers))
-		html += UnorderedListFromPeerIDSlice(d.ProtectedPeers)
+		html += unorderedListFromPeerIDSlice(d.ProtectedPeers)
 	}
 	// All Connected Peers
 	if len(d.UnprotectedPeers) > 0 {
 		html += fmt.Sprintf("<h2>libp2p Network Peers (%d):</h2>\n", len(d.UnprotectedPeers))
 
-		html += UnorderedListFromPeerIDSlice(d.UnprotectedPeers)
+		html += unorderedListFromPeerIDSlice(d.UnprotectedPeers)
 	}
 
 	html += "</body>\n</html>"
 	return html
+}
+
+func newRelayDocument() *RelayDocument {
+	return &RelayDocument{}
+}
+
+func (data *Relay) WebHandler(w http.ResponseWriter, r *http.Request) {
+	relayHandler(w, r, data.P2P)
+}
+
+func relayHandler(w http.ResponseWriter, _ *http.Request, p *p2p.P2P) {
+
+	doc := newRelayDocument()
+
+	doc.Title = fmt.Sprintf("Bootstrap peer for rendezvous %s.", ma.RENDEZVOUS)
+	doc.H1 = fmt.Sprintf("%s@%s", ma.RENDEZVOUS, (p.Host.ID().String()))
+	doc.H1 += fmt.Sprintf("<br>Found %d peers with rendezvous %s", len(p.ConnectedProtectedPeers()), ma.RENDEZVOUS)
+	doc.Addrs = p.Host.Addrs()
+	doc.ProtectedPeers = p.ConnectedProtectedPeers()
+	doc.UnprotectedPeers = p.ConnectedUnprotectedPeers()
+	// doc.AllConnectedPeers = p.GetAllConnectedPeers()
+
+	fmt.Fprint(w, doc.String())
 }

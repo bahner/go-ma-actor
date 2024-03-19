@@ -1,4 +1,4 @@
-package main
+package web
 
 import (
 	"fmt"
@@ -14,12 +14,7 @@ import (
 
 // Assuming you have initialized variables like `h` and `rendezvous` somewhere in your main function or globally
 
-type WebEntity struct {
-	P2P    *p2p.P2P
-	Entity *entity.Entity
-}
-
-type WebEntityDocument struct {
+type NodeDocument struct {
 	Title               string
 	H1                  string
 	H2                  string
@@ -29,17 +24,32 @@ type WebEntityDocument struct {
 	Topics              []string
 }
 
-func NewWebEntityDocument() *WebEntityDocument {
-	return &WebEntityDocument{}
+// NewWebHandler creates a new WebEntity instance.
+func NewWebEntityHandler(p *p2p.P2P, e *entity.Entity) *WebEntity {
+	return &WebEntity{
+		P2P:    p,
+		Entity: e,
+	}
 }
 
-func (data *WebEntity) WebHandler(w http.ResponseWriter, r *http.Request) {
-	webHandler(w, r, data.P2P, data.Entity)
+// ServeHTTP implements the http.Handler interface for WebEntity.
+// This allows WebEntity to be directly used as an HTTP handler.
+func (data *WebEntity) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	// Delegate the actual handling to the WebHandler method.
+	data.WebHandler(w, r)
 }
 
-func webHandler(w http.ResponseWriter, _ *http.Request, p *p2p.P2P, e *entity.Entity) {
+func NewNodeDocument() *NodeDocument {
+	return &NodeDocument{}
+}
 
-	doc := NewWebEntityDocument()
+func (data *WebEntity) NodeHandler(w http.ResponseWriter, r *http.Request) {
+	nodeHandler(w, r, data.P2P, data.Entity)
+}
+
+func nodeHandler(w http.ResponseWriter, _ *http.Request, p *p2p.P2P, e *entity.Entity) {
+
+	doc := NewNodeDocument()
 
 	titleStr := fmt.Sprintf("Entity: %s", e.DID.Id)
 	h1str := titleStr
@@ -54,7 +64,7 @@ func webHandler(w http.ResponseWriter, _ *http.Request, p *p2p.P2P, e *entity.En
 	fmt.Fprint(w, doc.String())
 }
 
-func (d *WebEntityDocument) String() string {
+func (d *NodeDocument) String() string {
 
 	html := "<!DOCTYPE html>\n<html>\n<head>\n"
 	html += "<style>table, th, td {border: 1px solid black;}</style>"
@@ -74,13 +84,13 @@ func (d *WebEntityDocument) String() string {
 	// Subscribed topics
 	if len(d.Topics) > 0 {
 		html += fmt.Sprintf("<h2>Topics (%d):</h2>\n", len(d.Topics))
-		html += UnorderedListFromTopicsSlice(d.Topics)
+		html += unorderedListFromStringSlice(d.Topics)
 	}
 
 	// Peers with Same Rendezvous
 	if len(d.PeersWithSameRendez) > 0 {
 		html += fmt.Sprintf("<h2>Discovered peers (%d):</h2>\n", len(d.PeersWithSameRendez))
-		html += UnorderedListFromPeerIDSlice(d.PeersWithSameRendez)
+		html += unorderedListFromPeerIDSlice(d.PeersWithSameRendez)
 	}
 
 	// Info leak? Not really important anyways.
@@ -97,7 +107,7 @@ func (d *WebEntityDocument) String() string {
 	// All Connected Peers
 	if len(d.AllConnectedPeers) > 0 {
 		html += fmt.Sprintf("<h2>libp2p Network Peers (%d):</h2>\n", len(d.AllConnectedPeers))
-		html += UnorderedListFromPeerIDSlice(d.AllConnectedPeers)
+		html += unorderedListFromPeerIDSlice(d.AllConnectedPeers)
 	}
 
 	html += "</body>\n</html>"

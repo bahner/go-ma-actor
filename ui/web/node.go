@@ -8,40 +8,40 @@ import (
 	"github.com/bahner/go-ma-actor/config"
 	"github.com/bahner/go-ma-actor/entity"
 	"github.com/bahner/go-ma-actor/p2p"
-	p2peer "github.com/libp2p/go-libp2p/core/peer"
+	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/multiformats/go-multiaddr"
 )
 
-type Entity struct {
-	P2P    *p2p.P2P
-	Entity *entity.Entity
+type Node struct {
+	P2P  *p2p.P2P
+	Node *entity.Entity
 }
-
-type EntityDocument struct {
+type NodeDocument struct {
 	Title               string
 	H1                  string
 	H2                  string
 	Addrs               []multiaddr.Multiaddr
-	PeersWithSameRendez p2peer.IDSlice
-	AllConnectedPeers   p2peer.IDSlice
+	PeersWithSameRendez peer.IDSlice
+	AllConnectedPeers   peer.IDSlice
+	Topics              []string
 }
 
-// NewWebHandler creates a new Entity instance.
-func NewEntityHandler(p *p2p.P2P, e *entity.Entity) *Entity {
-	return &Entity{
-		P2P:    p,
-		Entity: e,
+// NewWebHandler creates a new Node instance.
+func NewNodeHandler(p *p2p.P2P, e *entity.Entity) *Node {
+	return &Node{
+		P2P:  p,
+		Node: e,
 	}
 }
 
-// ServeHTTP implements the http.Handler interface for Entity.
-// This allows Entity to be directly used as an HTTP handler.
-func (data *Entity) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+// ServeHTTP implements the http.Handler interface for Node.
+// This allows Node to be directly used as an HTTP handler.
+func (data *Node) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Delegate the actual handling to the WebHandler method.
 	data.WebHandler(w, r)
 }
 
-func (d *EntityDocument) String() string {
+func (d *NodeDocument) String() string {
 
 	html := "<!DOCTYPE html>\n<html>\n<head>\n"
 	html += "<style>table, th, td {border: 1px solid black;}</style>"
@@ -58,6 +58,18 @@ func (d *EntityDocument) String() string {
 		html += "<h2>" + d.H2 + "</h2>\n"
 	}
 
+	// Subscribed topics
+	if len(d.Topics) > 0 {
+		html += fmt.Sprintf("<h2>Topics (%d):</h2>\n", len(d.Topics))
+		html += unorderedListFromStringSlice(d.Topics)
+	}
+
+	// Peers with Same Rendezvous
+	if len(d.PeersWithSameRendez) > 0 {
+		html += fmt.Sprintf("<h2>Discovered peers (%d):</h2>\n", len(d.PeersWithSameRendez))
+		html += unorderedListFromPeerIDSlice(d.PeersWithSameRendez)
+	}
+
 	// Info leak? Not really important anyways.
 	// // Addresses
 	if len(d.Addrs) > 0 {
@@ -69,11 +81,6 @@ func (d *EntityDocument) String() string {
 		html += "</table>\n"
 	}
 
-	// Peers with Same Rendezvous
-	if len(d.PeersWithSameRendez) > 0 {
-		html += fmt.Sprintf("<h2>Discovered peers (%d):</h2>\n", len(d.PeersWithSameRendez))
-		html += unorderedListFromPeerIDSlice(d.PeersWithSameRendez)
-	}
 	// All Connected Peers
 	if len(d.AllConnectedPeers) > 0 {
 		html += fmt.Sprintf("<h2>libp2p Network Peers (%d):</h2>\n", len(d.AllConnectedPeers))
@@ -84,17 +91,17 @@ func (d *EntityDocument) String() string {
 	return html
 }
 
-func newEntityDocument() *EntityDocument {
-	return &EntityDocument{}
+func newNodeDocument() *NodeDocument {
+	return &NodeDocument{}
 }
 
-func (data *Entity) WebHandler(w http.ResponseWriter, r *http.Request) {
-	webHandler(w, r, data.P2P, data.Entity)
+func (data *Node) WebHandler(w http.ResponseWriter, r *http.Request) {
+	nodeHandler(w, r, data.P2P, data.Node)
 }
 
-func webHandler(w http.ResponseWriter, _ *http.Request, p *p2p.P2P, e *entity.Entity) {
+func nodeHandler(w http.ResponseWriter, _ *http.Request, p *p2p.P2P, e *entity.Entity) {
 
-	doc := newEntityDocument()
+	doc := newNodeDocument()
 
 	titleStr := fmt.Sprintf("Entity: %s", e.DID.Id)
 	h1str := titleStr
@@ -104,6 +111,7 @@ func webHandler(w http.ResponseWriter, _ *http.Request, p *p2p.P2P, e *entity.En
 	doc.Addrs = p.Host.Addrs()
 	doc.AllConnectedPeers = p.AllConnectedPeers()
 	doc.PeersWithSameRendez = p.ConnectedProtectedPeers()
+	doc.Topics = p.PubSub.GetTopics()
 
 	fmt.Fprint(w, doc.String())
 }
