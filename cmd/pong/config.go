@@ -44,6 +44,7 @@ func p2pOptions() p2p.Options {
 			libp2p.DefaultSecurity,
 			libp2p.EnableRelay(),
 			libp2p.EnableRelayService(),
+			libp2p.Ping(true),
 		}}
 }
 
