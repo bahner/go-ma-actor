@@ -56,6 +56,8 @@ github.com/aliyun/credentials-go v1.1.0/go.mod h1:ZXrrxv386Mj6z8NpihLKpexQE550m7
 github.com/aliyun/credentials-go v1.1.2/go.mod h1:ozcZaMR5kLM7pwtCMEpVmQ242suV6qTJya2bDq4X1Tw=
 github.com/anmitsu/go-shlex v0.0.0-20161002113705-648efa622239/go.mod h1:2FmKhYUyUczH0OGQWaF5ceTx0UBShxjsH6f8oGKYe2c=
 github.com/armon/go-radix v0.0.0-20180808171621-7fddfc383310/go.mod h1:ufUuZ+zHj4x4TnLV4JWEpy2hxWSpsRywHrMgIH9cCH8=
+github.com/ayush6624/go-chatgpt v0.3.0 h1:tQUfwSvSL9KA2XmBqj3L8aVdVPRb0Hcs3XtMmZKqsc8=
+github.com/ayush6624/go-chatgpt v0.3.0/go.mod h1:bn550cv7EHT7sHJG5yR60IGqjKlZ0S0Ll+IZp3z7nOc=
 github.com/bahner/go-ma v0.7.6 h1:VJXVtT8iVDDwpQwpSvBNFinQ/nm0pI6D/qryWoE6yIk=
 github.com/bahner/go-ma v0.7.6/go.mod h1:IgMPcdPzH1GkP5mMz2PhJh8831hGi4TzhYbOV8UFzZ0=
 github.com/benbjohnson/clock v1.1.0/go.mod h1:J11/hYXuz8f4ySSvYwY0FKfm+ezbsZBKZxNJlLklBHA=

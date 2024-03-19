@@ -4,6 +4,7 @@ go 1.22
 
 require (
 	github.com/adrg/xdg v0.4.0
+	github.com/ayush6624/go-chatgpt v0.3.0
 	github.com/bahner/go-ma v0.7.6
 	github.com/ergo-services/ergo v1.999.224
 	github.com/fxamacker/cbor/v2 v2.6.0

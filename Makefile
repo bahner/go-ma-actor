@@ -24,7 +24,7 @@ ARM64=android-arm64 darwin-arm64 netbsd-arm64 openbsd-arm64
 ALL =  $(FETCH) $(KEYSET) $(NAME) $(DEBUG)
 BINDIR = $(PREFIX)/bin
 RELEASES = releases
-CMDS = actor relay pong node
+CMDS = actor relay pong node robot
 VAULT_TOKEN ?= space
 
 ifneq (,$(wildcard ./.env))
@@ -91,6 +91,9 @@ pong: tidy
 
 relay: tidy
 	$(GO) build $(BUILDFLAGS) ./cmd/relay
+
+robot: tidy
+	$(GO) build $(BUILDFLAGS) ./cmd/robot
 
 vault:
 	#vault server --dev -dev-root-token-id=$(VAULT_TOKEN) &
