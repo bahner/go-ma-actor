@@ -13,11 +13,11 @@ import (
 
 // Assuming you have initialized variables like `h` and `rendezvous` somewhere in your main function or globally
 
-type WebHandlerData struct {
+type WebEntity struct {
 	P2P *p2p.P2P
 }
 
-type WebHandlerDocument struct {
+type WebEntityDocument struct {
 	Title            string
 	H1               string
 	Addrs            []multiaddr.Multiaddr
@@ -25,17 +25,17 @@ type WebHandlerDocument struct {
 	UnprotectedPeers p2peer.IDSlice
 }
 
-func NewWebHandlerDocument() *WebHandlerDocument {
-	return &WebHandlerDocument{}
+func NewWebEntityDocument() *WebEntityDocument {
+	return &WebEntityDocument{}
 }
 
-func (data *WebHandlerData) WebHandler(w http.ResponseWriter, r *http.Request) {
+func (data *WebEntity) WebHandler(w http.ResponseWriter, r *http.Request) {
 	webHandler(w, r, data.P2P)
 }
 
 func webHandler(w http.ResponseWriter, _ *http.Request, p *p2p.P2P) {
 
-	doc := NewWebHandlerDocument()
+	doc := NewWebEntityDocument()
 
 	doc.Title = fmt.Sprintf("Bootstrap peer for rendezvous %s.", ma.RENDEZVOUS)
 	doc.H1 = fmt.Sprintf("%s@%s", ma.RENDEZVOUS, (p.Host.ID().String()))
@@ -48,7 +48,7 @@ func webHandler(w http.ResponseWriter, _ *http.Request, p *p2p.P2P) {
 	fmt.Fprint(w, doc.String())
 }
 
-func (d *WebHandlerDocument) String() string {
+func (d *WebEntityDocument) String() string {
 
 	html := "<!DOCTYPE html>\n<html>\n<head>\n"
 	html += "<style>table, th, td {border: 1px solid black;}</style>"

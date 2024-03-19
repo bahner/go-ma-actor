@@ -5,6 +5,8 @@ import (
 	"fmt"
 
 	"github.com/bahner/go-ma-actor/config"
+	"github.com/bahner/go-ma-actor/p2p/connmgr"
+	"github.com/bahner/go-ma-actor/p2p/node"
 	"github.com/bahner/go-ma-actor/p2p/pubsub"
 	libp2p "github.com/libp2p/go-libp2p"
 	p2ppubsub "github.com/libp2p/go-libp2p-pubsub"
@@ -28,33 +30,55 @@ type P2P struct {
 
 // Initialise everything needed for p2p communication. The function forces use of a specific IPNS key.
 // Taken from the config package. It would be an error to initialise the node with a different key.
-//
-// d is a DHT instance. If nil, a new one will be created.
-//
-// Also takes a variadic list of libp2p options.
-// Of it's nil, an empty list will be used.
-//
-// The configurable connection manager will be added to the node.
-//
-// The function return the libp2p node and a PubSub Service
-
-func Init(d *DHT, p2pOpts ...libp2p.Option) (*P2P, error) {
+// The input is derived from Config() in the config package.
+func Init(opts Options) (*P2P, error) {
 
 	ctx := context.Background()
 
+	// Initialise the connection manager and the connection gater.
+	// Which needs to be passed to the libp2p node.
+	cm, err := connmgr.Init(opts.Connmgr...)
+	if err != nil {
+		panic(fmt.Errorf("pong: failed to create connection manager: %w", err))
+	}
+	cg := connmgr.NewConnectionGater(cm)
+
+	opts.P2P = append(opts.P2P,
+		libp2p.ConnectionGater(cg),
+	)
+
+	// Initialise the libp2p node with the options.
+	n, err := node.New(config.NodeIdentity(), opts.P2P...)
+	if err != nil {
+		return nil, fmt.Errorf("pong: failed to create libp2p node: %w", err)
+	}
+
+	err = initPeer(string(n.ID()))
+	if err != nil {
+		return nil, fmt.Errorf("p2p.Init: failed to init peer: %w", err)
+	}
+
+	// Create discovery and routing
+	d, err := NewDHT(n, cg)
+	if err != nil {
+		return nil, fmt.Errorf("pong: failed to create DHT: %w", err)
+	}
+
+	m, err := newMDNS(n)
+	if err != nil {
+		log.Errorf("p2p.Init: failed to start MDNS discovery: %v", err)
+	}
+
+	// Create the pubsub service
 	ps, err := pubsub.New(ctx, d.Host)
 	if err != nil {
 		return nil, fmt.Errorf("p2p.Init: failed to create pubsub: %w", err)
 	}
 
+	// Generate the struct and start the protection loop.
 	ai := p2peer.AddrInfo{
 		ID:    d.Host.ID(),
 		Addrs: d.Host.Addrs(),
-	}
-
-	m, err := newMDNS(d.Host)
-	if err != nil {
-		log.Errorf("p2p.Init: failed to start MDNS discovery: %v", err)
 	}
 
 	_p2p = &P2P{

@@ -34,6 +34,7 @@ func init() {
 	pflag.String("vault-token", "", "Vault token")
 	viper.BindPFlag("vault.token", pflag.Lookup("vault-token"))
 	viper.SetDefault("vault.token", devVaultToken)
+	viper.BindEnv("vault.token", "VAULT_TOKEN")
 }
 
 func VaultClient() (*api.Client, error) {
@@ -85,7 +86,7 @@ func storeKeysetString(id string, keyset string) error {
 	}
 
 	log.Debugf("Storing secret: %s", secret)
-	_, err = client.KVv2("secret").Put(context.Background(), keysetPath+id, secret)
+	_, err = client.KVv2("ma").Put(context.Background(), keysetPath+id, secret)
 	if err != nil {
 		return fmt.Errorf("error storing keyset: %s", err)
 	}

@@ -1,4 +1,4 @@
-package main
+package web
 
 import (
 	"fmt"
@@ -6,14 +6,12 @@ import (
 	"os"
 
 	"github.com/bahner/go-ma-actor/config"
-	"github.com/bahner/go-ma-actor/entity/actor"
 
-	"github.com/bahner/go-ma-actor/p2p"
 	log "github.com/sirupsen/logrus"
 )
 
-// NB! In relay mode we stop here.
-func startWebServer(p *p2p.P2P, a *actor.Actor) {
+// Start the WebU with the given handler.
+func Start(h WebHandler) {
 
 	fmt.Println("Starting web server...")
 
@@ -23,11 +21,7 @@ func startWebServer(p *p2p.P2P, a *actor.Actor) {
 	// Start a simple web server to handle incoming requests.
 	// This is defined in web.go. It makes it possible to add extra parameters to the handler.
 	mux := http.NewServeMux()
-	h := &WebHandlerData{
-		P2P:    p,
-		Entity: a.Entity,
-	}
-	mux.HandleFunc("/", h.WebHandler)
+	mux.Handle("/", h)
 
 	log.Infof("Listening on %s", config.HttpSocket())
 

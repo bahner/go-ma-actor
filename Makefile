@@ -93,8 +93,8 @@ relay: tidy
 	$(GO) build $(BUILDFLAGS) ./cmd/relay
 
 vault:
-	# docker-compose up -d vault
-	vault server --dev -dev-root-token-id=$(VAULT_TOKEN) &
+	#vault server --dev -dev-root-token-id=$(VAULT_TOKEN) &
+	vault server -config vault.hcl &
 
 
 $(RELEASES): 
@@ -270,4 +270,4 @@ windows-arm64: $(RELEASES)
 lint:
 	find -name "*.yaml" -exec yamllint -c .yamllintrc {} \;
 
-.PHONY: default init tidy build client serve install clean distclean lint
+.PHONY: default init tidy build client serve install clean distclean lint vault

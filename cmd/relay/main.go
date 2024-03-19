@@ -29,7 +29,7 @@ func main() {
 	// Start a simple web server to handle incoming requests.
 	// This is defined in web.go. It makes it possible to add extra parameters to the handler.
 	mux := http.NewServeMux()
-	h := &WebHandlerData{
+	h := &WebEntity{
 		P2P: p,
 	}
 	mux.HandleFunc("/", h.WebHandler)

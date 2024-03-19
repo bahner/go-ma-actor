@@ -12,16 +12,11 @@
             "program": "${workspaceFolder}/cmd/pong/",
         },
         {
-            "name": "Generate pong",
+            "name": "Launch node",
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "${workspaceFolder}/cmd/pong/",
-            "args": [
-                "--generate",
-                "--publish",
-                "--force"
-            ]
+            "program": "${workspaceFolder}/cmd/node",
         },
                 {
             "name": "Launch allowAll",

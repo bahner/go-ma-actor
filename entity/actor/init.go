@@ -1,20 +1,22 @@
-package main
+package actor
 
 import (
 	"fmt"
 
 	"github.com/bahner/go-ma-actor/config"
 	"github.com/bahner/go-ma-actor/entity"
-	"github.com/bahner/go-ma-actor/entity/actor"
-	log "github.com/sirupsen/logrus"
 )
 
-func initActorOrPanic() *actor.Actor {
+// Initialise an actor or panic.
+// This is a common sugar function to create an actor from the keyset and set the DID Document.
+// Meant to be called from most main's.
+// Panics if the actor is not valid.
+func Init() *Actor {
 	// The actor is needed for initialisation of the WebHandler.
 	fmt.Println("Creating actor from keyset...")
-	a, err := actor.NewFromKeyset(config.ActorKeyset())
+	a, err := NewFromKeyset(config.ActorKeyset())
 	if err != nil {
-		log.Debugf("error creating actor: %s", err)
+		panic(fmt.Sprintf("error creating actor: %s", err))
 	}
 
 	id := a.Entity.DID.Id

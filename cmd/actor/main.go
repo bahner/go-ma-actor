@@ -4,6 +4,9 @@ import (
 	"fmt"
 
 	"github.com/bahner/go-ma-actor/config/db"
+	"github.com/bahner/go-ma-actor/entity/actor"
+	"github.com/bahner/go-ma-actor/ui"
+	"github.com/bahner/go-ma-actor/ui/web"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -14,7 +17,7 @@ func main() {
 		err error
 	)
 
-	initConfig()
+	actor.InitConfig()
 
 	// DB
 	fmt.Println("Initialising DB ...")
@@ -29,23 +32,17 @@ func main() {
 		panic(fmt.Sprintf("failed to initialize p2p: %v", err))
 	}
 
-	// PEER
-	fmt.Println("Initialising peer ...")
-	err = initPeer(p2P.Host.ID().String())
-	if err != nil {
-		panic(fmt.Sprintf("failed to initialize peer: %v", err))
-	}
-
 	// ACTOR
-	a := initActorOrPanic()
+	a := actor.Init()
 
 	// Start the webserver in the background. Ignore - but log - errors.
-	go startWebServer(p2P, a)
+	wh := web.NewWebEntityHandler(p2P, a.Entity)
+	go web.Start(wh)
 
 	// We have a valid actor, but for it to be useful, we need to discover peers.
 	// discoverPeersOrPanic(p2P)
 
-	ui := initUiOrPanic(p2P, a)
+	ui := ui.Init(p2P, a)
 
 	// START THE ACTOR UI
 	fmt.Println("Starting the actor...")
