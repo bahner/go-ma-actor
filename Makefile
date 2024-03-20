@@ -7,11 +7,20 @@ export VERSION = "v0.0.2"
 GO ?= go
 # This is required for sqlite3 cross-compilation
 BUILDFLAGS ?= -ldflags="-s -w"
-XZ ?= xz -zf
 PREFIX ?= /usr/local
+XZ ?= xz -zf
+
+ACTOR = $(NAME)
+RELAY = $(NAME)-relay
+PONG = $(NAME)-pong
+NODE = $(NAME)-node
+ROBOT = $(NAME)-robot
 KEYSET = $(NAME)-create-keyset
 FETCH = $(NAME)-fetch-document
 DEBUG = $(NAME)-debug
+CMDS = $(ACTOR) $(RELAY) $(NODE) $(ROBOT) $(PONG)
+ALL =  $(FETCH) $(KEYSET) $(CMDS) $(DEBUG)
+
 ANDROID = android-arm64
 DARWIN = darwin-amd64
 FREEBSD = freebsd-amd64
@@ -21,10 +30,8 @@ OPENBSD = openbsd-amd64
 WINDOWS =  windows-386 windows-amd64
 PLATFORMS =  $(ANDROID) $(DARWIN) $(FREEBSD) $(LINUX) $(NETBSD) $(OPENBSD) $(WINDOWS)
 ARM64=android-arm64 darwin-arm64 netbsd-arm64 openbsd-arm64 
-ALL =  $(FETCH) $(KEYSET) $(NAME) $(DEBUG)
 BINDIR = $(PREFIX)/bin
 RELEASES = releases
-CMDS = actor relay pong node robot
 VAULT_TOKEN ?= space
 
 ifneq (,$(wildcard ./.env))
@@ -48,14 +55,27 @@ $(DEBUG): BUILDFLAGS = -tags=debug
 $(DEBUG): tidy
 	$(GO) build -o $(DEBUG) $(BUILDFLAGS) ./cmd/actor
 
-$(NAME): tidy
-	$(GO) build -o $(NAME) $(BUILDFLAGS) ./cmd/actor
+$(ACTOR): tidy
+	$(GO) build -o $(ACTOR) $(BUILDFLAGS) ./cmd/actor
 
 $(FETCH): tidy
 	$(GO) build -o $(FETCH) $(BUILDFLAGS) ./cmd/fetch_document
 	
 $(KEYSET): tidy
 	$(GO) build -o $(KEYSET) $(BUILDFLAGS) ./cmd/create_keyset
+
+$(NODE): tidy
+	$(GO) build -o $(NODE) $(BUILDFLAGS) ./cmd/node
+
+$(PONG): tidy
+	$(GO) build -o $(PONG) $(BUILDFLAGS) ./cmd/pong
+
+$(RELAY): tidy
+	$(GO) build -o $(RELAY) $(BUILDFLAGS) ./cmd/relay
+
+$(ROBOT): tidy
+	$(GO) build -o $(ROBOT) $(BUILDFLAGS) ./cmd/robot
+
 	
 init: go.mod tidy
 
@@ -79,21 +99,6 @@ distclean: clean
 release: VERSION = $(shell ./.version)
 release: clean $(RELEASES) $(PLATFORMS)
 	git tag -a $(VERSION) -m "Release $(VERSION)"
-
-actor: tidy
-	$(GO) build $(BUILDFLAGS) ./cmd/actor
-
-node: tidy
-	$(GO) build $(BUILDFLAGS) ./cmd/node
-
-pong: tidy
-	$(GO) build $(BUILDFLAGS) ./cmd/pong
-
-relay: tidy
-	$(GO) build $(BUILDFLAGS) ./cmd/relay
-
-robot: tidy
-	$(GO) build $(BUILDFLAGS) ./cmd/robot
 
 vault:
 	#vault server --dev -dev-root-token-id=$(VAULT_TOKEN) &
