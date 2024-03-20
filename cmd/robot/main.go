@@ -3,9 +3,8 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 
-	"github.com/bahner/go-ma-actor/config"
-	"github.com/bahner/go-ma-actor/entity"
 	"github.com/bahner/go-ma-actor/entity/actor"
 	"github.com/bahner/go-ma-actor/ui/web"
 
@@ -26,31 +25,19 @@ func main() {
 		return
 	}
 
-	// Init of actor requires P2P to be initialized
-	a := actor.Init()
-
 	go p.StartDiscoveryLoop(ctx)
 
-	// Subscribe self
-	go a.Subscribe(ctx, a.Entity)
-	go handleEnvelopeEvents(ctx, a)
-	go handleMessageEvents(ctx, a)
-
-	// SUbscribe location
-	l, err := entity.GetOrCreate(config.ActorLocation(), true)
+	i, err := NewRobot()
 	if err != nil {
-		fmt.Printf("Failed to get or create actor location: %v\n", err)
-		return
+		log.Fatal(err)
 	}
-	go a.Subscribe(ctx, l)
-	go a.HandleIncomingEnvelopes(ctx, a.Entity.Messages)
-	go a.Entity.HandleIncomingMessages(ctx, a.Entity.Messages)
 
-	actor.HelloWorld(ctx, a)
+	actor.HelloWorld(ctx, i.Robot)
+	// i.Robot.HelloWorld(ctx, a)
 
 	fmt.Println("Press Ctrl-C to stop.")
 
-	h := web.NewEntityHandler(p, a.Entity)
+	h := web.NewEntityHandler(p, i.Robot.Entity)
 	go web.Start(h)
 
 	for {

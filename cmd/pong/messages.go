@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/bahner/go-ma"
+	"github.com/bahner/go-ma-actor/entity"
 	"github.com/bahner/go-ma-actor/entity/actor"
 	"github.com/bahner/go-ma/msg"
 	"github.com/pkg/errors"
@@ -33,30 +34,35 @@ func handleMessageEvents(ctx context.Context, a *actor.Actor) {
 				continue
 			}
 
-			if m.Verify() != nil {
+			if m.Message.Verify() != nil {
 				log.Debugf("messageEvents: failed to verify message: %v", m)
 				continue
 			}
 
-			log.Debugf("Handling message: %v from %s to %s", string(m.Content), m.From, m.To)
+			content := string(m.Message.Content)
+			from := m.Message.From
+			to := m.Message.To
+			_type := m.Message.Type
 
-			if m.From == me {
+			log.Debugf("Handling message: %v from %s to %s", content, from, to)
+
+			if from == me {
 				log.Debugf("Received message from self, ignoring...")
 				continue
 			}
 
-			if m.To == me && m.Type == ma.MESSAGE_TYPE {
+			if to == me && _type == ma.MESSAGE_TYPE {
 				messageReply(ctx, a, m)
 			}
 		}
 	}
 }
 
-func messageReply(ctx context.Context, a *actor.Actor, m *msg.Message) error {
+func messageReply(ctx context.Context, a *actor.Actor, m *entity.Message) error {
 
 	// Switch sender and receiver. Reply back to from :-)
-	replyFrom := m.To
-	replyTo := m.From
+	replyFrom := m.Message.To
+	replyTo := m.Message.From
 	// Broadcast are sent to the topic, and the topic is the DID of the recipient
 	r, err := msg.New(replyFrom, replyTo, reply(m), "text/plain", a.Keyset.SigningKey.PrivKey)
 	if err != nil {

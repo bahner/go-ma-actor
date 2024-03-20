@@ -5,14 +5,14 @@ import (
 	"fmt"
 	"os/exec"
 
-	"github.com/bahner/go-ma/msg"
+	"github.com/bahner/go-ma-actor/entity"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
-func reply(m *msg.Message) []byte {
+func reply(m *entity.Message) []byte {
 
-	if string(m.Content) == string(replyBytes()) {
+	if string(m.Message.Content) == string(replyBytes()) {
 		return angryBytes()
 	}
 

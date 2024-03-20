@@ -22,19 +22,17 @@ func (ui *ChatUI) handleIncomingMessages(ctx context.Context) {
 				log.Debug("Message channel closed, exiting...")
 				return
 			}
-			log.Debugf("UI received message %v from %s to %s", m.Content, m.From, m.To)
+			content := string(m.Message.Content)
+			from := m.Message.From
+			to := m.Message.To
+			log.Debugf("UI received message %v from %s to %s", content, from, to)
 
 			// No need to verify at this point, as the message has already been verified by the actor.
-			ui.displayChatMessage(m)
-		case m, ok := <-ui.chPrivateMessages:
-			if !ok {
-				log.Debug("Private message channel closed, exiting...")
-				return
+			if m.Enveloped {
+				ui.displayPrivateMessage(m.Message)
+				continue
 			}
-			log.Debugf("UI received private message from %s to %s", m.From, m.To)
-
-			// No need to verify at this point, as the message has already been verified by the actor.
-			ui.displayPrivateMessage(m)
+			ui.displayChatMessage(m.Message)
 		}
 	}
 }

@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/bahner/go-ma/msg"
+	"github.com/bahner/go-ma-actor/entity"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -13,7 +13,7 @@ import (
 // makes the design simpler and easier to understand /methinks.
 // Sent the messages to the message channel in the input. Then you can handle the messages in the
 // UI or wherever you want to handle them and you know they were private messages.
-func (a *Actor) HandleIncomingEnvelopes(ctx context.Context, messages chan *msg.Message) {
+func (a *Actor) HandleIncomingEnvelopes(ctx context.Context, messages chan *entity.Message) {
 
 	mesg := fmt.Sprintf("Handling incoming envelopes to " + a.Entity.DID.Id)
 	log.Info(mesg)
@@ -43,14 +43,9 @@ func (a *Actor) HandleIncomingEnvelopes(ctx context.Context, messages chan *msg.
 				continue
 			}
 
-			// Deliver message to our message channel.
-			if m.To == a.Entity.DID.Id {
-				log.Debugf("actor.HandleIncomingEnvelopes: Accepted message %s from %s to %s", m.Id, m.From, m.To)
-				messages <- m
-				continue
-			}
-
-			log.Errorf("actor.HandleIncomingEnvelopes: Received message to %s. Expected %s. Ignoring...", m.To, a.Entity.DID.Id)
+			// Deliver message to the requested message channel.
+			log.Debugf("actor.HandleIncomingEnvelopes: Accepted message %s from %s to %s", m.Id, m.From, m.To)
+			messages <- entity.NewMessage(m, true)
 		}
 	}
 }

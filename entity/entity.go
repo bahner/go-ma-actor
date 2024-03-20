@@ -7,7 +7,6 @@ import (
 	"github.com/bahner/go-ma-actor/p2p/pubsub"
 	"github.com/bahner/go-ma/did"
 	"github.com/bahner/go-ma/did/doc"
-	"github.com/bahner/go-ma/msg"
 	p2ppubsub "github.com/libp2p/go-libp2p-pubsub"
 	log "github.com/sirupsen/logrus"
 )
@@ -30,7 +29,7 @@ type Entity struct {
 	Nick string // NOT the fragment. Can be but, nut needn't be.
 
 	// Channels
-	Messages chan *msg.Message
+	Messages chan *Message
 }
 
 // Create a new entity from a DID
@@ -65,7 +64,7 @@ func NewFromDID(d did.DID) (*Entity, error) {
 		DID:   d,
 		Topic: _topic,
 
-		Messages: make(chan *msg.Message, MESSAGES_BUFFERSIZE),
+		Messages: make(chan *Message, MESSAGES_BUFFERSIZE),
 	}
 
 	// Check if we are known from before

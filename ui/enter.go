@@ -94,7 +94,7 @@ func (ui *ChatUI) enterEntity(e *entity.Entity, reEntry bool) error {
 		go ui.a.Subscribe(ui.currentEntityCtx, ui.e)
 
 		// Don't listen for envelopes when entering self.
-		go ui.a.HandleIncomingEnvelopes(ui.currentEntityCtx, ui.chPrivateMessages)
+		go ui.a.HandleIncomingEnvelopes(ui.currentEntityCtx, ui.chMessages)
 
 		// Handle incoming messages to the entity, also accept messages from self.
 		go ui.e.HandleIncomingMessages(ui.currentEntityCtx, ui.chMessages)

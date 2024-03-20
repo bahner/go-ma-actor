@@ -62,11 +62,11 @@ func (ui *ChatUI) handleEvents() {
 			ui.handleChatMessage(input)
 
 		case m := <-ui.chMessages:
-			if m.Type == ma.BROADCAST_MESSAGE_TYPE {
-				ui.displayBroadcastMessage(m)
+			if m.Message.Type == ma.BROADCAST_MESSAGE_TYPE {
+				ui.displayBroadcastMessage(m.Message)
 				continue
 			}
-			ui.displayChatMessage(m)
+			ui.displayChatMessage(m.Message)
 
 		case <-peerRefreshTicker.C:
 			ui.refreshPeers()

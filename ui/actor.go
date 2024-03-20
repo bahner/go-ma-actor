@@ -15,7 +15,7 @@ func (ui *ChatUI) startActor() {
 
 	// We want to handle envelopes for the actor, then deliver the messages
 	// to the UI from the incoming envelopes.
-	go ui.a.HandleIncomingEnvelopes(ui.currentActorCtx, ui.chPrivateMessages)
+	go ui.a.HandleIncomingEnvelopes(ui.currentActorCtx, ui.chMessages)
 	go ui.a.Entity.HandleIncomingMessages(ui.currentActorCtx, ui.chMessages)
 
 	go actor.HelloWorld(ui.currentActorCtx, ui.a) // This wait a bit before sending the message.

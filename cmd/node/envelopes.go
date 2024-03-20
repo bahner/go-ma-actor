@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 
+	"github.com/bahner/go-ma-actor/entity"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -40,7 +41,7 @@ func (s *Subscription) handleEnvelopesLoop(ctx context.Context) {
 			}
 
 			log.Debugf("subscriptionHandleEnvelopesLoop: open envelope and found: %v", msg)
-			s.actor.Entity.Messages <- msg
+			s.actor.Entity.Messages <- entity.NewMessage(msg, true)
 		}
 	}
 }

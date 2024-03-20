@@ -83,12 +83,12 @@ func (a *Actor) Subscribe(ctx context.Context, e *entity.Entity) {
 				log.Debugf("actor.Subscribe: Delivering message %s to entity: %s\n", m.Id, them)
 				if m.To == me {
 					log.Debugf("actor.Subscribe: Received message for actor: %s\n", me)
-					a.Entity.Messages <- m
+					a.Entity.Messages <- entity.NewMessage(m, false)
 					continue
 				}
 
 				if m.To == them {
-					e.Messages <- m
+					e.Messages <- entity.NewMessage(m, false)
 					continue
 				}
 
