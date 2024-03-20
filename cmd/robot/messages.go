@@ -45,7 +45,7 @@ func handleMessageEvents(ctx context.Context, a *actor.Actor) {
 				continue
 			}
 
-			if m.To == me && m.Type == ma.MESSAGE_TYPE {
+			if m.Type == ma.MESSAGE_TYPE {
 				messageReply(ctx, a, m)
 			}
 		}
