@@ -4,7 +4,7 @@ import (
 	"context"
 	"strings"
 
-	"github.com/bahner/go-ma-actor/p2p/peer"
+	"github.com/bahner/go-ma-actor/entity"
 	"github.com/spf13/viper"
 )
 
@@ -55,18 +55,12 @@ func (ui *ChatUI) handleSetNickCommand(args []string) {
 
 func (ui *ChatUI) handleSetLocationCommand(args []string) {
 
-	var err error
-
 	if len(args) == 3 {
 		location := args[2]
 		if location == "here" {
 			location = ui.e.DID.Id
 		} else {
-			location, err = peer.LookupID(location)
-			if err != nil {
-				ui.displaySystemMessage("Error: " + err.Error())
-				return
-			}
+			location = entity.Nick(location)
 		}
 
 		viper.Set("actor.location", location)

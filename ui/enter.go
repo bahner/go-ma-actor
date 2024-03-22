@@ -21,7 +21,7 @@ func (ui *ChatUI) handleEnterCommand(args []string) {
 	if len(args) >= 2 {
 
 		id := strings.Join(args[1:], separator)
-		id = entity.Lookup(id)
+		id = entity.DID(id)
 
 		e, err := entity.GetOrCreate(id, false)
 		if err != nil {
@@ -46,11 +46,8 @@ func (ui *ChatUI) handleEnterCommand(args []string) {
 // Input is a did, so we know it's a valid entity.
 func (ui *ChatUI) enterEntity(e *entity.Entity, reEntry bool) error {
 
-	var (
-		err error
-	)
+	var err = e.Verify()
 
-	err = e.Verify()
 	if err != nil {
 		log.Errorf("Error verifying entity for entry: %s", err.Error())
 		// Without an entity, we can't do anything.
@@ -78,12 +75,7 @@ func (ui *ChatUI) enterEntity(e *entity.Entity, reEntry bool) error {
 	ui.currentEntityCtx, ui.currentEntityCancel = context.WithCancel(context.Background())
 
 	ui.msgBox.Clear()
-	titleNick, err := entity.LookupNick(e.DID.Id)
-	if err != nil {
-		titleNick = e.DID.Id
-		ui.displayDebugMessage("Error looking up nick for " + e.DID.Id + ": " + err.Error())
-	}
-	ui.msgBox.SetTitle(titleNick)
+	ui.msgBox.SetTitle(entity.Nick(e.DID.Id))
 
 	// Start handling the new topic
 	// This *must* be called *after* the entity is set!

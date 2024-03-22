@@ -18,7 +18,7 @@ func (ui *ChatUI) displayChatMessage(cm *msg.Message) {
 		log.Debugf("entity lookup error: %s", err)
 		return
 	}
-	prompt := withColor("black", fmt.Sprintf("<%s>:", e.Nick))
+	prompt := withColor("black", fmt.Sprintf("<%s>:", e.Nick()))
 	fmt.Fprintf(ui.msgW, "%s %s\n", prompt, string(cm.Content))
 }
 
@@ -28,7 +28,7 @@ func (ui *ChatUI) displayBroadcastMessage(cm *msg.Message) {
 		log.Debugf("entity lookup error: %s", err)
 		return
 	}
-	prompt := withColor("blue", fmt.Sprintf("<%s>:", e.Nick))
+	prompt := withColor("blue", fmt.Sprintf("<%s>:", e.Nick()))
 	fmt.Fprintf(ui.msgW, "%s %s\n", prompt, string(cm.Content))
 }
 
@@ -38,7 +38,7 @@ func (ui *ChatUI) displayPrivateMessage(cm *msg.Message) {
 		log.Debugf("entity lookup error: %s", err)
 		return
 	}
-	prompt := withColor("green", fmt.Sprintf("<%s>:", e.Nick))
+	prompt := withColor("green", fmt.Sprintf("<%s>:", e.Nick()))
 	fmt.Fprintf(ui.msgW, "%s %s\n", prompt, string(cm.Content))
 }
 
@@ -48,7 +48,7 @@ func (ui *ChatUI) displaySentPrivateMessage(cm *msg.Message) {
 		log.Debugf("entity lookup error: %s", err)
 		return
 	}
-	prompt := withColor("green", fmt.Sprintf("@%s:", e.Nick))
+	prompt := withColor("green", fmt.Sprintf("@%s:", e.Nick()))
 	fmt.Fprintf(ui.msgW, "%s %s\n", prompt, string(cm.Content))
 }
 

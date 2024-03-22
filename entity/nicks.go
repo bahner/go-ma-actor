@@ -2,144 +2,60 @@ package entity
 
 import (
 	"errors"
+	"strings"
 
-	"github.com/bahner/go-ma-actor/config/db"
-	_ "github.com/mattn/go-sqlite3"
+	"github.com/bahner/go-ma-actor/db"
 )
 
 const (
-	_SELECT_NICK = "SELECT nick FROM entities WHERE did =?"
-	_SELECT_DID  = "SELECT did FROM entities WHERE nick =?"
-	_UPSERT      = "INSERT INTO entities (did, nick) VALUES (?, ?) ON CONFLICT(did) DO UPDATE SET nick = excluded.nick;"
-	_UPDATE      = "UPDATE entities SET nick = ? WHERE did = ?"
-	_DELETE      = "DELETE FROM entities WHERE did = ?"
+	entityNickPrefix = entityPrefix + "nick:"
 )
 
-var ErrFailedToCreateNick = errors.New("failed to set entity nick")
+var (
+	ErrFailedToCreateNick = errors.New("failed to set entity nick")
+	ErrDIDNotFound        = errors.New("DID not found")
+	ErrNickNotFound       = errors.New("Nick not found")
+)
 
-// Returns the DID . Returns the input if the node does not exist
-// This is used before we know in an Entity exists or not. It can be used anywhere.
-func GetDID(id string) string {
+// This returns the DID for the nick.
+// If it doesn't exist it returns the query.
+func DID(query string) string {
 
-	did, err := LookupID(id)
-	if err == nil {
-		return did
+	queryBytes := []byte(entityNickPrefix + query)
+
+	id, err := db.Get(queryBytes)
+	if err != nil {
+		return query
 	}
 
-	return id
-
+	return string(id)
 }
 
-func ListNicks() map[string]string {
+// Removes a an entity nick from the database if it exists.
+// It does a lookup to you can enter both a nick or a DID.
+func DeleteNick(q string) error {
 
-	entities := make(map[string]string)
+	nick := Nick(q)
+	nickBytes := []byte(entityNickPrefix + nick)
 
-	d, err := db.Get()
-	if err != nil {
-		return entities
-	}
-
-	rows, err := d.Query("SELECT did, nick FROM entities")
-	if err != nil {
-		return entities
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		var did, nick string
-		err = rows.Scan(&did, &nick)
-		if err != nil {
-			return entities
-		}
-
-		entities[did] = nick
-	}
-
-	return entities
+	return db.Delete(nickBytes)
 }
 
-// Takes a nick as input and returns the corresponding DID
-// Else it returns the input as is with an error.
-func LookupID(nick string) (string, error) {
+// Nick is the opposite of LookupDID. It returns the nick for a DID.
+// This means iterating over all nicks to find the right one,
+// hence it's not as efficient as LookupDID.
+func Nick(q string) string {
 
-	var did string
+	qBytes := []byte(q)
 
-	d, err := db.Get()
+	id, err := db.Lookup(qBytes)
 	if err != nil {
-		return nick, err
+		return q
 	}
 
-	err = d.QueryRow(_SELECT_DID, nick).Scan(&did)
-	if err != nil {
-		return nick, err
-	}
-
-	return did, nil
-
+	return strings.TrimPrefix(string(id), entityNickPrefix)
 }
 
-// Takes a nick as input and returns the corresponding DID
-// Else it returns the input as is with an error.
-func LookupNick(did string) (string, error) {
-
-	var nick string
-
-	d, err := db.Get()
-	if err != nil {
-		return did, err
-	}
-
-	err = d.QueryRow(_SELECT_NICK, did).Scan(&nick)
-	if err != nil {
-		return did, err
-	}
-
-	return nick, nil
-
-}
-
-// Tries to find a DID for the input name whether DID or Nick
-func Lookup(name string) string {
-
-	id, err := LookupID(name)
-	if err != nil {
-		return name
-	}
-
-	return id
-}
-
-// Removes a node from the database if it exists. Must be a DID
-func Delete(id string) error {
-
-	d, err := db.Get()
-	if err != nil {
-		return err
-	}
-
-	_, err = d.Exec(_DELETE, id)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// Sets a node in the database
-// The key is the node's ID
-func (e *Entity) SetNick(nick string) error {
-
-	d, err := db.Get()
-	if err != nil {
-		return err
-	}
-	_, err = d.Exec(_UPSERT, e.DID.Id, nick)
-	if err != nil {
-		return err
-	}
-
-	// Wait to update the entity until we know the database is updated
-	e.Nick = nick
-
-	return nil
+func Nicks() (map[string]string, error) {
+	return db.Keys(entityNickPrefix)
 }

@@ -57,7 +57,7 @@ func (ui *ChatUI) handleMeWhereCommand(args []string) {
 func (ui *ChatUI) handleMeNickCommand(args []string) {
 
 	if len(args) == 2 {
-		ui.displaySystemMessage(ui.a.Entity.Nick)
+		ui.displaySystemMessage(ui.a.Entity.Nick())
 	} else {
 		ui.handleHelpCommand(meUsage, meHelp)
 	}

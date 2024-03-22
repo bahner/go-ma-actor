@@ -3,16 +3,18 @@ package entity
 import (
 	"context"
 	"fmt"
+	"strings"
 
+	"github.com/bahner/go-ma-actor/db"
 	"github.com/bahner/go-ma-actor/p2p/pubsub"
 	"github.com/bahner/go-ma/did"
 	"github.com/bahner/go-ma/did/doc"
 	p2ppubsub "github.com/libp2p/go-libp2p-pubsub"
-	log "github.com/sirupsen/logrus"
 )
 
 const (
 	MESSAGES_BUFFERSIZE = 100
+	entityPrefix        = "entity:"
 )
 
 type Entity struct {
@@ -24,9 +26,8 @@ type Entity struct {
 	Topic  *p2ppubsub.Topic
 
 	//Stored data
-	DID  did.DID
-	Doc  *doc.Document
-	Nick string // NOT the fragment. Can be but, nut needn't be.
+	DID did.DID
+	Doc *doc.Document
 
 	// Channels
 	Messages chan *Message
@@ -56,7 +57,7 @@ func NewFromDID(d did.DID) (*Entity, error) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	e := &Entity{
+	return &Entity{
 
 		Ctx:    ctx,
 		Cancel: cancel,
@@ -65,20 +66,7 @@ func NewFromDID(d did.DID) (*Entity, error) {
 		Topic: _topic,
 
 		Messages: make(chan *Message, MESSAGES_BUFFERSIZE),
-	}
-
-	// Check if we are known from before
-	nick, err := LookupNick(d.Id)
-	if err != nil {
-		log.Debugf("NewFromDID: LookupNick failed: %v", err)
-	}
-
-	err = e.SetNick(nick)
-	if err != nil {
-		return nil, fmt.Errorf("NewFromDID: failed to set nick: %w", err)
-	}
-
-	return e, nil
+	}, nil
 }
 
 func GetOrCreate(id string, cached bool) (*Entity, error) {
@@ -89,6 +77,32 @@ func GetOrCreate(id string, cached bool) (*Entity, error) {
 	}
 
 	return GetOrCreateFromDID(d, cached)
+}
+
+// Sets a node in the database
+// takes new did and nick. If an old  did  for the alias exists it is removed.
+// This makes this the only alias for the DID and the only complex function in this file.
+func (e Entity) SetNick(nick string) error {
+
+	prefixBytes := []byte(entityNickPrefix)
+	nickBytes := []byte(nick)
+	idBytes := []byte(e.DID.Id)
+
+	return db.Upsert(prefixBytes, nickBytes, idBytes)
+
+}
+
+// Returns the Entitty's nick. If it doesn't exist it returns the DID.
+func (e Entity) Nick() string {
+
+	idBytes := []byte(e.DID.Id)
+
+	key, err := db.Lookup(idBytes)
+	if err != nil {
+		return e.DID.Id
+	}
+
+	return strings.TrimPrefix(string(key), entityNickPrefix)
 }
 
 // Get an entity from the global map.

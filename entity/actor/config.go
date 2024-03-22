@@ -65,7 +65,7 @@ func configTemplate(identity string, node string) map[string]interface{} {
 			"nick":     config.ActorNick(),
 		},
 		"db": map[string]interface{}{
-			"file": config.DefaultDbFile,
+			"dir": config.DefaultDbPath,
 		},
 		// Use default log settings, so as not to pick up debug log settings
 		"log": map[string]interface{}{

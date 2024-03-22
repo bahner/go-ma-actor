@@ -1,5 +1,11 @@
 package config
 
-const defaultDBFilename = "ma.db"
+import "github.com/spf13/viper"
 
-var DefaultDbFile = NormalisePath(dataHome + defaultDBFilename)
+const defaultDBDirname = ".madb"
+
+var DefaultDbPath = NormalisePath(dataHome + defaultDBDirname)
+
+func DBPath() string {
+	return viper.GetString("db.path")
+}

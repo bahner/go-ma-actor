@@ -17,7 +17,7 @@ NODE = $(NAME)-node
 ROBOT = $(NAME)-robot
 KEYSET = $(NAME)-create-keyset
 FETCH = $(NAME)-fetch-document
-DEBUG = $(NAME)-debug
+# DEBUG = $(NAME)-debug
 CMDS = $(ACTOR) $(RELAY) $(NODE) $(ROBOT) $(PONG)
 ALL =  $(FETCH) $(KEYSET) $(CMDS) $(DEBUG)
 
@@ -51,9 +51,8 @@ $(BINDIR):
 install: $(BINDIR) $(CMDS)
 	sudo install -m755 $(CMDS) $(DESTDIR)$(BINDIR)/
 	
-$(DEBUG): BUILDFLAGS = -tags=debug
-$(DEBUG): tidy
-	$(GO) build -o $(DEBUG) $(BUILDFLAGS) ./cmd/actor
+debug: BUILDFLAGS = $(BUILDFAGS) -tags=debug
+debug: install
 
 $(ACTOR): tidy
 	$(GO) build -o $(ACTOR) $(BUILDFLAGS) ./cmd/actor

@@ -60,7 +60,7 @@ func configTemplate(node string) map[string]interface{} {
 	// so we manually recreate the structure based on the config we have set.
 	return map[string]interface{}{
 		"db": map[string]interface{}{
-			"file": config.DefaultDbFile,
+			"dir": config.DefaultDbPath,
 		},
 		"log": map[string]interface{}{
 			"level": config.LogLevel(),

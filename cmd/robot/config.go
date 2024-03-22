@@ -65,7 +65,7 @@ func configTemplate(identity string, node string) map[string]interface{} {
 			"nick":     name,
 		},
 		"db": map[string]interface{}{
-			"file": config.DefaultDbFile,
+			"dir": config.DefaultDbPath,
 		},
 		"log": map[string]interface{}{
 			"level": config.LogLevel(),

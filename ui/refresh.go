@@ -24,7 +24,7 @@ func (ui *ChatUI) handleRefresh() {
 	ui.refreshPeers()
 	ui.msgBox.Clear()
 	ui.setupInputField()
-	ui.msgBox.SetTitle(ui.e.Nick)
+	ui.msgBox.SetTitle(ui.e.Nick())
 	ui.app.Draw()
 }
 
@@ -41,11 +41,7 @@ func (ui *ChatUI) refreshPeers() {
 	plist := []string{}
 
 	for _, p := range peers {
-		n, err := peer.LookupNick(p.ID.String())
-		if err != nil {
-			ui.displaySystemMessage(fmt.Sprintf("Error looking up nick for %s: %s", p.ID, err))
-			n = p.ID.ShortString()
-		}
+		n := peer.Nick(p.ID.String())
 		plist = append(plist, n)
 	}
 

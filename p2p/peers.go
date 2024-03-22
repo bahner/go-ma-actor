@@ -5,7 +5,6 @@ import (
 	"github.com/bahner/go-ma-actor/p2p/peer"
 	"github.com/libp2p/go-libp2p/core/network"
 	p2peer "github.com/libp2p/go-libp2p/core/peer"
-	log "github.com/sirupsen/logrus"
 )
 
 // AllConnectedPeers returns a slice of p2peer.ID for all connected peers of the given host.
@@ -67,11 +66,7 @@ func (p *P2P) ConnectedProctectedPeersNickList() []string {
 	peers := p.ConnectedProtectedPeersAddrInfo()
 	peersNickList := make([]string, 0, len(peers))
 	for _, p := range peers {
-		nick, err := peer.LookupNick(p.ID.String())
-		if err != nil {
-			log.Warnf("Error looking up nick for connected protected peer %s: %s", p.ID.String(), err)
-			continue
-		}
+		nick := peer.Nick(p.ID.String())
 		peersNickList = append(peersNickList, nick)
 	}
 	return peersNickList

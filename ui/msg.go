@@ -24,7 +24,7 @@ func (ui *ChatUI) handleMsgCommand(input string) {
 
 		recipient := parts[0][1:] // The recipient is the first argument, without the leading @
 		if !did.IsValid(recipient) {
-			recipient = entity.GetDID(recipient)
+			recipient = entity.DID(recipient)
 		}
 
 		if recipient == "" {

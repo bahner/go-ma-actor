@@ -11,12 +11,8 @@ func unorderedListFromPeerIDSlice(peers p2peer.IDSlice) string {
 	peersMap := make(map[string]string)
 	for _, p := range peers {
 		id := p.String()
-		nick, err := peer.LookupNick(id)
-		if err != nil {
-			peersMap[id] = id
-		} else {
-			peersMap[id] = nick
-		}
+		nick := peer.Nick(id)
+		peersMap[id] = nick
 	}
 
 	var keys []string

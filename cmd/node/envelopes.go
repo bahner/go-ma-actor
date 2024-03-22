@@ -9,6 +9,11 @@ import (
 
 func (s *Subscription) handleEnvelopesLoop(ctx context.Context) {
 
+	if !s.actor.Keyset.IsValid() {
+		log.Errorf("handleEnvelopesLoop: No valid keyset for entity: %s", s.actor.Entity.DID.Id)
+		return
+	}
+
 	t := s.actor.Entity.Topic.String()
 
 	log.Debugf("Starting subscription envelope handling loop for topic: %s", t)

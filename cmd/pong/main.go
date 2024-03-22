@@ -16,7 +16,6 @@ func main() {
 	initConfig(pong)
 
 	// THese are the relay specific parts.
-
 	p, err := p2p.Init(p2pOptions())
 	if err != nil {
 		fmt.Printf("Failed to initialize p2p: %v\n", err)

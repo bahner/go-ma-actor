@@ -1,70 +1,37 @@
 package peer
 
 import (
-	"database/sql"
-	"errors"
-
-	"github.com/bahner/go-ma-actor/config/db"
-	"github.com/bahner/go-ma-actor/internal"
-	_ "github.com/mattn/go-sqlite3"
+	"github.com/bahner/go-ma-actor/config"
+	"github.com/bahner/go-ma-actor/db"
 )
 
-const (
-	_SELECT_ALLOWED = "SELECT allowed FROM peers WHERE id = ?"
-	_UPDATE_ALLOWED = "UPDATE peers SET allowed = ? WHERE id = ?"
+const peerAllowedPrefix = peerPrefix + "allowed:"
 
-	defaultAllowed = true // This is required for discovery to work for hosts that are not in the database.
-)
+func IsAllowed(id string) bool {
 
-// GetAllowedForID returns whether a peer is allowed to be discovered.
-// This implies whther the peer is blacklisted or not.
-func GetAllowedForID(id string) (bool, error) {
+	allowedIdBytes := []byte(peerAllowedPrefix + id)
 
-	allowed := internal.Bool2int(defaultAllowed)
-
-	db, err := db.Get()
+	allowed, err := db.Get(allowedIdBytes)
 	if err != nil {
-		return defaultAllowed, err
+		return config.ALLOW_ALL_PEERS
 	}
-
-	err = db.QueryRow(_SELECT_ALLOWED, id).Scan(&allowed)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return defaultAllowed, ErrPeerNotFoundInDB
-		}
-		return defaultAllowed, err
-	}
-
-	return internal.Int2bool(allowed), nil
+	return byteToBool(allowed)
 }
 
 func SetAllowed(id string, allowed bool) error {
-	d, err := db.Get()
-	if err != nil {
-		return err
-	}
 
-	tx, err := d.Begin()
-	if err != nil {
-		return err
-	}
+	allowedIdBytes := []byte(peerAllowedPrefix + id)
 
-	defer func() {
-		if err != nil {
-			tx.Rollback()
-		} else {
-			tx.Commit()
-		}
-	}()
-
-	_, err = tx.Exec(_UPDATE_ALLOWED, id, internal.Bool2int(allowed))
-	return err
+	return db.Set(allowedIdBytes, boolToByte(allowed))
 }
 
-func IsAllowed(id string) bool {
-	allowed, err := GetAllowedForID(id)
-	if err != nil {
-		return defaultAllowed
+func boolToByte(b bool) []byte {
+	if b {
+		return []byte{1}
 	}
-	return allowed
+	return []byte{0}
+}
+
+func byteToBool(b []byte) bool {
+	return b[0] == 1
 }

@@ -18,7 +18,7 @@ func (e *Entity) ConnectPeer() (pi p2peer.AddrInfo, err error) {
 	pid, err := e.DID.PeerID()
 	if err != nil {
 		log.Debugf("Failed to get peer ID: %v", err)
-		return p2peer.AddrInfo{}, err
+		return pi, err
 	}
 
 	// If we're already connected, return
@@ -31,7 +31,7 @@ func (e *Entity) ConnectPeer() (pi p2peer.AddrInfo, err error) {
 	pai, err := p.DHT.FindPeer(e.Ctx, pid)
 	if err != nil {
 		log.Debugf("Failed to find peer: %v", err)
-		return pi, err
+		// return pi, err
 	}
 	log.Debugf("PeerInfo: %v", pai.Addrs)
 

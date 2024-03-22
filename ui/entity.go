@@ -67,8 +67,12 @@ func (ui *ChatUI) handleEntityListCommand(args []string) {
 	log.Debugf("entity list command: %v", args)
 	if len(args) == 2 {
 
-		nicks := entity.ListNicks()
-		log.Debugf("entities: %v", nicks)
+		nicks, err := entity.Nicks()
+		if err != nil {
+			ui.displaySystemMessage("Error fetching nicks: " + err.Error())
+			return
+		}
+		log.Debugf("nicks: %v", nicks)
 
 		if len(nicks) > 0 {
 			for k, v := range nicks {
@@ -86,7 +90,7 @@ func (ui *ChatUI) handleEntityListCommand(args []string) {
 func (ui *ChatUI) handleEntityNickCommand(args []string) {
 
 	if len(args) >= 4 {
-		id := entity.Lookup(args[2])
+		id := entity.DID(args[2])
 		nick := strings.Join(args[3:], separator)
 
 		e, err := entity.GetOrCreate(id, true)
@@ -103,7 +107,7 @@ func (ui *ChatUI) handleEntityNickCommand(args []string) {
 		if id == ui.e.DID.Id {
 			ui.msgBox.SetTitle(nick)
 		}
-		ui.displaySystemMessage(e.DID.Id + aliasSeparator + e.Nick)
+		ui.displaySystemMessage(e.DID.Id + aliasSeparator + e.Nick())
 		return
 	}
 	ui.handleHelpCommand(entityNickUsage, entityNickHelp)
@@ -114,12 +118,12 @@ func (ui *ChatUI) handleEntityShowCommand(args []string) {
 
 	if len(args) >= 3 {
 		id := strings.Join(args[2:], separator)
-		e, err := entity.GetOrCreate(entity.Lookup(id), true)
+		e, err := entity.GetOrCreate(entity.DID(id), true)
 		if err != nil {
 			ui.displaySystemMessage("Error: " + err.Error())
 			return
 		}
-		entityInfo := fmt.Sprintf(e.DID.Id + aliasSeparator + e.Nick)
+		entityInfo := fmt.Sprintf(e.DID.Id + aliasSeparator + e.Nick())
 		ui.displaySystemMessage(entityInfo)
 		return
 	}
@@ -132,8 +136,11 @@ func (ui *ChatUI) handleEntityDeleteCommand(args []string) {
 
 	if len(args) >= 3 {
 		id := strings.Join(args[2:], separator)
-		id = entity.Lookup(id)
-		entity.Delete(id)
+		err := entity.DeleteNick(id)
+		if err != nil {
+			ui.displaySystemMessage("Error deleting nick: " + err.Error())
+			return
+		}
 		ui.displaySystemMessage("Nick deleted for " + id + " if it existed")
 		return
 	}
@@ -145,7 +152,7 @@ func (ui *ChatUI) handleEntityConnectCommand(args []string) {
 
 	if len(args) >= 3 {
 		id := strings.Join(args[2:], separator)
-		id = entity.Lookup(id)
+		id = entity.DID(id)
 		e, err := entity.GetOrCreate(id, false) // Lookup up the entity document properly.
 		if err != nil {
 			ui.displaySystemMessage("Error: " + err.Error())
@@ -154,7 +161,8 @@ func (ui *ChatUI) handleEntityConnectCommand(args []string) {
 		log.Debugf("Connecting to peer for entity: %v", id)
 		pai, err := e.ConnectPeer()
 		if err != nil {
-			ui.displaySystemMessage("Error connecting to entity peer: " + err.Error())
+			msg := fmt.Sprintf("Error connecting to entity peer: %v. %v", pai.ID, err)
+			ui.displaySystemMessage(msg)
 			return
 		}
 		ui.displaySystemMessage("Connected to " + id + aliasSeparator + pai.ID.String())
@@ -172,11 +180,8 @@ func (ui *ChatUI) handleEntityResolveCommand(args []string) {
 		CACHED := false
 
 		id := strings.Join(args[2:], separator)
-		id, err := entity.LookupID(id)
-		if err != nil {
-			ui.displaySystemMessage("Error: " + err.Error())
-			return
-		}
+		id = entity.DID(id)
+
 		e, err := entity.GetOrCreate(id, CACHED)
 		if err != nil {
 			ui.displaySystemMessage("Error fetching entity: " + err.Error())

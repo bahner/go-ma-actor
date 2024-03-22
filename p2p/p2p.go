@@ -53,11 +53,6 @@ func Init(opts Options) (*P2P, error) {
 		return nil, fmt.Errorf("pong: failed to create libp2p node: %w", err)
 	}
 
-	err = initPeer(string(n.ID()))
-	if err != nil {
-		return nil, fmt.Errorf("p2p.Init: failed to init peer: %w", err)
-	}
-
 	// Create discovery and routing
 	d, err := NewDHT(n, cg)
 	if err != nil {

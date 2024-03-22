@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/bahner/go-ma-actor/config"
-	"github.com/bahner/go-ma-actor/config/db"
 	"github.com/bahner/go-ma-actor/entity/actor"
 	"github.com/bahner/go-ma-actor/p2p"
 	"github.com/bahner/go-ma-actor/ui"
@@ -21,13 +20,6 @@ func main() {
 
 	fmt.Println("Initialising actor configuation...")
 	actor.InitConfig(config.Profile())
-
-	// DB
-	fmt.Println("Initialising DB ...")
-	_, err = db.Init()
-	if err != nil {
-		panic(fmt.Sprintf("failed to initialize db: %v", err))
-	}
 
 	// P2P
 	fmt.Println("Setting default p2p options...")

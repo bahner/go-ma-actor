@@ -21,13 +21,7 @@ func ConnectAndProtect(ctx context.Context, h host.Host, pai p2peer.AddrInfo) er
 		return ErrAddrInfoAddrsEmpty
 	}
 
-	p, err := GetOrCreate(id)
-	if err != nil {
-		log.Errorf("Failed to get or create peer %s: %v", id, err)
-		return err
-	}
-
-	if !p.Allowed() {
+	if !IsAllowed(id) {
 		log.Debugf("Peer %s is explicitly denied", id)
 		UnprotectPeer(h, pai.ID)
 		return ErrPeerDenied
@@ -38,7 +32,7 @@ func ConnectAndProtect(ctx context.Context, h host.Host, pai p2peer.AddrInfo) er
 		return ErrAlreadyConnected // This is not an error, but we'll return it as such for now.
 	}
 
-	err = Protect(h, pai.ID)
+	err := Protect(h, pai.ID)
 	if err != nil {
 		log.Warnf("Failed to protect peer %s: %v", id, err)
 	}
@@ -49,7 +43,8 @@ func ConnectAndProtect(ctx context.Context, h host.Host, pai p2peer.AddrInfo) er
 		return err
 	}
 
-	return p.Commit()
+	// Use Allowed as an indicator of known peers
+	return SetAllowed(id, true)
 }
 
 func Protect(h host.Host, id p2peer.ID) error {

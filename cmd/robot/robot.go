@@ -52,37 +52,38 @@ func NewRobot() (i *RobotStruct, err error) {
 
 	go i.Location.HandleIncomingMessages(context.Background(), messages)
 
-	go i.handleMessageEvents()
+	go i.handleEntityMessageEvents()
 
 	return i, err
 }
 
-func (i *RobotStruct) handleMessageEvents() {
+func (i *RobotStruct) handleEntityMessageEvents() {
 	ctx := context.Background()
 	me := i.Robot.Entity.DID.Id
 	myMessages := i.Robot.Entity.Messages
+	errPrefix := fmt.Sprintf("handleEntityMessageEvents (%s): ", me)
 
 	log.Debugf("Starting handleMessageEvents for %s", me)
 
 	for {
 		select {
 		case <-ctx.Done(): // Check for cancellation signal
-			log.Info("handleMessageEvents: context cancelled, exiting...")
+			log.Info(errPrefix + "context cancelled, exiting...")
 			return
 
 		case m, ok := <-myMessages: // Attempt to receive a message
 			if !ok {
-				log.Debugf("messageEvents: channel closed, exiting...")
+				log.Debugf(errPrefix + "channel closed, exiting...")
 				return
 			}
 
 			if m == nil {
-				log.Debugf("messageEvents: received nil message, ignoring...")
+				log.Debugf(errPrefix + "received nil message, ignoring...")
 				continue
 			}
 
 			if m.Message.Verify() != nil {
-				log.Debugf("messageEvents: failed to verify message: %v", m)
+				log.Debugf(errPrefix+"failed to verify message: %v", m)
 				continue
 			}
 
@@ -90,21 +91,21 @@ func (i *RobotStruct) handleMessageEvents() {
 			from := m.Message.From
 			to := m.Message.To
 
-			log.Debugf("Handling message: %v from %s to %s", content, from, to)
+			log.Debugf(errPrefix+"Handling message: %v from %s to %s", content, from, to)
 
 			if from == me {
-				log.Debugf("Received message from self, ignoring...")
+				log.Debugf(errPrefix + "Received message from self, ignoring...")
 				continue
 			}
 
 			if m.Message.Type == ma.MESSAGE_TYPE {
-				i.messageReply(ctx, m)
+				i.handleMessage(ctx, m)
 			}
 		}
 	}
 }
 
-func (i *RobotStruct) messageReply(ctx context.Context, m *entity.Message) error {
+func (i *RobotStruct) handleMessage(ctx context.Context, m *entity.Message) error {
 
 	// Switch sender and receiver. Reply back to from :-)
 	// Broadcast are sent to the topic, and the topic is the DID of the recipient
