@@ -3,14 +3,9 @@ package config
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 	"strings"
 
-	"github.com/adrg/xdg"
-	"github.com/bahner/go-ma"
-	"github.com/mitchellh/go-homedir"
 	log "github.com/sirupsen/logrus"
-	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	"gopkg.in/yaml.v2"
 )
@@ -25,11 +20,11 @@ const (
 	dataHomeMode   os.FileMode = 0755
 )
 
-var (
-	configHome        string = xdg.ConfigHome + "/" + ma.NAME + "/"
-	dataHome          string = xdg.DataHome + "/" + ma.NAME + "/"
-	defaultConfigFile string = NormalisePath(configHome + Profile() + ".yaml")
-)
+type Config interface {
+	MarshalToYAML() ([]byte, error)
+	Print()
+	Save() error
+}
 
 // This should be called after pflag.Parse() in main.
 // If you want to use a specific config file, you need to call SetProfile() before Init().
@@ -64,15 +59,6 @@ func Init() error {
 		}
 	}
 
-	// API
-	viper.SetDefault("api.maddr", ma.DEFAULT_IPFS_API_MULTIADDR)
-
-	// Logging
-	viper.SetDefault("log.file", genDefaultLogFileName(Profile()))
-	InitLogging()
-
-	// FLAGS
-
 	// Handle the easy flags first.
 	if versionFlag() {
 		fmt.Println(VERSION)
@@ -89,7 +75,7 @@ func Init() error {
 
 }
 
-func Print() (int, error) {
+func PrintAll() (int, error) {
 
 	configMap := viper.AllSettings()
 
@@ -103,100 +89,53 @@ func Print() (int, error) {
 	return fmt.Println(string(configYAML))
 }
 
-func Save() error {
-
-	return viper.WriteConfig()
-
-}
-
-func DataHome() string {
-	return dataHome
-}
-
-func ConfigHome() string {
-	return configHome
-}
-
-// Returns the configfile name to use.
-// The preferred value is the explcitily requested config file on the command line.
-// Else it uses the nick of the actor or the mode.
-func File() string {
-
-	var (
-		filename string
-		err      error
-	)
-
-	config, err := pflag.CommandLine.GetString("config")
+func Print(c Config) {
+	configYAML, err := c.MarshalToYAML()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Failed to marshal config to YAML: %v", err)
 	}
 
-	// Prefer explicitly requested config. If not, use the name of the profile name.
-	if config != defaultConfigFile && config != "" {
-		filename, err = homedir.Expand(config)
-		if err != nil {
-			log.Fatal(err)
-		}
+	fmt.Println(string(configYAML))
+}
+
+// Write the generated config to the correct file
+// NB! This fails fatally in case of an error.
+func Save(c Config) error {
+	filePath := File()
+	var errMsg string
+
+	// Determine the file open flags based on the forceFlag
+	var flags int
+	if ForceFlag() {
+		// Allow overwrite
+		log.Warnf("Force flag set, overwriting existing config file %s", filePath)
+		flags = os.O_WRONLY | os.O_CREATE | os.O_TRUNC
 	} else {
-		filename = configHome + Profile() + ".yaml"
+		// Prevent overwrite
+		flags = os.O_WRONLY | os.O_CREATE | os.O_EXCL
 	}
 
-	return filepath.Clean(filename)
-
-}
-
-func GenerateFlag() bool {
-	// This will exit when done. It will also publish if applicable.
-	generateFlag, err := pflag.CommandLine.GetBool("generate")
+	file, err := os.OpenFile(filePath, flags, configFileMode)
 	if err != nil {
-		log.Warnf("config.init: %v", err)
-		return false
+		if os.IsExist(err) {
+			errMsg = fmt.Sprintf("File %s already exists.", filePath)
+		} else {
+			errMsg = fmt.Sprintf("Failed to open file: %v", err)
+		}
+		return fmt.Errorf(errMsg)
 	}
+	defer file.Close()
 
-	return generateFlag
-}
-
-func PublishFlag() bool {
-	publishFlag, err := pflag.CommandLine.GetBool("publish")
+	content, err := c.MarshalToYAML()
 	if err != nil {
-		log.Warnf("config.init: %v", err)
-		return false
+		return fmt.Errorf("failed to marshal to YAML: %w", err)
 	}
 
-	return publishFlag
-}
-
-func ShowConfigFlag() bool {
-	showConfigFlag, err := pflag.CommandLine.GetBool("show-config")
-	if err != nil {
-		log.Warnf("config.init: %v", err)
-		return false
+	// Write content to file.
+	if _, err := file.Write(content); err != nil {
+		return fmt.Errorf("failed to write to file: %w", err)
 	}
 
-	return showConfigFlag
-}
-
-func versionFlag() bool {
-	versionFlag, err := pflag.CommandLine.GetBool("version")
-	if err != nil {
-		log.Warnf("config.init: %v", err)
-		return false
-	}
-
-	return versionFlag
-}
-
-func ForceFlag() bool {
-	forceFlag, err := pflag.CommandLine.GetBool("force")
-	if err != nil {
-		log.Warnf("config.init: %v", err)
-		return false
-	}
-
-	return forceFlag
-}
-
-func NormalisePath(path string) string {
-	return filepath.ToSlash(filepath.Clean(path))
+	log.Printf("Generated config file %s", filePath)
+	return nil
 }

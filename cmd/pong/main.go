@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"os"
 
 	"github.com/bahner/go-ma-actor/entity/actor"
 
@@ -13,10 +14,15 @@ import (
 func main() {
 
 	ctx := context.Background()
-	initConfig(pong)
+
+	c := Config()
+	c.Print()
+	if true {
+		os.Exit(0)
+	}
 
 	// THese are the relay specific parts.
-	p, err := p2p.Init(p2pOptions())
+	p, err := p2p.Init(p2p.DefaultOptions())
 	if err != nil {
 		fmt.Printf("Failed to initialize p2p: %v\n", err)
 		return

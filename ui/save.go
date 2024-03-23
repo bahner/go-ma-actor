@@ -12,7 +12,7 @@ const (
 func (ui *ChatUI) handleSaveCommand(args []string) {
 
 	if len(args) == 1 {
-		err := config.Save()
+		err := config.Save(ui.c)
 		if err != nil {
 			ui.displaySystemMessage("Error: " + err.Error())
 			return

@@ -10,7 +10,17 @@ const (
 	defaultHttpRefresh int    = 10
 )
 
-func InitHTTPFlags() {
+type HTTPStruct struct {
+	Socket      string `yaml:"socket"`
+	Refresh     int    `yaml:"refresh"`
+	DebugSocket string `yaml:"debug_socket"`
+}
+
+type HTTPConfigStruct struct {
+	HTTP HTTPStruct `yaml:"http"`
+}
+
+func init() {
 
 	pflag.String("http-socket", defaultHttpSocket, "Address for webserver to listen on")
 	pflag.Int("http-refresh", defaultHttpRefresh, "Number of seconds for webpages to wait before refresh")
@@ -20,11 +30,18 @@ func InitHTTPFlags() {
 
 }
 
-func InitHTTP() {
+func HTTPConfig() HTTPConfigStruct {
 
 	viper.SetDefault("http.socket", defaultHttpSocket)
 	viper.SetDefault("http.refresh", defaultHttpRefresh)
 
+	return HTTPConfigStruct{
+		HTTP: HTTPStruct{
+			Socket:      HttpSocket(),
+			Refresh:     HttpRefresh(),
+			DebugSocket: HttpDebugSocket(),
+		},
+	}
 }
 
 func HttpSocket() string {
@@ -33,4 +50,8 @@ func HttpSocket() string {
 
 func HttpRefresh() int {
 	return viper.GetInt("http.refresh")
+}
+
+func HttpDebugSocket() string {
+	return viper.GetString("http.debug-socket")
 }

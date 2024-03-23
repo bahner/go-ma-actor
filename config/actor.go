@@ -23,7 +23,9 @@ var (
 	ErrEmptyNick     = fmt.Errorf("nick is empty")
 )
 
-func InitActorFlags() {
+// Initialise command line flags for the actor package
+// The actor is optional for some commands, but required for others.
+func ActorFlags() {
 
 	pflag.StringP("nick", "n", "", "Nickname to use in character creation")
 	pflag.StringP("location", "l", defaultLocation, "DID of the location to visit")
@@ -36,23 +38,62 @@ func InitActorFlags() {
 
 }
 
-// Set the default nick to the user's username, unless a profile is set.
-func defaultNick() string {
+type ActorStruct struct {
+	Identity string `yaml:"identity"`
+	Nick     string `yaml:"nick"`
+	Location string `yaml:"location"`
+}
 
-	if Profile() == defaultProfile {
-		return os.Getenv("USER")
+type ActorConfigStruct struct {
+	Actor ActorStruct `yaml:"actor"`
+}
+
+// Cofig for actor. Remember to parse the flags first.
+// Eg. ActorFlags()
+func ActorConfig() ActorConfigStruct {
+
+	initActor()
+
+	identity, err := actorIdentity()
+	if err != nil {
+		panic(err)
 	}
 
-	return Profile()
+	return ActorConfigStruct{
+		Actor: ActorStruct{
+			Identity: identity,
+			Nick:     ActorNick(),
+			Location: ActorLocation(),
+		},
+	}
+}
+
+// Fetches the actor nick from the config or the command line
+// NB! This is a little more complex than the other config functions, as it
+// needs to fetch the nick from the command line if it's not in the config.
+// Due to being a required parameter when generating a new keyset.
+func ActorNick() string {
+	return viper.GetString("actor.nick")
+}
+
+func ActorLocation() string {
+	return viper.GetString("actor.location")
+}
+
+func ActorKeyset() set.Keyset {
+	return keyset
 }
 
 // Load a keyset from string and initiate an Actor.
 // This is optional, but if you want to use the actor package, you need to call this.
-func InitActor() {
+func initActor() {
 
-	keyset_string := actorIdentity()
-	if keyset_string == fakeActorIdentity {
-		panic(ErrFakeIdentity)
+	keyset_string, err := actorIdentity()
+	// if keyset_string == fakeActorIdentity {
+	// 	panic(ErrFakeIdentity)
+	// }
+	if err != nil {
+		panic(err)
 	}
 
 	log.Debugf("config.initActor: %s", keyset_string)
@@ -74,28 +115,23 @@ func InitActor() {
 
 }
 
-// Fetches the actor nick from the config or the command line
-// NB! This is a little more complex than the other config functions, as it
-// needs to fetch the nick from the command line if it's not in the config.
-// Due to being a required parameter when generating a new keyset.
-func ActorNick() string {
+func actorIdentity() (string, error) {
 
-	return viper.GetString("actor.nick")
+	if GenerateFlag() {
+		return GenerateActorIdentity(ActorNick())
+	}
 
+	return viper.GetString("actor.identity"), nil
 }
 
-func ActorLocation() string {
+// Set the default nick to the user's username, unless a profile is set.
+func defaultNick() string {
 
-	return viper.GetString("actor.location")
-}
+	if Profile() == defaultProfile {
+		return os.Getenv("USER")
+	}
 
-func ActorKeyset() set.Keyset {
-	return keyset
-}
-func actorIdentity() string {
-
-	return viper.GetString("actor.identity")
-
+	return Profile()
 }
 
 func initActorKeyset(keyset_string string) {

@@ -3,22 +3,20 @@ package main
 import (
 	"context"
 
-	"github.com/bahner/go-ma-actor/config"
 	"github.com/bahner/go-ma-actor/entity/actor"
 	"github.com/bahner/go-ma-actor/p2p"
 	"github.com/bahner/go-ma-actor/ui/web"
 	log "github.com/sirupsen/logrus"
 )
 
-const name = "node"
-
 func main() {
 
 	ctx := context.Background()
 
+	Config(name)
+
 	// Init config and logger
-	config.SetProfile(name)
-	actor.InitConfig(config.Profile())
+	// actor.InitConfig(config.Profile())
 
 	p, err := p2p.Init(p2p.DefaultOptions())
 	if err != nil {

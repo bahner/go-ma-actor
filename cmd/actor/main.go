@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 
-	"github.com/bahner/go-ma-actor/config"
 	"github.com/bahner/go-ma-actor/entity/actor"
 	"github.com/bahner/go-ma-actor/p2p"
 	"github.com/bahner/go-ma-actor/ui"
@@ -12,14 +11,16 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+const name = "actor"
+
 func main() {
 
-	var (
-		err error
-	)
+	var err error
+
+	actor.Config(name)
 
 	fmt.Println("Initialising actor configuation...")
-	actor.InitConfig(config.Profile())
+	// actor.InitConfig(config.Profile())
 
 	// P2P
 	fmt.Println("Setting default p2p options...")
