@@ -1,6 +1,9 @@
 package actor
 
 import (
+	"errors"
+	"os"
+
 	"github.com/bahner/go-ma-actor/config"
 	"gopkg.in/yaml.v2"
 )
@@ -17,6 +20,7 @@ type ActorConfigStruct struct {
 func Config(name string) ActorConfigStruct {
 
 	config.SetProfile(name)
+	config.Init()
 
 	return ActorConfigStruct{
 		Actor: config.ActorConfig(),

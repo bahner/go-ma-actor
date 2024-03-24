@@ -12,11 +12,12 @@ func init() {
 	pflag.StringP("profile", "p", "", "Config profile (name) to use.")
 
 	pflag.Bool("show-config", false, "Whether to print the config.")
+
 	pflag.BoolP("version", "v", false, "Print version and exit.")
+
 	pflag.Bool("generate", false, "Generates a new keyset")
 	pflag.Bool("publish", false, "Publishes keyset to IPFS")
 	pflag.Bool("force", false, "Forces regneration of config keyset and publishing")
-}
 
 func GenerateFlag() bool {
 	// This will exit when done. It will also publish if applicable.

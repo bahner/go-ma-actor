@@ -2,9 +2,13 @@ package main
 
 import (
 	"errors"
+	"os"
 
 	"github.com/bahner/go-ma-actor/config"
+	"github.com/bahner/go-ma-actor/p2p"
 	"github.com/bahner/go-ma/did/doc"
+	"github.com/libp2p/go-libp2p"
+	p2pDHT "github.com/libp2p/go-libp2p-kad-dht"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
@@ -77,7 +81,6 @@ func Config() PongConfig {
 			},
 		},
 	}
-}
 
 func (c *PongConfig) MarshalToYAML() ([]byte, error) {
 	return yaml.Marshal(c)

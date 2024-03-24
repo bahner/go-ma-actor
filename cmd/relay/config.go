@@ -1,7 +1,13 @@
 package main
 
 import (
+	"os"
+
 	"github.com/bahner/go-ma-actor/config"
+	"github.com/bahner/go-ma-actor/p2p"
+	libp2p "github.com/libp2p/go-libp2p"
+	p2pDHT "github.com/libp2p/go-libp2p-kad-dht"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/pflag"
 	"gopkg.in/yaml.v2"
 )
@@ -16,10 +22,9 @@ type RelayConfig struct {
 
 func Config(name string) RelayConfig {
 
-	config.ActorFlags()
 	pflag.Parse()
-
 	config.SetProfile(name)
+	config.Init()
 
 	c := RelayConfig{
 		API:  config.APIConfig(),
