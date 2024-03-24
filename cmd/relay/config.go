@@ -4,20 +4,16 @@ import (
 	"os"
 
 	"github.com/bahner/go-ma-actor/config"
-	"github.com/bahner/go-ma-actor/p2p"
-	libp2p "github.com/libp2p/go-libp2p"
-	p2pDHT "github.com/libp2p/go-libp2p-kad-dht"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/pflag"
 	"gopkg.in/yaml.v2"
 )
 
 type RelayConfig struct {
-	API  config.APIConfigStruct  `yaml:"api"`
-	DB   config.DBConfigStruct   `yaml:"db"`
-	HTTP config.HTTPConfigStruct `yaml:"http"`
-	Log  config.LogConfigStruct  `yaml:"log"`
-	P2P  config.P2PConfigStruct  `yaml:"p2p"`
+	API  config.APIConfig  `yaml:"api"`
+	DB   config.DBConfig   `yaml:"db"`
+	HTTP config.HTTPConfig `yaml:"http"`
+	Log  config.LogConfig  `yaml:"log"`
+	P2P  config.P2PConfig  `yaml:"p2p"`
 }
 
 func Config(name string) RelayConfig {
@@ -27,15 +23,21 @@ func Config(name string) RelayConfig {
 	config.Init()
 
 	c := RelayConfig{
-		API:  config.APIConfig(),
-		DB:   config.DBConfig(),
-		HTTP: config.HTTPConfig(),
-		Log:  config.LogConfig(),
-		P2P:  config.P2PConfig(),
+		API:  config.API(),
+		DB:   config.DB(),
+		HTTP: config.HTTP(),
+		Log:  config.Log(),
+		P2P:  config.P2P(),
 	}
 
 	if config.GenerateFlag() {
-		config.Save(&c)
+		config.HandleGenerate(&c)
+
+		if config.ShowConfigFlag() {
+			c.Print()
+		}
+
+		os.Exit(0)
 	}
 
 	return c

@@ -1,45 +1,49 @@
 package actor
 
 import (
-	"errors"
-	"os"
-
 	"github.com/bahner/go-ma-actor/config"
+	"github.com/spf13/pflag"
 	"gopkg.in/yaml.v2"
 )
 
-type ActorConfigStruct struct {
-	Actor config.ActorConfigStruct `yaml:"actor"`
-	API   config.APIConfigStruct   `yaml:"api"`
-	DB    config.DBConfigStruct    `yaml:"db"`
-	HTTP  config.HTTPConfigStruct  `yaml:"http"`
-	Log   config.LogConfigStruct   `yaml:"log"`
-	P2P   config.P2PConfigStruct   `yaml:"p2p"`
+type ActorConfig struct {
+	Actor config.ActorConfig `yaml:"actor"`
+	API   config.APIConfig   `yaml:"api"`
+	DB    config.DBConfig    `yaml:"db"`
+	HTTP  config.HTTPConfig  `yaml:"http"`
+	Log   config.LogConfig   `yaml:"log"`
+	P2P   config.P2PConfig   `yaml:"p2p"`
 }
 
-func Config(name string) ActorConfigStruct {
+// This is an all-inclusive configuration function that sets up the configuration for the actor.
+// flags and everything. It is used in the main function of siple actors programmes.
+// Remebmer to call check the config.GenerateFlag() and save the configuration if it is set.
+func Config(name string) ActorConfig {
+
+	config.ActorFlags()
+	pflag.Parse()
 
 	config.SetProfile(name)
 	config.Init()
 
-	return ActorConfigStruct{
-		Actor: config.ActorConfig(),
-		API:   config.APIConfig(),
-		DB:    config.DBConfig(),
-		HTTP:  config.HTTPConfig(),
-		Log:   config.LogConfig(),
-		P2P:   config.P2PConfig(),
+	return ActorConfig{
+		Actor: config.Actor(),
+		API:   config.API(),
+		DB:    config.DB(),
+		HTTP:  config.HTTP(),
+		Log:   config.Log(),
+		P2P:   config.P2P(),
 	}
 }
 
-func (c *ActorConfigStruct) MarshalToYAML() ([]byte, error) {
+func (c *ActorConfig) MarshalToYAML() ([]byte, error) {
 	return yaml.Marshal(c)
 }
 
-func (c *ActorConfigStruct) Print() {
+func (c *ActorConfig) Print() {
 	config.Print(c)
 }
 
-func (c *ActorConfigStruct) Save() error {
+func (c *ActorConfig) Save() error {
 	return config.Save(c)
 }

@@ -8,12 +8,12 @@ type UIStruct struct {
 	PeerslistWidth int `yaml:"peerslist-width"`
 }
 
-type UIConfigStruct struct {
+type UIConfig struct {
 	UI UIStruct `yaml:"ui"`
 }
 
-func UIConfig() UIConfigStruct {
-	return UIConfigStruct{
+func InitUIConfig() UIConfig {
+	return UIConfig{
 		UI: UIStruct{
 			PeerslistWidth: UIPeerslistWidth(),
 		},

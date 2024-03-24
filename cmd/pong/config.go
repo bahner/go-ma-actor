@@ -1,28 +1,12 @@
 package main
 
 import (
-	"errors"
-	"os"
-
 	"github.com/bahner/go-ma-actor/config"
-	"github.com/bahner/go-ma-actor/p2p"
-	"github.com/bahner/go-ma/did/doc"
-	"github.com/libp2p/go-libp2p"
-	p2pDHT "github.com/libp2p/go-libp2p-kad-dht"
-	log "github.com/sirupsen/logrus"
+	"github.com/bahner/go-ma-actor/entity/actor"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	"gopkg.in/yaml.v2"
 )
-
-const (
-	defaultPongReply   = "Pong!"
-	defaultFortuneMode = false
-	pong               = "pong"
-	profile            = pong
-)
-
-var defaultFortuneArgs = []string{"-s"}
 
 func init() {
 	pflag.String("pong-reply", defaultPongReply, "The message to send back to the sender")
@@ -36,62 +20,61 @@ func init() {
 	viper.SetDefault("mode.pong.fortune.args", defaultFortuneArgs)
 }
 
-type FortuneStruct struct {
+type PongFortuneStruct struct {
 	Enable bool     `yaml:"enable"`
 	Args   []string `yaml:"args"`
 }
 
-type PongStruct struct {
-	Reply   string        `yaml:"reply"`
-	Fortune FortuneStruct `yaml:"fortune"`
-}
-
 type PongConfigStruct struct {
-	Pong PongStruct `yaml:"pong"`
+	Reply   string            `yaml:"reply"`
+	Fortune PongFortuneStruct `yaml:"fortune"`
 }
 
 type PongConfig struct {
-	API   config.APIConfigStruct   `yaml:"api"`
-	Actor config.ActorConfigStruct `yaml:"actor"`
-	DB    config.DBConfigStruct    `yaml:"db"`
-	Log   config.LogConfigStruct   `yaml:"log"`
-	Pong  PongConfigStruct         `yaml:"pong"`
+	Actor config.ActorConfig `yaml:"actor"`
+	API   config.APIConfig   `yaml:"api"`
+	DB    config.DBConfig    `yaml:"db"`
+	HTTP  config.HTTPConfig  `yaml:"http"`
+	Log   config.LogConfig   `yaml:"log"`
+	P2P   config.P2PConfig   `yaml:"p2p"`
+	Pong  PongConfigStruct   `yaml:"pong"`
 }
 
-func Config() PongConfig {
+func Config(profileName string) PongConfig {
 
-	config.ActorFlags()
-	pflag.Parse()
+	actor.Config(profileName)
 
-	// Always parse the flags first
-	config.SetProfile(profile)
-	config.Init()
-
-	return PongConfig{
-		API:   config.APIConfig(),
-		Actor: config.ActorConfig(),
-		DB:    config.DBConfig(),
-		Log:   config.LogConfig(),
+	p := PongConfig{
+		Actor: config.Actor(),
+		API:   config.API(),
+		DB:    config.DB(),
+		HTTP:  config.HTTP(),
+		Log:   config.Log(),
+		P2P:   config.P2P(),
 		Pong: PongConfigStruct{
-			Pong: PongStruct{
-				Reply: pongReply(),
-				Fortune: FortuneStruct{
-					Enable: pongFortuneMode(),
-					Args:   pongFortuneArgs()},
-			},
+			Reply: pongReply(),
+			Fortune: PongFortuneStruct{
+				Enable: pongFortuneMode(),
+				Args:   pongFortuneArgs()},
 		},
 	}
+
+	config.HandleGenerate(&p)
+
+	return p
+
+}
 
 func (c *PongConfig) MarshalToYAML() ([]byte, error) {
 	return yaml.Marshal(c)
 }
 
 func (c *PongConfig) Print() {
-	y, err := c.MarshalToYAML()
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Println(string(y))
+	config.Print(c)
+}
+
+func (c *PongConfig) Save() error {
+	return config.Save(c)
 }
 
 func pongFortuneMode() bool {
@@ -104,16 +87,4 @@ func pongFortuneArgs() []string {
 
 func pongReply() string {
 	return viper.GetString("mode.pong.reply")
-}
-
-func generateActorIdentitiesOrPanic(name string) (string, string) {
-	actor, node, err := config.GenerateActorIdentities(name)
-	if err != nil {
-		if errors.Is(err, doc.ErrAlreadyPublished) {
-			log.Warnf("Actor document already published: %v", err)
-		} else {
-			log.Fatal(err)
-		}
-	}
-	return actor, node
 }

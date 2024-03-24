@@ -16,22 +16,16 @@ func init() {
 	viper.SetDefault("db.path", DefaultDbPath)
 }
 
-type DBStruct struct {
+type DBConfig struct {
 	Path string `yaml:"path"`
 }
 
-type DBConfigStruct struct {
-	DB DBStruct `yaml:"db"`
-}
-
-func DBConfig() DBConfigStruct {
+func DB() DBConfig {
 
 	viper.SetDefault("db.path", DefaultDbPath)
 
-	return DBConfigStruct{
-		DB: DBStruct{
-			Path: DBPath(),
-		},
+	return DBConfig{
+		Path: DBPath(),
 	}
 }
 

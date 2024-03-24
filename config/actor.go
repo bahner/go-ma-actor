@@ -1,12 +1,14 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 
+	"github.com/bahner/go-ma/did/doc"
 	"github.com/bahner/go-ma/key/set"
 	log "github.com/sirupsen/logrus"
 )
@@ -38,19 +40,15 @@ func ActorFlags() {
 
 }
 
-type ActorStruct struct {
+type ActorConfig struct {
 	Identity string `yaml:"identity"`
 	Nick     string `yaml:"nick"`
 	Location string `yaml:"location"`
 }
 
-type ActorConfigStruct struct {
-	Actor ActorStruct `yaml:"actor"`
-}
-
 // Cofig for actor. Remember to parse the flags first.
 // Eg. ActorFlags()
-func ActorConfig() ActorConfigStruct {
+func Actor() ActorConfig {
 
 	initActor()
 
@@ -59,12 +57,10 @@ func ActorConfig() ActorConfigStruct {
 		panic(err)
 	}
 
-	return ActorConfigStruct{
-		Actor: ActorStruct{
-			Identity: identity,
-			Nick:     ActorNick(),
-			Location: ActorLocation(),
-		},
+	return ActorConfig{
+		Identity: identity,
+		Nick:     ActorNick(),
+		Location: ActorLocation(),
 	}
 }
 
@@ -118,7 +114,7 @@ func initActor() {
 func actorIdentity() (string, error) {
 
 	if GenerateFlag() {
-		return GenerateActorIdentity(ActorNick())
+		return generateActorIdentity(ActorNick())
 	}
 
 	return viper.GetString("actor.identity"), nil
@@ -151,4 +147,62 @@ func initActorKeyset(keyset_string string) {
 		os.Exit(70) // EX_SOFTWARE
 	}
 
+}
+
+func generateActorIdentity(nick string) (string, error) {
+
+	log.Debugf("Generating new keyset for %s", nick)
+	keyset_string, err := generateKeysetString(nick)
+	if err != nil {
+		log.Errorf("Failed to generate new keyset: %s", err)
+		return "", fmt.Errorf("failed to generate new keyset: %w", err)
+	}
+
+	// Ignore already published error. That's a good thing.
+	if PublishFlag() {
+		err = publishActorIdentityFromString(keyset_string)
+
+		if err != nil {
+			if errors.Is(err, doc.ErrAlreadyPublished) {
+				log.Warnf("Actor document already published: %v", err)
+			} else {
+				return "", fmt.Errorf("failed to publish actor identity: %w", err)
+			}
+		}
+	}
+
+	return keyset_string, nil
+}
+
+// Generates a new keyset and returns the keyset as a string
+func generateKeysetString(nick string) (string, error) {
+
+	ks, err := set.GetOrCreate(nick)
+	if err != nil {
+		return "", fmt.Errorf("failed to generate new keyset: %w", err)
+	}
+	log.Debugf("Created new keyset: %v", ks)
+
+	pks, err := ks.Pack()
+	if err != nil {
+		return "", fmt.Errorf("failed to pack keyset: %w", err)
+	}
+	log.Debugf("Packed keyset: %v", pks)
+
+	return pks, nil
+}
+
+func publishActorIdentityFromString(keyset_string string) error {
+
+	keyset, err := set.Unpack(keyset_string)
+	if err != nil {
+		log.Errorf("publishActorIdentityFromString: Failed to unpack keyset: %v", err)
+	}
+
+	err = PublishIdentityFromKeyset(keyset)
+	if err != nil {
+		return fmt.Errorf("publishActorIdentityFromString: Failed to publish keyset: %w", err)
+	}
+
+	return nil
 }

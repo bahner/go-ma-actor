@@ -27,7 +27,7 @@ func NodeIdentity() crypto.PrivKey {
 
 }
 
-func GenerateNodeIdentity() (string, error) {
+func generateNodeIdentity() (string, error) {
 	pk, _, err := crypto.GenerateKeyPair(crypto.Ed25519, -1)
 	if err != nil {
 		log.Errorf("failed to generate node identity: %s", err)

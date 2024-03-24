@@ -30,26 +30,20 @@ func init() {
 
 }
 
-type LogStruct struct {
+type LogConfig struct {
 	Level string `yaml:"level"`
 	File  string `yaml:"file"`
 }
 
-type LogConfigStruct struct {
-	Log LogStruct `yaml:"log"`
-}
-
-func LogConfig() LogConfigStruct {
+func Log() LogConfig {
 
 	viper.SetDefault("log.file", genDefaultLogFileName(Profile()))
 
 	initLogging()
 
-	return LogConfigStruct{
-		Log: LogStruct{
-			Level: LogLevel(),
-			File:  LogFile(),
-		},
+	return LogConfig{
+		Level: LogLevel(),
+		File:  LogFile(),
 	}
 }
 

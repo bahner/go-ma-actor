@@ -1,9 +1,11 @@
 package main
 
 import (
+	"os"
 	"time"
 
 	"github.com/bahner/go-ma-actor/config"
+	"github.com/bahner/go-ma-actor/entity/actor"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	"gopkg.in/yaml.v2"
@@ -38,53 +40,50 @@ func init() {
 
 }
 
-type NodeStruct struct {
+type NodeConfigStruct struct {
 	Cookie        string        `yaml:"cookie"`
 	Name          string        `yaml:"name"`
 	Space         string        `yaml:"space"`
 	DebugInterval time.Duration `yaml:"debug-interval"`
 }
 
-type NodeConfigStruct struct {
-	Node NodeStruct `yaml:"node"`
-}
-
 type NodeConfig struct {
-	Actor config.ActorConfigStruct `yaml:"actor"`
-	API   config.APIConfigStruct   `yaml:"api"`
-	DB    config.DBConfigStruct    `yaml:"db"`
-	HTTP  config.HTTPConfigStruct  `yaml:"http"`
-	Node  NodeConfigStruct         `yaml:"node"`
-	Log   config.LogConfigStruct   `yaml:"log"`
-	P2P   config.P2PConfigStruct   `yaml:"p2p"`
+	Actor config.ActorConfig `yaml:"actor"`
+	API   config.APIConfig   `yaml:"api"`
+	DB    config.DBConfig    `yaml:"db"`
+	HTTP  config.HTTPConfig  `yaml:"http"`
+	Log   config.LogConfig   `yaml:"log"`
+	Node  NodeConfigStruct   `yaml:"node"`
+	P2P   config.P2PConfig   `yaml:"p2p"`
 }
 
 func Config(name string) NodeConfig {
 
-	config.ActorFlags()
-	pflag.Parse()
-
-	config.SetProfile(name)
+	actor.Config(name)
 
 	c := NodeConfig{
-		Actor: config.ActorConfig(),
-		API:   config.APIConfig(),
-		DB:    config.DBConfig(),
-		HTTP:  config.HTTPConfig(),
+		Actor: config.Actor(),
+		API:   config.API(),
+		DB:    config.DB(),
+		HTTP:  config.HTTP(),
 		Node: NodeConfigStruct{
-			Node: NodeStruct{
-				Cookie:        NodeCookie(),
-				Name:          NodeName(),
-				Space:         NodeSpace(),
-				DebugInterval: NodeDebugInterval(),
-			},
+			Cookie:        NodeCookie(),
+			Name:          NodeName(),
+			Space:         NodeSpace(),
+			DebugInterval: NodeDebugInterval(),
 		},
-		Log: config.LogConfig(),
-		P2P: config.P2PConfig(),
+		Log: config.Log(),
+		P2P: config.P2P(),
 	}
 
 	if config.GenerateFlag() {
 		config.Save(&c)
+
+		if config.ShowConfigFlag() {
+			c.Print()
+		}
+
+		os.Exit(0)
 	}
 
 	return c

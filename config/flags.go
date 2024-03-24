@@ -19,6 +19,10 @@ func init() {
 	pflag.Bool("publish", false, "Publishes keyset to IPFS")
 	pflag.Bool("force", false, "Forces regneration of config keyset and publishing")
 
+	pflag.String("debug-socket", defaultDebugSocket, "Port to listen on for debug endpoints")
+
+}
+
 func GenerateFlag() bool {
 	// This will exit when done. It will also publish if applicable.
 	generateFlag, err := pflag.CommandLine.GetBool("generate")

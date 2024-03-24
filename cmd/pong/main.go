@@ -10,12 +10,21 @@ import (
 	"github.com/bahner/go-ma-actor/p2p"
 )
 
+const (
+	defaultPongReply   = "Pong!"
+	defaultFortuneMode = false
+	pong               = "pong"
+	profile            = pong
+)
+
+var defaultFortuneArgs = []string{"-s"}
+
 // Run the pong actor. Cancel it from outside to stop it.
 func main() {
 
 	ctx := context.Background()
 
-	c := Config()
+	c := Config(profile)
 	c.Print()
 	if true {
 		os.Exit(0)

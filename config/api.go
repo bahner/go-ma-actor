@@ -5,21 +5,15 @@ import (
 	"github.com/spf13/viper"
 )
 
-type APIStruct struct {
+type APIConfig struct {
 	Maddr string `yaml:"maddr"`
 }
 
-type APIConfigStruct struct {
-	Api APIStruct `yaml:"api"`
-}
-
-func APIConfig() APIConfigStruct {
+func API() APIConfig {
 	viper.SetDefault("api.maddr", ma.DEFAULT_IPFS_API_MULTIADDR)
 
-	return APIConfigStruct{
-		Api: APIStruct{
-			Maddr: APIAddr(),
-		},
+	return APIConfig{
+		Maddr: APIAddr(),
 	}
 }
 func APIAddr() string {

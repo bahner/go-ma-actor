@@ -63,14 +63,14 @@ type DiscoveryStruct struct {
 	MDNS              bool          `yaml:"mdns"`
 }
 
-type P2PConfigStruct struct {
+type P2PConfig struct {
 	Identity  string          `yaml:"identity"`
 	Port      int             `yaml:"port"`
 	Connmgr   ConnmgrStruct   `yaml:"connmgr"`
 	Discovery DiscoveryStruct `yaml:"discovery"`
 }
 
-func P2PConfig() P2PConfigStruct {
+func P2P() P2PConfig {
 	viper.SetDefault("p2p.identity", fakeP2PIdentity)
 
 	p2pIdentity, err := P2PIdentity()
@@ -78,7 +78,7 @@ func P2PConfig() P2PConfigStruct {
 		panic(err)
 	}
 
-	return P2PConfigStruct{
+	return P2PConfig{
 		Identity: p2pIdentity,
 		Port:     P2PPort(),
 		Connmgr: ConnmgrStruct{
@@ -97,7 +97,7 @@ func P2PConfig() P2PConfigStruct {
 func P2PIdentity() (string, error) {
 
 	if GenerateFlag() {
-		return GenerateNodeIdentity()
+		return generateNodeIdentity()
 	}
 
 	return viper.GetString("p2p.identity"), nil

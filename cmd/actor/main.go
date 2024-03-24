@@ -11,13 +11,13 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const name = "actor"
+const profile = "actor"
 
 func main() {
 
 	var err error
 
-	actor.Config(name)
+	initConfig(profile)
 
 	fmt.Println("Initialising actor configuation...")
 	// actor.InitConfig(config.Profile())

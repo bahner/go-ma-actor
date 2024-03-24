@@ -6,20 +6,11 @@ import (
 	"net/http"
 	_ "net/http/pprof"
 	"runtime"
-
-	"github.com/spf13/pflag"
-	"github.com/spf13/viper"
 )
-
-const defaultDebugSocket = "0.0.0.0:6060"
 
 func init() {
 	// Assume you have a function setupDebugHandlers to register debug routes
 	setupDebugHandlers()
-
-	pflag.String("debug-socket", defaultDebugSocket, "Port to listen on for debug endpoints")
-	viper.BindPFlag("http.debug-socket", pflag.Lookup("debug-socket"))
-	viper.SetDefault("http.debug-socket", defaultDebugSocket)
 }
 
 func setupDebugHandlers() {
