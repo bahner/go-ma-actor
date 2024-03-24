@@ -2,10 +2,7 @@ package config
 
 import "github.com/spf13/pflag"
 
-// NB! This file is used early in the initialization process, so it can't depend on other packages.
-const defaultProfile string = "actor"
-
-var profile string = defaultProfile
+var defaultProfile = "actor"
 
 // Profile is the mode unless overridden by the profile flag.
 func Profile() string {
@@ -15,9 +12,11 @@ func Profile() string {
 		return flag.Value.String()
 	}
 
-	return profile
+	return defaultProfile
 }
 
-func SetProfile(p string) {
-	profile = p
+// Call this for special cmds like "relay", "node", etc.
+// Before initConfig() like calls.
+func SetDefaultProfileName(p string) {
+	defaultProfile = p
 }

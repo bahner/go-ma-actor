@@ -6,9 +6,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-const defaultDBDirname = ".madb"
-
-var DefaultDbPath = internal.NormalisePath(dataHome + defaultDBDirname)
+var DefaultDbPath = internal.NormalisePath(dataHome + "/." + Profile())
 
 func init() {
 	pflag.String("db-path", DefaultDbPath, "Directory to use for database.")

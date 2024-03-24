@@ -8,13 +8,13 @@ import (
 	"github.com/bahner/go-ma-actor/ui/web"
 )
 
-const name = "relay"
+const defaultProfileName = "relay"
 
 // Run the pong actor. Cancel it from outside to stop it.
 func main() {
 
 	ctx := context.Background()
-	Config(name)
+	initConfig(defaultProfileName)
 
 	// FIXME. Not default here
 	p, err := p2p.Init(p2p.DefaultOptions())

@@ -16,10 +16,10 @@ type RelayConfig struct {
 	P2P  config.P2PConfig  `yaml:"p2p"`
 }
 
-func Config(name string) RelayConfig {
+func initConfig(defaultProfileName string) RelayConfig {
 
 	pflag.Parse()
-	config.SetProfile(name)
+	config.SetDefaultProfileName(defaultProfileName)
 	config.Init()
 
 	c := RelayConfig{

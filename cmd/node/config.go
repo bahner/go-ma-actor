@@ -57,9 +57,10 @@ type NodeConfig struct {
 	P2P   config.P2PConfig   `yaml:"p2p"`
 }
 
-func Config(name string) NodeConfig {
+func Config(defaultProfileName string) NodeConfig {
 
-	actor.Config(name)
+	config.SetDefaultProfileName(defaultProfileName)
+	actor.Config()
 
 	c := NodeConfig{
 		Actor: config.Actor(),

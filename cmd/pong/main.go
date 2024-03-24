@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"os"
 
 	"github.com/bahner/go-ma-actor/entity/actor"
 
@@ -14,7 +13,7 @@ const (
 	defaultPongReply   = "Pong!"
 	defaultFortuneMode = false
 	pong               = "pong"
-	profile            = pong
+	defaultProfileName = pong
 )
 
 var defaultFortuneArgs = []string{"-s"}
@@ -24,11 +23,7 @@ func main() {
 
 	ctx := context.Background()
 
-	c := Config(profile)
-	c.Print()
-	if true {
-		os.Exit(0)
-	}
+	initConfig(defaultProfileName)
 
 	// THese are the relay specific parts.
 	p, err := p2p.Init(p2p.DefaultOptions())

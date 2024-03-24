@@ -7,9 +7,10 @@ import (
 	"github.com/bahner/go-ma-actor/entity/actor"
 )
 
-func initConfig(profileName string) actor.ActorConfig {
+func initConfig(defaultProfileName string) actor.ActorConfig {
 
-	c := actor.Config(profileName)
+	config.SetDefaultProfileName(defaultProfileName)
+	c := actor.Config()
 
 	if config.GenerateFlag() {
 		config.Generate(&c)

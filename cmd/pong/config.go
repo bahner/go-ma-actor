@@ -42,9 +42,10 @@ type PongConfig struct {
 	Pong  PongConfigStruct   `yaml:"pong"`
 }
 
-func Config(profileName string) PongConfig {
+func initConfig(defaultProfileName string) PongConfig {
 
-	actor.Config(profileName)
+	config.SetDefaultProfileName(defaultProfileName)
+	actor.Config()
 
 	c := PongConfig{
 		Actor: config.Actor(),

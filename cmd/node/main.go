@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 
+	"github.com/bahner/go-ma-actor/config"
 	"github.com/bahner/go-ma-actor/entity/actor"
 	"github.com/bahner/go-ma-actor/p2p"
 	"github.com/bahner/go-ma-actor/ui/web"
@@ -13,7 +14,7 @@ func main() {
 
 	ctx := context.Background()
 
-	Config(name)
+	Config(config.Profile())
 
 	// Init config and logger
 	// actor.InitConfig(config.Profile())

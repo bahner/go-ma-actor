@@ -86,9 +86,10 @@ tidy: go.mod
 
 clean:
 	rm -rf $(PLATFORMS)
-	# rm -f $(NAME)-*.tar
-	# find -type f -name "*.log" -delete
-	# rm -f actor.exe
+	rm -f $(NAME)-*.tar
+	find -type f -name "*.log" -delete
+	rm -f actor.exe
+	rm go-ma-actor*
 
 distclean: clean
 	rm -rf releases

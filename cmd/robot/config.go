@@ -10,10 +10,6 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-const (
-	name = "robot"
-)
-
 func init() {
 	pflag.String("openai-key", "", "The (paid) key to use with the OpenAI API")
 
@@ -37,9 +33,10 @@ type RobotConfig struct {
 	Robot RobotConfigStruct  `yaml:"robot"`
 }
 
-func initConfig(name string) RobotConfig {
+func initConfig(defaultProfileName string) RobotConfig {
 
-	actor.Config(name)
+	config.SetDefaultProfileName(defaultProfileName)
+	actor.Config()
 
 	// Create a new RobotConfig with the base config and the new key
 	robotConfig := RobotConfig{

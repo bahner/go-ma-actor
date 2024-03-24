@@ -18,12 +18,11 @@ type ActorConfig struct {
 // This is an all-inclusive configuration function that sets up the configuration for the actor.
 // flags and everything. It is used in the main function of siple actors programmes.
 // Remebmer to call check the config.GenerateFlag() and save the configuration if it is set.
-func Config(name string) ActorConfig {
+func Config() ActorConfig {
 
 	config.ActorFlags()
 	pflag.Parse()
 
-	config.SetProfile(name)
 	config.Init()
 
 	return ActorConfig{

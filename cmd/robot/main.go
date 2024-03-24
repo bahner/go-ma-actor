@@ -11,11 +11,13 @@ import (
 	"github.com/bahner/go-ma-actor/p2p"
 )
 
+const defaultProfileName = "robot"
+
 // Run the pong actor. Cancel it from outside to stop it.
 func main() {
 
 	ctx := context.Background()
-	initConfig(name)
+	initConfig(defaultProfileName)
 
 	// THese are the relay specific parts.
 
