@@ -3,20 +3,35 @@ package main
 import (
 	"context"
 	"fmt"
+	"os"
 
 	"github.com/bahner/go-ma-actor/entity/actor"
 
 	"github.com/bahner/go-ma-actor/p2p"
 )
 
+const (
+	defaultPongReply   = "Pong!"
+	defaultFortuneMode = false
+	pong               = "pong"
+	profile            = pong
+)
+
+var defaultFortuneArgs = []string{"-s"}
+
 // Run the pong actor. Cancel it from outside to stop it.
 func main() {
 
 	ctx := context.Background()
-	initConfig(pong)
+
+	c := Config(profile)
+	c.Print()
+	if true {
+		os.Exit(0)
+	}
 
 	// THese are the relay specific parts.
-	p, err := p2p.Init(p2pOptions())
+	p, err := p2p.Init(p2p.DefaultOptions())
 	if err != nil {
 		fmt.Printf("Failed to initialize p2p: %v\n", err)
 		return

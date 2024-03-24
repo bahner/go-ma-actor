@@ -10,14 +10,10 @@ const (
 	defaultHttpRefresh int    = 10
 )
 
-type HTTPStruct struct {
+type HTTPConfig struct {
 	Socket      string `yaml:"socket"`
 	Refresh     int    `yaml:"refresh"`
 	DebugSocket string `yaml:"debug_socket"`
-}
-
-type HTTPConfigStruct struct {
-	HTTP HTTPStruct `yaml:"http"`
 }
 
 func init() {
@@ -30,17 +26,15 @@ func init() {
 
 }
 
-func HTTPConfig() HTTPConfigStruct {
+func HTTP() HTTPConfig {
 
 	viper.SetDefault("http.socket", defaultHttpSocket)
 	viper.SetDefault("http.refresh", defaultHttpRefresh)
 
-	return HTTPConfigStruct{
-		HTTP: HTTPStruct{
-			Socket:      HttpSocket(),
-			Refresh:     HttpRefresh(),
-			DebugSocket: HttpDebugSocket(),
-		},
+	return HTTPConfig{
+		Socket:      HttpSocket(),
+		Refresh:     HttpRefresh(),
+		DebugSocket: HttpDebugSocket(),
 	}
 }
 

@@ -15,9 +15,7 @@ It provides The ability to browse IPFS properly, and to pin files and directorie
 
 ### Cros-compiling
 
-Cross-cmpiling for Windows requires gcc-mingw-w64 and gcc-multilib tools to be installed.
-
-CGO is required for sqlite to work on Windows™.
+Cross-compiling for Windows requires gcc-mingw-w64 and gcc-multilib tools to be installed.
 
 ## TL;DR
 

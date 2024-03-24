@@ -26,3 +26,26 @@ func NodeIdentity() crypto.PrivKey {
 	return privKey
 
 }
+
+func generateNodeIdentity() (string, error) {
+	pk, _, err := crypto.GenerateKeyPair(crypto.Ed25519, -1)
+	if err != nil {
+		log.Errorf("failed to generate node identity: %s", err)
+		return "", err
+	}
+
+	pkBytes, err := crypto.MarshalPrivateKey(pk)
+	if err != nil {
+		log.Errorf("failed to generate node identity: %s", err)
+		return "", err
+	}
+
+	ni, err := mb.Encode(mb.Base58BTC, pkBytes)
+	if err != nil {
+		log.Errorf("failed to encode node identity: %s", err)
+		return "", err
+	}
+
+	return ni, nil
+
+}

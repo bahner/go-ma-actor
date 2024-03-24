@@ -1,99 +1,49 @@
 package actor
 
 import (
-	"errors"
-	"os"
-
 	"github.com/bahner/go-ma-actor/config"
-	"github.com/bahner/go-ma/did/doc"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/pflag"
-	"github.com/spf13/viper"
+	"gopkg.in/yaml.v2"
 )
 
-func InitConfig(name string) {
+type ActorConfig struct {
+	Actor config.ActorConfig `yaml:"actor"`
+	API   config.APIConfig   `yaml:"api"`
+	DB    config.DBConfig    `yaml:"db"`
+	HTTP  config.HTTPConfig  `yaml:"http"`
+	Log   config.LogConfig   `yaml:"log"`
+	P2P   config.P2PConfig   `yaml:"p2p"`
+}
 
-	// Always parse the flags first
-	config.InitActorFlags()
+// This is an all-inclusive configuration function that sets up the configuration for the actor.
+// flags and everything. It is used in the main function of siple actors programmes.
+// Remebmer to call check the config.GenerateFlag() and save the configuration if it is set.
+func Config(name string) ActorConfig {
+
+	config.ActorFlags()
 	pflag.Parse()
+
 	config.SetProfile(name)
 	config.Init()
 
-	if config.GenerateFlag() {
-		// Reinit logging to STDOUT
-		log.SetOutput(os.Stdout)
-		log.Info("Generating new actor and node identity")
-		actor, node := generateActorIdentitiesOrPanic(name)
-		actorConfig := configTemplate(actor, node)
-		config.Generate(actorConfig)
-		os.Exit(0)
+	return ActorConfig{
+		Actor: config.Actor(),
+		API:   config.API(),
+		DB:    config.DB(),
+		HTTP:  config.HTTP(),
+		Log:   config.Log(),
+		P2P:   config.P2P(),
 	}
-
-	// At this point an actor *must* be initialized
-	config.InitActor()
-
-	// This flag is dependent on the actor to be initialized to make sense.
-	if config.ShowConfigFlag() {
-		config.Print()
-		os.Exit(0)
-	}
-
 }
 
-func generateActorIdentitiesOrPanic(name string) (string, string) {
-	actor, node, err := config.GenerateActorIdentities(name)
-	if err != nil {
-		if errors.Is(err, doc.ErrAlreadyPublished) {
-			log.Warnf("Actor document already published: %v", err)
-		} else {
-			log.Fatal(err)
-		}
-	}
-	return actor, node
+func (c *ActorConfig) MarshalToYAML() ([]byte, error) {
+	return yaml.Marshal(c)
 }
 
-func configTemplate(identity string, node string) map[string]interface{} {
+func (c *ActorConfig) Print() {
+	config.Print(c)
+}
 
-	// Get the default settings as a map
-	// Note: Viper does not have a built-in way to directly extract only the config
-	// so we manually recreate the structure based on the config we have set.
-	return map[string]interface{}{
-		"actor": map[string]interface{}{
-			"identity": identity,
-			"location": config.ActorLocation(),
-			"nick":     config.ActorNick(),
-		},
-		"db": map[string]interface{}{
-			"dir": config.DefaultDbPath,
-		},
-		// Use default log settings, so as not to pick up debug log settings
-		"log": map[string]interface{}{
-			"level": viper.GetString("log.level"),
-			"file":  viper.GetString("log.file"),
-		},
-		// NB! This is a cross over from go-ma
-		"api": map[string]interface{}{
-			// This must be set corretly for generation to work
-			"maddr": viper.GetString("api.maddr"),
-		},
-		"http": map[string]interface{}{
-			"socket": config.HttpSocket(),
-		},
-		"p2p": map[string]interface{}{
-			"identity": node,
-			"port":     config.P2PPort(),
-			"connmgr": map[string]interface{}{
-				"low-watermark":  config.P2PConnmgrLowWatermark(),
-				"high-watermark": config.P2PConnmgrHighWatermark(),
-				"grace-period":   config.P2PConnMgrGracePeriod(),
-			},
-			"discovery": map[string]interface{}{
-				"advertise-ttl":      config.P2PDiscoveryAdvertiseTTL(),
-				"advertise-limit":    config.P2PDiscoveryAdvertiseLimit(),
-				"advertise-interval": config.P2PDiscoveryAdvertiseInterval(),
-				"dht":                config.P2PDiscoveryDHT(),
-				"mdns":               config.P2PDiscoveryMDNS(),
-			},
-		},
-	}
+func (c *ActorConfig) Save() error {
+	return config.Save(c)
 }

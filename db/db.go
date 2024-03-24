@@ -4,20 +4,11 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/bahner/go-ma-actor/config"
+	"github.com/bahner/go-ma-actor/internal"
 	badger "github.com/dgraph-io/badger/v3"
 	"github.com/mitchellh/go-homedir"
-	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
-
-func init() {
-
-	pflag.String("db-path", config.DefaultDbPath, "Directory to use for database.")
-	viper.BindPFlag("db.path", pflag.Lookup("db-path"))
-	viper.SetDefault("db.path", config.DefaultDbPath)
-
-}
 
 var (
 	db   *badger.DB
@@ -78,6 +69,6 @@ func dbDir() (string, error) {
 		return "", err
 	}
 
-	return config.NormalisePath(p), nil
+	return internal.NormalisePath(p), nil
 
 }

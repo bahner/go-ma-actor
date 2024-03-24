@@ -1,12 +1,14 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 
+	"github.com/bahner/go-ma/did/doc"
 	"github.com/bahner/go-ma/key/set"
 	log "github.com/sirupsen/logrus"
 )
@@ -23,7 +25,9 @@ var (
 	ErrEmptyNick     = fmt.Errorf("nick is empty")
 )
 
-func InitActorFlags() {
+// Initialise command line flags for the actor package
+// The actor is optional for some commands, but required for others.
+func ActorFlags() {
 
 	pflag.StringP("nick", "n", "", "Nickname to use in character creation")
 	pflag.StringP("location", "l", defaultLocation, "DID of the location to visit")
@@ -36,23 +40,56 @@ func InitActorFlags() {
 
 }
 
-// Set the default nick to the user's username, unless a profile is set.
-func defaultNick() string {
+type ActorConfig struct {
+	Identity string `yaml:"identity"`
+	Nick     string `yaml:"nick"`
+	Location string `yaml:"location"`
+}
 
-	if Profile() == defaultProfile {
-		return os.Getenv("USER")
+// Cofig for actor. Remember to parse the flags first.
+// Eg. ActorFlags()
+func Actor() ActorConfig {
+
+	initActor()
+
+	identity, err := actorIdentity()
+	if err != nil {
+		panic(err)
 	}
 
-	return Profile()
+	return ActorConfig{
+		Identity: identity,
+		Nick:     ActorNick(),
+		Location: ActorLocation(),
+	}
+}
+
+// Fetches the actor nick from the config or the command line
+// NB! This is a little more complex than the other config functions, as it
+// needs to fetch the nick from the command line if it's not in the config.
+// Due to being a required parameter when generating a new keyset.
+func ActorNick() string {
+	return viper.GetString("actor.nick")
+}
+
+func ActorLocation() string {
+	return viper.GetString("actor.location")
+}
+
+func ActorKeyset() set.Keyset {
+	return keyset
 }
 
 // Load a keyset from string and initiate an Actor.
 // This is optional, but if you want to use the actor package, you need to call this.
-func InitActor() {
+func initActor() {
 
-	keyset_string := actorIdentity()
-	if keyset_string == fakeActorIdentity {
-		panic(ErrFakeIdentity)
+	keyset_string, err := actorIdentity()
+	// if keyset_string == fakeActorIdentity {
+	// 	panic(ErrFakeIdentity)
+	// }
+	if err != nil {
+		panic(err)
 	}
 
 	log.Debugf("config.initActor: %s", keyset_string)
@@ -74,28 +111,23 @@ func InitActor() {
 
 }
 
-// Fetches the actor nick from the config or the command line
-// NB! This is a little more complex than the other config functions, as it
-// needs to fetch the nick from the command line if it's not in the config.
-// Due to being a required parameter when generating a new keyset.
-func ActorNick() string {
+func actorIdentity() (string, error) {
 
-	return viper.GetString("actor.nick")
+	if GenerateFlag() {
+		return generateActorIdentity(ActorNick())
+	}
 
+	return viper.GetString("actor.identity"), nil
 }
 
-func ActorLocation() string {
+// Set the default nick to the user's username, unless a profile is set.
+func defaultNick() string {
 
-	return viper.GetString("actor.location")
-}
+	if Profile() == defaultProfile {
+		return os.Getenv("USER")
+	}
 
-func ActorKeyset() set.Keyset {
-	return keyset
-}
-func actorIdentity() string {
-
-	return viper.GetString("actor.identity")
-
+	return Profile()
 }
 
 func initActorKeyset(keyset_string string) {
@@ -115,4 +147,62 @@ func initActorKeyset(keyset_string string) {
 		os.Exit(70) // EX_SOFTWARE
 	}
 
+}
+
+func generateActorIdentity(nick string) (string, error) {
+
+	log.Debugf("Generating new keyset for %s", nick)
+	keyset_string, err := generateKeysetString(nick)
+	if err != nil {
+		log.Errorf("Failed to generate new keyset: %s", err)
+		return "", fmt.Errorf("failed to generate new keyset: %w", err)
+	}
+
+	// Ignore already published error. That's a good thing.
+	if PublishFlag() {
+		err = publishActorIdentityFromString(keyset_string)
+
+		if err != nil {
+			if errors.Is(err, doc.ErrAlreadyPublished) {
+				log.Warnf("Actor document already published: %v", err)
+			} else {
+				return "", fmt.Errorf("failed to publish actor identity: %w", err)
+			}
+		}
+	}
+
+	return keyset_string, nil
+}
+
+// Generates a new keyset and returns the keyset as a string
+func generateKeysetString(nick string) (string, error) {
+
+	ks, err := set.GetOrCreate(nick)
+	if err != nil {
+		return "", fmt.Errorf("failed to generate new keyset: %w", err)
+	}
+	log.Debugf("Created new keyset: %v", ks)
+
+	pks, err := ks.Pack()
+	if err != nil {
+		return "", fmt.Errorf("failed to pack keyset: %w", err)
+	}
+	log.Debugf("Packed keyset: %v", pks)
+
+	return pks, nil
+}
+
+func publishActorIdentityFromString(keyset_string string) error {
+
+	keyset, err := set.Unpack(keyset_string)
+	if err != nil {
+		log.Errorf("publishActorIdentityFromString: Failed to unpack keyset: %v", err)
+	}
+
+	err = PublishIdentityFromKeyset(keyset)
+	if err != nil {
+		return fmt.Errorf("publishActorIdentityFromString: Failed to publish keyset: %w", err)
+	}
+
+	return nil
 }

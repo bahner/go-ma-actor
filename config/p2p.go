@@ -49,15 +49,58 @@ func init() {
 	viper.BindPFlag("p2p.port", pflag.Lookup("port"))
 }
 
-func InitP2P() {
-
-	viper.SetDefault("p2p.identity", fakeP2PIdentity)
-
+type ConnmgrStruct struct {
+	LowWatermark  int           `yaml:"low-watermark"`
+	HighWatermark int           `yaml:"high-watermark"`
+	GracePeriod   time.Duration `yaml:"grace-period"`
 }
 
-func P2PIdentity() string {
+type DiscoveryStruct struct {
+	AdvertiseInterval time.Duration `yaml:"advertise-interval"`
+	AdvertiseTTL      time.Duration `yaml:"advertise-ttl"`
+	AdvertiseLimit    int           `yaml:"advertise-limit"`
+	DHT               bool          `yaml:"dht"`
+	MDNS              bool          `yaml:"mdns"`
+}
 
-	return viper.GetString("p2p.identity")
+type P2PConfig struct {
+	Identity  string          `yaml:"identity"`
+	Port      int             `yaml:"port"`
+	Connmgr   ConnmgrStruct   `yaml:"connmgr"`
+	Discovery DiscoveryStruct `yaml:"discovery"`
+}
+
+func P2P() P2PConfig {
+	viper.SetDefault("p2p.identity", fakeP2PIdentity)
+
+	p2pIdentity, err := P2PIdentity()
+	if err != nil {
+		panic(err)
+	}
+
+	return P2PConfig{
+		Identity: p2pIdentity,
+		Port:     P2PPort(),
+		Connmgr: ConnmgrStruct{
+			LowWatermark:  P2PConnmgrLowWatermark(),
+			HighWatermark: P2PConnmgrHighWatermark(),
+			GracePeriod:   P2PConnMgrGracePeriod()},
+		Discovery: DiscoveryStruct{
+			AdvertiseInterval: P2PDiscoveryAdvertiseInterval(),
+			AdvertiseTTL:      P2PDiscoveryAdvertiseTTL(),
+			AdvertiseLimit:    P2PDiscoveryAdvertiseLimit(),
+			DHT:               P2PDiscoveryDHT(),
+			MDNS:              P2PDiscoveryMDNS()},
+	}
+}
+
+func P2PIdentity() (string, error) {
+
+	if GenerateFlag() {
+		return generateNodeIdentity()
+	}
+
+	return viper.GetString("p2p.identity"), nil
 }
 
 func P2PDiscoveryAdvertiseInterval() time.Duration {

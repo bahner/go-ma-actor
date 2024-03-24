@@ -8,15 +8,16 @@ import (
 	"github.com/bahner/go-ma-actor/ui/web"
 )
 
-const relay = "relay"
+const name = "relay"
 
 // Run the pong actor. Cancel it from outside to stop it.
 func main() {
 
 	ctx := context.Background()
-	initConfig(relay)
+	Config(name)
 
-	p, err := p2p.Init(p2pOptions())
+	// FIXME. Not default here
+	p, err := p2p.Init(p2p.DefaultOptions())
 	if err != nil {
 		fmt.Printf("Failed to initialize p2p: %v\n", err)
 		return

@@ -3,12 +3,8 @@ package config
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 	"strings"
 
-	"github.com/adrg/xdg"
-	"github.com/bahner/go-ma"
-	"github.com/mitchellh/go-homedir"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
@@ -23,13 +19,15 @@ const (
 	configDirMode  os.FileMode = 0700
 	configFileMode os.FileMode = 0600
 	dataHomeMode   os.FileMode = 0755
+
+	defaultDebugSocket = "127.0.0.1:6060"
 )
 
-var (
-	configHome        string = xdg.ConfigHome + "/" + ma.NAME + "/"
-	dataHome          string = xdg.DataHome + "/" + ma.NAME + "/"
-	defaultConfigFile string = NormalisePath(configHome + Profile() + ".yaml")
-)
+type Config interface {
+	MarshalToYAML() ([]byte, error)
+	Print()
+	Save() error
+}
 
 // This should be called after pflag.Parse() in main.
 // If you want to use a specific config file, you need to call SetProfile() before Init().
@@ -38,6 +36,8 @@ func Init() error {
 	var err error
 
 	//VIPER CONFIGURATION
+	viper.BindPFlag("http.debug-socket", pflag.Lookup("debug-socket"))
+	viper.SetDefault("http.debug-socket", defaultDebugSocket)
 
 	// Read the config file and environment variables.
 	viper.SetEnvPrefix(ENV_PREFIX)
@@ -64,15 +64,6 @@ func Init() error {
 		}
 	}
 
-	// API
-	viper.SetDefault("api.maddr", ma.DEFAULT_IPFS_API_MULTIADDR)
-
-	// Logging
-	viper.SetDefault("log.file", genDefaultLogFileName(Profile()))
-	InitLogging()
-
-	// FLAGS
-
 	// Handle the easy flags first.
 	if versionFlag() {
 		fmt.Println(VERSION)
@@ -89,7 +80,7 @@ func Init() error {
 
 }
 
-func Print() (int, error) {
+func PrintAll() (int, error) {
 
 	configMap := viper.AllSettings()
 
@@ -103,100 +94,11 @@ func Print() (int, error) {
 	return fmt.Println(string(configYAML))
 }
 
-func Save() error {
-
-	return viper.WriteConfig()
-
-}
-
-func DataHome() string {
-	return dataHome
-}
-
-func ConfigHome() string {
-	return configHome
-}
-
-// Returns the configfile name to use.
-// The preferred value is the explcitily requested config file on the command line.
-// Else it uses the nick of the actor or the mode.
-func File() string {
-
-	var (
-		filename string
-		err      error
-	)
-
-	config, err := pflag.CommandLine.GetString("config")
+func Print(c Config) {
+	configYAML, err := c.MarshalToYAML()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Failed to marshal config to YAML: %v", err)
 	}
 
-	// Prefer explicitly requested config. If not, use the name of the profile name.
-	if config != defaultConfigFile && config != "" {
-		filename, err = homedir.Expand(config)
-		if err != nil {
-			log.Fatal(err)
-		}
-	} else {
-		filename = configHome + Profile() + ".yaml"
-	}
-
-	return filepath.Clean(filename)
-
-}
-
-func GenerateFlag() bool {
-	// This will exit when done. It will also publish if applicable.
-	generateFlag, err := pflag.CommandLine.GetBool("generate")
-	if err != nil {
-		log.Warnf("config.init: %v", err)
-		return false
-	}
-
-	return generateFlag
-}
-
-func PublishFlag() bool {
-	publishFlag, err := pflag.CommandLine.GetBool("publish")
-	if err != nil {
-		log.Warnf("config.init: %v", err)
-		return false
-	}
-
-	return publishFlag
-}
-
-func ShowConfigFlag() bool {
-	showConfigFlag, err := pflag.CommandLine.GetBool("show-config")
-	if err != nil {
-		log.Warnf("config.init: %v", err)
-		return false
-	}
-
-	return showConfigFlag
-}
-
-func versionFlag() bool {
-	versionFlag, err := pflag.CommandLine.GetBool("version")
-	if err != nil {
-		log.Warnf("config.init: %v", err)
-		return false
-	}
-
-	return versionFlag
-}
-
-func ForceFlag() bool {
-	forceFlag, err := pflag.CommandLine.GetBool("force")
-	if err != nil {
-		log.Warnf("config.init: %v", err)
-		return false
-	}
-
-	return forceFlag
-}
-
-func NormalisePath(path string) string {
-	return filepath.ToSlash(filepath.Clean(path))
+	fmt.Println(string(configYAML))
 }

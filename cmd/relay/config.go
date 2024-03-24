@@ -4,87 +4,55 @@ import (
 	"os"
 
 	"github.com/bahner/go-ma-actor/config"
-	"github.com/bahner/go-ma-actor/p2p"
-	libp2p "github.com/libp2p/go-libp2p"
-	p2pDHT "github.com/libp2p/go-libp2p-kad-dht"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/pflag"
+	"gopkg.in/yaml.v2"
 )
 
-func p2pOptions() p2p.Options {
-	return p2p.Options{
-		DHT: []p2pDHT.Option{
-			p2pDHT.Mode(p2pDHT.ModeServer),
-		},
-		P2P: []libp2p.Option{
-			libp2p.DefaultTransports,
-			libp2p.DefaultSecurity,
-			libp2p.EnableRelay(),
-			libp2p.EnableRelayService(),
-		}}
+type RelayConfig struct {
+	API  config.APIConfig  `yaml:"api"`
+	DB   config.DBConfig   `yaml:"db"`
+	HTTP config.HTTPConfig `yaml:"http"`
+	Log  config.LogConfig  `yaml:"log"`
+	P2P  config.P2PConfig  `yaml:"p2p"`
 }
 
-func initConfig(name string) {
+func Config(name string) RelayConfig {
 
-	// Always parse the flags first
 	pflag.Parse()
 	config.SetProfile(name)
 	config.Init()
 
+	c := RelayConfig{
+		API:  config.API(),
+		DB:   config.DB(),
+		HTTP: config.HTTP(),
+		Log:  config.Log(),
+		P2P:  config.P2P(),
+	}
+
 	if config.GenerateFlag() {
-		// Reinit logging to STDOUT
-		log.SetOutput(os.Stdout)
-		log.Info("Generating new node identity")
-		node, err := config.GenerateNodeIdentity()
-		if err != nil {
-			log.Fatal(err)
-		}
-		relayConfig := configTemplate(node)
-		config.Generate(relayConfig)
-		os.Exit(0)
+		config.Generate(&c)
 	}
 
-	// This flag is dependent on the actor to be initialized to make sense.
 	if config.ShowConfigFlag() {
-		config.Print()
+		c.Print()
+	}
+
+	if config.ShowConfigFlag() || config.GenerateFlag() {
 		os.Exit(0)
 	}
 
+	return c
 }
 
-func configTemplate(node string) map[string]interface{} {
+func (c *RelayConfig) MarshalToYAML() ([]byte, error) {
+	return yaml.Marshal(c)
+}
 
-	// Get the default settings as a map
-	// Note: Viper does not have a built-in way to directly extract only the config
-	// so we manually recreate the structure based on the config we have set.
-	return map[string]interface{}{
-		"db": map[string]interface{}{
-			"dir": config.DefaultDbPath,
-		},
-		"log": map[string]interface{}{
-			"level": config.LogLevel(),
-			"file":  config.LogFile(),
-		},
-		"http": map[string]interface{}{
-			"socket":  config.HttpSocket(),
-			"refresh": config.HttpRefresh(),
-		},
-		"p2p": map[string]interface{}{
-			"identity": node,
-			"port":     config.P2PPort(),
-			"connmgr": map[string]interface{}{
-				"low-watermark":  config.P2PConnmgrLowWatermark(),
-				"high-watermark": config.P2PConnmgrHighWatermark(),
-				"grace-period":   config.P2PConnMgrGracePeriod(),
-			},
-			"discovery": map[string]interface{}{
-				"advertise-ttl":      config.P2PDiscoveryAdvertiseTTL(),
-				"advertise-limit":    config.P2PDiscoveryAdvertiseLimit(),
-				"advertise-interval": config.P2PDiscoveryAdvertiseInterval(),
-				"dht":                config.P2PDiscoveryDHT(),
-				"mdns":               config.P2PDiscoveryMDNS(),
-			},
-		},
-	}
+func (c *RelayConfig) Print() {
+	config.Print(c)
+}
 
+func (c *RelayConfig) Save() error {
+	return config.Save(c)
 }

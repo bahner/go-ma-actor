@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/bahner/go-ma-actor/internal"
 	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
@@ -17,9 +18,9 @@ const (
 	logFilePerm     os.FileMode = 0640
 )
 
-var defaultLogfile string = NormalisePath(dataHome + Profile() + ".log")
+var defaultLogfile string = internal.NormalisePath(dataHome + Profile() + ".log")
 
-func InitLogFlags() {
+func init() {
 
 	pflag.String("loglevel", defaultLogLevel, "Loglevel to use for application.")
 	pflag.String("logfile", defaultLogfile, "Logfile to use for application. Accepts 'STDERR' and 'STDOUT' as such.")
@@ -29,7 +30,32 @@ func InitLogFlags() {
 
 }
 
-func InitLogging() {
+type LogConfig struct {
+	Level string `yaml:"level"`
+	File  string `yaml:"file"`
+}
+
+func Log() LogConfig {
+
+	viper.SetDefault("log.file", genDefaultLogFileName(Profile()))
+
+	initLogging()
+
+	return LogConfig{
+		Level: LogLevel(),
+		File:  LogFile(),
+	}
+}
+
+func LogLevel() string {
+	return viper.GetString("log.level")
+}
+
+func LogFile() string {
+	return viper.GetString("log.file")
+}
+
+func initLogging() {
 
 	viper.SetDefault("log.level", defaultLogLevel)
 
@@ -85,17 +111,9 @@ func getLogFile() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return NormalisePath(lf), nil
-}
-
-func LogLevel() string {
-	return viper.GetString("log.level")
-}
-
-func LogFile() string {
-	return viper.GetString("log.file")
+	return internal.NormalisePath(lf), nil
 }
 
 func genDefaultLogFileName(name string) string {
-	return NormalisePath(dataHome + name + ".log")
+	return internal.NormalisePath(dataHome + name + ".log")
 }

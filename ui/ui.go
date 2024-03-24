@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/bahner/go-ma-actor/config"
 	"github.com/bahner/go-ma-actor/entity"
 	"github.com/bahner/go-ma-actor/entity/actor"
 	"github.com/bahner/go-ma-actor/p2p"
@@ -43,6 +44,7 @@ func init() {
 // chat prompt.
 type ChatUI struct {
 	p *p2p.P2P
+	c config.Config
 
 	// The actor is need to encrypt and sign messages in the event loop.
 	a                  *actor.Actor
