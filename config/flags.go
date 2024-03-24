@@ -19,6 +19,5 @@ func InitCommonFlags() {
 	pflag.Bool("force", false, "Forces regneration of config keyset and publishing")
 
 	InitLogFlags()
-	InitHTTPFlags()
 	InitP2PFlags()
 }
