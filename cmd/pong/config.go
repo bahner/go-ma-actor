@@ -51,7 +51,6 @@ func p2pOptions() p2p.Options {
 func initConfig(profile string) {
 
 	// Always parse the flags first
-	config.InitCommonFlags()
 	config.InitActorFlags()
 	pflag.Parse()
 	config.SetProfile(profile)

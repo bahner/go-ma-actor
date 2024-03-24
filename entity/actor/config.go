@@ -14,7 +14,6 @@ import (
 func InitConfig(name string) {
 
 	// Always parse the flags first
-	config.InitCommonFlags()
 	config.InitActorFlags()
 	pflag.Parse()
 	config.SetProfile(name)

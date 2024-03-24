@@ -13,21 +13,23 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-func Generate(configMap map[string]interface{}) {
+func Generate(c Config) {
 
-	if configMap == nil {
+	if c == nil {
 		log.Fatalf("No template set.")
 	}
 
 	// Convert the config map to YAML
-	configYAML, err := yaml.Marshal(configMap)
+	configYAML, err := yaml.Marshal(c)
 	if err != nil {
 		log.Fatalf("Failed to marshal config to YAML: %v", err)
 	}
 
 	if GenerateFlag() {
 		writeGeneratedConfigFile(configYAML)
-	} else {
+	}
+
+	if ShowConfigFlag() {
 		fmt.Println(string(configYAML))
 	}
 }

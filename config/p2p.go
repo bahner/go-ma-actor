@@ -25,7 +25,7 @@ const (
 	defaultMDNS       bool   = true
 )
 
-func InitP2PFlags() {
+func init() {
 
 	pflag.Bool("dht", defaultDHT, "Whether to discover using DHT")
 	pflag.Bool("mdns", defaultMDNS, "Whether to discover using MDNS")
@@ -51,7 +51,6 @@ func InitP2PFlags() {
 
 func InitP2P() {
 
-	// Identity
 	viper.SetDefault("p2p.identity", fakeP2PIdentity)
 
 }

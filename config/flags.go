@@ -4,7 +4,7 @@ import (
 	"github.com/spf13/pflag"
 )
 
-func InitCommonFlags() {
+func init() {
 
 	// Allow to set config file via command line flag.
 	pflag.StringP("config", "c", "", "Config file to use.")
@@ -18,6 +18,4 @@ func InitCommonFlags() {
 	pflag.Bool("publish", false, "Publishes keyset to IPFS")
 	pflag.Bool("force", false, "Forces regneration of config keyset and publishing")
 
-	InitLogFlags()
-	InitP2PFlags()
 }
