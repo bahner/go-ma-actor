@@ -89,7 +89,7 @@ clean:
 	rm -f $(NAME)-*.tar
 	find -type f -name "*.log" -delete
 	rm -f actor.exe
-	rm go-ma-actor*
+	rm -f go-ma-actor*
 
 distclean: clean
 	rm -rf releases

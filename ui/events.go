@@ -70,6 +70,7 @@ func (ui *ChatUI) handleEvents() {
 
 		case <-peerRefreshTicker.C:
 			ui.refreshPeers()
+			ui.refreshTitle()
 
 		case <-ui.chDone:
 			return

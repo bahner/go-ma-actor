@@ -24,7 +24,7 @@ func (ui *ChatUI) handleMsgCommand(input string) {
 
 		recipient := parts[0][1:] // The recipient is the first argument, without the leading @
 		if !did.IsValid(recipient) {
-			recipient = entity.DID(recipient)
+			recipient = entity.Lookup(recipient)
 		}
 
 		if recipient == "" {
@@ -50,7 +50,7 @@ func (ui *ChatUI) handleMsgCommand(input string) {
 			ui.displaySystemMessage(fmt.Sprintf("envelope creation error: %s", err))
 		}
 
-		recp, err := entity.GetOrCreate(recipient, false)
+		recp, err := entity.GetOrCreate(recipient)
 		if err != nil {
 			ui.displaySystemMessage(fmt.Sprintf("entity creation error: %s", err))
 		}

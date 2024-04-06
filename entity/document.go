@@ -24,7 +24,7 @@ func (e *Entity) FetchDocument(cached bool) (*doc.Document, error) {
 // Fetch the document and set it in the entity.
 // If cached is true, the document will be fetched from the IPFS cache,
 // if available.
-func (e *Entity) FetchAndSetDocument(cached bool) error {
+func (e *Entity) FetchAndSetDocument() error {
 
 	var (
 		err error
@@ -32,7 +32,7 @@ func (e *Entity) FetchAndSetDocument(cached bool) error {
 
 	if e.Doc == nil {
 		// Fetch the document
-		e.Doc, _, err = doc.FetchFromDID(e.DID, cached)
+		e.Doc, _, err = doc.FetchFromDID(e.DID, false)
 		if err != nil {
 			return err
 		}

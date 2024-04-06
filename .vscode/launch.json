@@ -18,23 +18,6 @@
             "mode": "auto",
             "program": "${workspaceFolder}/cmd/node",
         },
-                {
-            "name": "Launch allowAll",
-            "type": "go",
-            "request": "launch",
-            "mode": "auto",
-            "program": "${workspaceFolder}/cmd/actor/",
-            "console": "integratedTerminal",
-            "args": [
-                "--p2p-discovery-allow-all"
-            ],
-            "env": {
-                "GOLOG_FILE": "/tmp/debug.log",
-                "GOLOG_LOG_LEVEL": "debug",
-                "GOLOG_STDOUT": "false",
-                "GOLOG_OUTPUT": "file"
-            }
-        },
         {
             "name": "Launch actor as bahner",
             "type": "go",
@@ -68,20 +51,6 @@
             }
         },
         {
-            "name": "Launch relay",
-            "type": "go",
-            "request": "launch",
-            "mode": "auto",
-            "program": "${workspaceFolder}/cmd/relay/",
-            "console": "integratedTerminal",
-            "env": {
-                "GOLOG_FILE": "/tmp/debug.log",
-                "GOLOG_LOG_LEVEL": "debug",
-                "GOLOG_STDOUT": "false",
-                "GOLOG_OUTPUT": "file"
-            }
-        },
-        {
             "name": "go-ma-actor generate",
             "type": "go",
             "request": "launch",
@@ -98,39 +67,9 @@
                 "--generate",
                 "--nick",
                 "FUBAR",
+                "--publish",
+                "--force",
             ]
-        },
-        {
-            "name": "Launch Foo",
-            "type": "go",
-            "request": "launch",
-            "mode": "auto",
-            "program": "${workspaceFolder}/cmd/actor/",
-            "args": [
-                "-c",
-                "~/.ma/foo.yaml"
-            ],
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "show-config",
-            "type": "go",
-            "request": "launch",
-            "mode": "auto",
-            "program": "${workspaceFolder}/cmd/actor/",
-            "console": "integratedTerminal",
-            "args": [
-                "--show-config"
-            ],
-            "env": {
-                "GO_MA_ACTOR_ACTOR_NICK": "jonatan",
-                "GO_MA_ACTOR_LOG_FILE": "/dev/null",
-                "GOLOG_FILE": "debug.log",
-                "GOLOG_LOG_LEVEL": "debug",
-                "GOLOG_STDOUT": "false",
-                "GOLOG_OUTPUT": "file"
-            }
-        }
-    
+        }    
     ]
 }

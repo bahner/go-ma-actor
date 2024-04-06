@@ -22,7 +22,7 @@ func Init() *Actor {
 	id := a.Entity.DID.Id
 
 	fmt.Println("Creating and setting DID Document for actor...")
-	err = a.CreateAndSetDocument(id)
+	err = a.CreateAndSetEntityDocument(id)
 	if err != nil {
 		panic(fmt.Sprintf("error creating document: %s", err))
 	}
@@ -33,7 +33,7 @@ func Init() *Actor {
 		panic(fmt.Sprintf("%s is not a valid actor: %v", id, err))
 	}
 
-	_, err = entity.GetOrCreateFromDID(a.Entity.DID, false)
+	_, err = entity.New(a.Entity.DID)
 	if err != nil {
 		panic(fmt.Sprintf("error getting or creating entity: %s", err))
 	}

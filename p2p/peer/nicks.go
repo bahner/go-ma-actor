@@ -1,80 +1,128 @@
 package peer
 
 import (
-	"strings"
+	"sync"
 
+	"github.com/bahner/go-ma-actor/config"
 	"github.com/bahner/go-ma-actor/db"
+	p2peer "github.com/libp2p/go-libp2p/core/peer"
+	log "github.com/sirupsen/logrus"
 )
 
-// Sets a node in the database
-// takes new did and nick. If an old  did  for the alias exists it is removed.
-// This makes this the only alias for the DID and the only complex function in this file.
-func SetNick(nick string, id string) error {
+const defaultNickLength = 8
 
-	prefixBytes := []byte(peerNickPrefix)
-	keyBytes := []byte(nick)
-	valBytes := []byte(id)
+var nicks *sync.Map
 
-	return db.Upsert(prefixBytes, keyBytes, valBytes)
-
+func init() {
+	nicks = new(sync.Map)
 }
 
-// Returns the Entity's nick. If it doesn't exist it returns the query.
-func Nick(id string) string {
-
-	idBytes := []byte(id)
-
-	key, err := db.Lookup(idBytes)
-	if err != nil {
-		return id
+// If a nick is not found, it creates and sets a new one.
+func AssertNick(pid p2peer.ID) error {
+	if IsKnown(pid) {
+		return nil
 	}
 
-	return strings.TrimPrefix(string(key), peerNickPrefix)
+	id := pid.String()
+	nick := createNick(id)
+	return SetNick(id, nick)
 }
 
-func Nicks() (map[string]string, error) {
-	return db.Keys(peerNickPrefix)
-}
+// GetOrCreateNick looks for a peer's nick by its ID.
+// If it does not exist, creates a default nick, stores, and returns it.
+// Takes a peerID as input, to make sure it's valid so we don't have to
+// do any more error checking.
+func GetOrCreateNick(peerID p2peer.ID) string {
 
-// Removes a nnick from the database if it exists.
-func DeleteNick(nick string) error {
+	id := peerID.String()
 
-	nickBytes := []byte(peerNickPrefix + nick)
-
-	return db.Delete(nickBytes)
-}
-
-// ID is the opposite of Nick. It returns the PeerID for a nick.
-func ID(q string) string {
-
-	prefixBytes := []byte(peerNickPrefix)
-	qBytes := []byte(q)
-
-	id, err := db.Get(append(prefixBytes, qBytes...))
-	if err != nil {
-		return q
+	if nick, ok := nicks.Load(id); ok {
+		return nick.(string)
 	}
 
-	return string(id)
+	// If not found, create a default nick
+	return createNick(id)
 }
 
-// Always returns a nick for the did, but also an error if it fails to set the nick.
-func getOrCreateNick(id string) (nick string) {
-	nick = Nick(id)
-	if nick == id {
-		nick = createDefaultNick(id)
-	}
-	return nick
+func DeleteNick(id string) {
+	nicks.Delete(id)
 }
 
-// Create a default nick from the DID
-func createDefaultNick(s string) string {
-	runes := []rune(s)
+func IsKnown(peerID p2peer.ID) bool {
 
-	// This should be made from did's so length should be more than 8
-	if len(runes) > 8 {
-		return string(runes[len(runes)-defailtNickLength:])
+	_, ok := nicks.Load(peerID.String())
+
+	return ok
+}
+
+// Lookup takes an input string that can be either a nick or an ID,
+// and returns the corresponding ID if found; otherwise, it returns the input.
+func Lookup(q string) string {
+	found := ""
+	nicks.Range(func(key, value interface{}) bool {
+		id := key.(string)
+		nick := value.(string)
+
+		// Check if input matches either the key (ID) or the value (nick)
+		if q == id || q == nick {
+			found = id
+			return false // Stop iterating
+		}
+		return true // Continue iterating
+	})
+
+	if found != "" {
+		return found
 	}
-	// This is strange, but just return the string
-	return s
+	return q // Return the input if no match is found
+}
+
+// Nick returns the nick for a given peer ID.
+func Nick(q string) (string, error) {
+
+	nick, ok := nicks.Load(q)
+	if !ok {
+		return "", ErrNickNotFound
+	}
+
+	return nick.(string), nil
+
+}
+
+func Nicks() map[string]string {
+	nmap := make(map[string]string) // Pun intended
+
+	nicks.Range(func(key, value interface{}) bool {
+		strKey, okKey := key.(string)
+		strValue, okValue := value.(string)
+		if okKey && okValue {
+			nmap[strKey] = strValue
+		}
+		return true
+	})
+
+	return nmap
+}
+
+// SetNick updates or sets a new nick for a given peer ID.
+func SetNick(id, nick string) error {
+	nicks.Store(id, nick)
+	filename := config.DBPeers()
+	return db.Save(nicks, filename)
+}
+
+func WatchCSV() error {
+	filename := config.DBPeers()
+	log.Infof("peer.WatchCSV: watching %s", filename)
+	return db.Watch(filename, nicks)
+}
+
+// createNick creates a short nick from a peer ID.
+// It simply takes the last 8 characters of the ID.
+// If the ID is shorter than 8 characters, it returns the ID as is.
+func createNick(id string) string {
+	if len(id) > defaultNickLength {
+		return id[len(id)-defaultNickLength:]
+	}
+	return id
 }

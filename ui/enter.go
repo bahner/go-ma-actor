@@ -21,16 +21,16 @@ func (ui *ChatUI) handleEnterCommand(args []string) {
 	if len(args) >= 2 {
 
 		id := strings.Join(args[1:], separator)
-		id = entity.DID(id)
+		id = entity.Lookup(id)
 
-		e, err := entity.GetOrCreate(id, false)
+		e, err := entity.GetOrCreate(id)
 		if err != nil {
 			ui.displaySystemMessage("Error getting entity: " + err.Error())
 			return
 		}
 
 		// This function handles the verification of the entity
-		err = ui.enterEntity(e, true)
+		err = ui.enterEntity(e, false)
 		if err != nil {
 			ui.displaySystemMessage("Error entering entity: " + err.Error())
 			return
@@ -75,7 +75,7 @@ func (ui *ChatUI) enterEntity(e *entity.Entity, reEntry bool) error {
 	ui.currentEntityCtx, ui.currentEntityCancel = context.WithCancel(context.Background())
 
 	ui.msgBox.Clear()
-	ui.msgBox.SetTitle(entity.Nick(e.DID.Id))
+	ui.msgBox.SetTitle(e.Nick())
 
 	// Start handling the new topic
 	// This *must* be called *after* the entity is set!

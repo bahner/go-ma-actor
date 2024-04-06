@@ -2,13 +2,11 @@ package connmgr
 
 import (
 	"github.com/bahner/go-ma-actor/config"
-	"github.com/bahner/go-ma-actor/p2p/peer"
 	"github.com/libp2p/go-libp2p/core/control"
 	"github.com/libp2p/go-libp2p/core/network"
 	p2peer "github.com/libp2p/go-libp2p/core/peer"
 	p2pConnmgr "github.com/libp2p/go-libp2p/p2p/net/connmgr"
 	"github.com/multiformats/go-multiaddr"
-	log "github.com/sirupsen/logrus"
 )
 
 // ConnectionGater is a struct that implements the network.ConnectionGater interface.
@@ -41,19 +39,11 @@ func (cg *ConnectionGater) InterceptAccept(conn network.ConnMultiaddrs) (allow b
 func (cg *ConnectionGater) InterceptSecured(nd network.Direction, p p2peer.ID, _ network.ConnMultiaddrs) (allow bool) {
 
 	// We should probably run with cg.AllowAll = true in the future
-	if nd == network.DirOutbound || cg.AllowAll {
-		return true
-	}
+	// if nd == network.DirOutbound || cg.AllowAll {
+	// 	return true
+	// }
 
-	// We normally shouldn't arrive here.
-	allow = cg.isAllowed(p)
-
-	if allow {
-		log.Debugf("InterceptSecured: Allow dialing to %s", p)
-	} else {
-		log.Debugf("InterceptSecured: Block dialing to %s", p)
-	}
-	return allow
+	return true
 }
 
 func (cg *ConnectionGater) InterceptAddrDial(p p2peer.ID, _ multiaddr.Multiaddr) (allow bool) {
@@ -65,11 +55,11 @@ func (cg *ConnectionGater) InterceptUpgraded(_ network.Conn) (allow bool, reason
 	return true, 0
 }
 
-func (cg *ConnectionGater) isAllowed(p p2peer.ID) bool {
+// func (cg *ConnectionGater) isAllowed(p p2peer.ID) bool {
 
-	if cg.AllowAll {
-		return true
-	}
+// 	if cg.AllowAll {
+// 		return true
+// 	}
 
-	return peer.IsAllowed(p.String())
-}
+// 	return peer.IsAllowed(p.String())
+// }

@@ -66,7 +66,11 @@ func (p *P2P) ConnectedProctectedPeersNickList() []string {
 	peers := p.ConnectedProtectedPeersAddrInfo()
 	peersNickList := make([]string, 0, len(peers))
 	for _, p := range peers {
-		nick := peer.Nick(p.ID.String())
+		nick, err := peer.Nick(p.ID.String())
+		if err != nil {
+			// We only want known live peers in the list
+			continue
+		}
 		peersNickList = append(peersNickList, nick)
 	}
 	return peersNickList

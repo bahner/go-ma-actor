@@ -42,7 +42,7 @@ func NewRobot() (i *RobotStruct, err error) {
 	go i.Robot.Entity.HandleIncomingMessages(context.Background(), messages)
 
 	// Subscribe to message at location
-	i.Location, err = entity.GetOrCreate(config.ActorLocation(), true)
+	i.Location, err = entity.GetOrCreate(config.ActorLocation())
 	if err != nil {
 		return nil, fmt.Errorf("failed to get or create actor location: %w", errors.Cause(err))
 	}
@@ -110,7 +110,7 @@ func (i *RobotStruct) handleMessage(ctx context.Context, m *entity.Message) erro
 	// Switch sender and receiver. Reply back to from :-)
 	// Broadcast are sent to the topic, and the topic is the DID of the recipient
 	replyFrom := i.Robot.Entity.DID.Id
-	replyTo, err := entity.New(m.Message.From)
+	replyTo, err := entity.GetOrCreate(m.Message.From)
 	if err != nil {
 		return fmt.Errorf("failed to create new entity: %w", errors.Cause(err))
 	}

@@ -13,7 +13,7 @@ import (
 // is the controller alone.
 // NB! All entities must have a document, hence we apply this to the Entity struct,
 // but we can only create Documents for actors. For entities we fetch them.
-func (a *Actor) CreateDocument(controller string) (*doc.Document, error) {
+func (a *Actor) CreateEntityDocument(controller string) (*doc.Document, error) {
 
 	id := a.Entity.DID.Id
 
@@ -99,9 +99,9 @@ func (a *Actor) CreateDocument(controller string) (*doc.Document, error) {
 // Creates a new DID Document for the entity, and sets it as the entity's document.
 // This only applies if the entity has a keyset. If the controller is "", the entity
 // is the controller alone.
-func (a *Actor) CreateAndSetDocument(controller string) error {
+func (a *Actor) CreateAndSetEntityDocument(controller string) error {
 
-	doc, err := a.CreateDocument(controller)
+	doc, err := a.CreateEntityDocument(controller)
 	if err != nil {
 		return fmt.Errorf("entity: failed to create document: %s", err)
 	}

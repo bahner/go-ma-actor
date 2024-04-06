@@ -29,7 +29,7 @@ func (ui *ChatUI) Run() error {
 
 	// We must wait for this to finish.
 	fmt.Printf("Entering %s ...\n", config.ActorLocation())
-	e, err := entity.GetOrCreate(config.ActorLocation(), false)
+	e, err := entity.GetOrCreate(config.ActorLocation())
 	if err != nil {
 		return fmt.Errorf("ui/run: %w", err)
 	}

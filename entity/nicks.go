@@ -1,61 +1,80 @@
 package entity
 
 import (
-	"errors"
-	"strings"
+	"sync"
 
+	"github.com/bahner/go-ma-actor/config"
 	"github.com/bahner/go-ma-actor/db"
+	log "github.com/sirupsen/logrus"
 )
 
-const (
-	entityNickPrefix = entityPrefix + "nick:"
-)
+var nicks *sync.Map
 
-var (
-	ErrFailedToCreateNick = errors.New("failed to set entity nick")
-	ErrDIDNotFound        = errors.New("DID not found")
-	ErrNickNotFound       = errors.New("Nick not found")
-)
+func init() {
+	nicks = new(sync.Map)
+}
 
-// This returns the DID for the nick.
-// If it doesn't exist it returns the query.
-func DID(query string) string {
-
-	queryBytes := []byte(entityNickPrefix + query)
-
-	id, err := db.Get(queryBytes)
-	if err != nil {
-		return query
+// Returns the Entity's nick. Uses and sets the DID as fallback.
+// This does not actually save the nick, as it it will always return
+// the same value for the same DID.
+func (e Entity) Nick() string {
+	if nick, ok := nicks.Load(e.DID.Id); ok {
+		return nick.(string)
 	}
-
-	return string(id)
+	return e.DID.Id
 }
 
-// Removes a an entity nick from the database if it exists.
-// It does a lookup to you can enter both a nick or a DID.
-func DeleteNick(q string) error {
-
-	nick := Nick(q)
-	nickBytes := []byte(entityNickPrefix + nick)
-
-	return db.Delete(nickBytes)
+// Sets a node in the database
+// takes new did and nick. If an old  did  for the alias exists it is removed.
+// This makes this the only alias for the DID and the only complex function in this file.
+func (e Entity) SetNick(nick string) error {
+	nicks.Store(e.DID.Id, nick)
+	return db.Save(nicks, config.DBPeers())
 }
 
-// Nick is the opposite of LookupDID. It returns the nick for a DID.
-// This means iterating over all nicks to find the right one,
-// hence it's not as efficient as LookupDID.
-func Nick(q string) string {
+func DeleteNick(id string) {
+	nicks.Delete(id)
+}
 
-	qBytes := []byte(q)
+// Lookup takes an input string that can be either a nick or an ID,
+// and returns the corresponding ID if found; otherwise, it returns the input.
+func Lookup(q string) string {
+	found := ""
+	nicks.Range(func(key, value interface{}) bool {
+		id := key.(string)
+		nick := value.(string)
 
-	id, err := db.Lookup(qBytes)
-	if err != nil {
-		return q
+		// Check if input matches either the key (ID) or the value (nick)
+		if q == id || q == nick {
+			found = id
+			return false // Stop iterating
+		}
+		return true // Continue iterating
+	})
+
+	if found != "" {
+		return found
 	}
-
-	return strings.TrimPrefix(string(id), entityNickPrefix)
+	return q // Return the input if no match is found
 }
 
-func Nicks() (map[string]string, error) {
-	return db.Keys(entityNickPrefix)
+func Nicks() map[string]string {
+	nmap := make(map[string]string) // Pun intended
+
+	nicks.Range(func(key, value interface{}) bool {
+		strKey, okKey := key.(string)
+		strValue, okValue := value.(string)
+		if okKey && okValue {
+			nmap[strKey] = strValue
+		}
+		return true
+	})
+
+	return nmap
+}
+
+func WatchCSV() error {
+	filename := config.DBEntities()
+	log.Infof("entity.WatchCSV: watching %s", filename)
+	return db.Watch(filename, nicks)
 }

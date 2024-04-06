@@ -32,11 +32,7 @@ func New(d did.DID, k set.Keyset) (*Actor, error) {
 		return nil, fmt.Errorf("entity/new: failed to verify keyset: %w", err)
 	}
 
-	// Hrm. Use the entity context or create own ...
-	// ctx, cancel := context.WithCancel(context.Background())
-	// defer cancel()
-
-	e, err := entity.NewFromDID(d)
+	e, err := entity.New(d)
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +43,7 @@ func New(d did.DID, k set.Keyset) (*Actor, error) {
 		Envelopes: make(chan *msg.Envelope, ENVELOPES_BUFFERSIZE),
 	}
 
-	a.CreateDocument(d.Id)
+	a.CreateEntityDocument(d.Id)
 
 	// Cache the entity
 	store(a)

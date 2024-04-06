@@ -3,8 +3,6 @@ package ui
 import (
 	"fmt"
 	"sort"
-
-	"github.com/bahner/go-ma-actor/p2p/peer"
 )
 
 const (
@@ -32,24 +30,20 @@ func (ui *ChatUI) handleRefresh() {
 // displays the last 8 chars of their peer id in the Peers panel in the ui.
 func (ui *ChatUI) refreshPeers() {
 
-	// Tweak this to change the timeout for peer discovery
-	peers := ui.p.ConnectedProtectedPeersAddrInfo()
+	plist := ui.p.ConnectedProctectedPeersNickList()
+	sort.Strings(plist)
 
 	// clear is thread-safe
 	ui.peersList.Clear()
-
-	plist := []string{}
-
-	for _, p := range peers {
-		n := peer.Nick(p.ID.String())
-		plist = append(plist, n)
-	}
-
-	sort.Strings(plist)
 
 	for _, p := range plist {
 		fmt.Fprintln(ui.peersList, p)
 	}
 
+	ui.app.Draw()
+}
+
+func (ui *ChatUI) refreshTitle() {
+	ui.msgBox.SetTitle(ui.e.Nick())
 	ui.app.Draw()
 }

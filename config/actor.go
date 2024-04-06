@@ -101,7 +101,8 @@ func initActor() {
 	// This function fails fatally, so no return value
 	initActorKeyset(keyset_string)
 
-	if PublishFlag() && keyset_string != "" {
+	// If publish then publish, unless we are to generate a new keyset.
+	if PublishFlag() && !GenerateFlag() {
 		fmt.Println("Publishing identity to IPFS...")
 		err := PublishIdentityFromKeyset(keyset)
 		if err != nil {
@@ -146,7 +147,6 @@ func initActorKeyset(keyset_string string) {
 		log.Errorf("config.initActor: %v", err)
 		os.Exit(70) // EX_SOFTWARE
 	}
-
 }
 
 func generateActorIdentity(nick string) (string, error) {
@@ -164,7 +164,7 @@ func generateActorIdentity(nick string) (string, error) {
 
 		if err != nil {
 			if errors.Is(err, doc.ErrAlreadyPublished) {
-				log.Warnf("Actor document already published: %v", err)
+				log.Debugf("Actor document already published: %v", err)
 			} else {
 				return "", fmt.Errorf("failed to publish actor identity: %w", err)
 			}

@@ -65,7 +65,7 @@ func New(id string) gen.ServerBehavior {
 
 	log.Debugf("Creating new genServer: %s", id)
 
-	a, err := getOrCreateEntity(id)
+	a, err := getOrCreateActor(id)
 	if err != nil {
 		log.Errorf("Error getting or creating entity: %s", err)
 		return nil

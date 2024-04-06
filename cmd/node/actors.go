@@ -9,23 +9,23 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-var entities *entityCache
+var actors *actorCache
 
-type entityCache struct {
+type actorCache struct {
 	store sync.Map
 }
 
 func init() {
-	entities = new(entityCache)
+	actors = new(actorCache)
 }
 
 // GetOrCreateEntity returns an entity from the cache or creates a new one
 // The id is just the uniqgue name of the calling entity, not the full DID
-func getOrCreateEntity(id string) (*actor.Actor, error) {
+func getOrCreateActor(id string) (*actor.Actor, error) {
 
 	// Attempt to retrieve the entity from cache.
 	// This is runtime, so entities will be generated at least once.
-	if cachedEntity, ok := entities.Get(id); ok {
+	if cachedEntity, ok := actors.Get(id); ok {
 		if entity, ok := cachedEntity.(*actor.Actor); ok {
 			log.Debugf("found topic: %s in entities cache.", id)
 			return entity, nil // Successfully type-asserted and returned
@@ -40,12 +40,12 @@ func getOrCreateEntity(id string) (*actor.Actor, error) {
 	}
 
 	// Assuming entity.NewFromKeyset returns *actor.Actor
-	e, err := actor.NewFromKeyset(k)
+	a, err := actor.NewFromKeyset(k)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create entity: %w", err)
 	}
 
-	e.Entity.Doc, err = e.CreateDocument(e.Entity.DID.Id)
+	a.Entity.Doc, err = a.CreateEntityDocument(a.Entity.DID.Id)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create DID Document: %w", err)
 	}
@@ -53,18 +53,18 @@ func getOrCreateEntity(id string) (*actor.Actor, error) {
 	// Force publication of document.
 	o := doc.DefaultPublishOptions()
 	o.Force = true
-	e.Entity.Doc.Publish(o)
+	a.Entity.Doc.Publish(o)
 
 	// Cache the newly created entity for future retrievals
-	entities.Set(id, e)
+	actors.Set(id, a)
 
-	return e, nil
+	return a, nil
 }
 
-func (e *entityCache) Set(key string, value interface{}) {
+func (e *actorCache) Set(key string, value interface{}) {
 	e.store.Store(key, value)
 }
 
-func (e *entityCache) Get(key string) (interface{}, bool) {
+func (e *actorCache) Get(key string) (interface{}, bool) {
 	return e.store.Load(key)
 }

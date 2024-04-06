@@ -67,11 +67,7 @@ func (ui *ChatUI) handleEntityListCommand(args []string) {
 	log.Debugf("entity list command: %v", args)
 	if len(args) == 2 {
 
-		nicks, err := entity.Nicks()
-		if err != nil {
-			ui.displaySystemMessage("Error fetching nicks: " + err.Error())
-			return
-		}
+		nicks := entity.Nicks()
 		log.Debugf("nicks: %v", nicks)
 
 		if len(nicks) > 0 {
@@ -90,19 +86,15 @@ func (ui *ChatUI) handleEntityListCommand(args []string) {
 func (ui *ChatUI) handleEntityNickCommand(args []string) {
 
 	if len(args) >= 4 {
-		id := entity.DID(args[2])
+		id := entity.Lookup(args[2])
 		nick := strings.Join(args[3:], separator)
 
-		e, err := entity.GetOrCreate(id, true)
+		e, err := entity.GetOrCreate(id)
 		if err != nil {
 			ui.displaySystemMessage("Error: " + err.Error())
 			return
 		}
-		err = e.SetNick(nick)
-		if err != nil {
-			ui.displaySystemMessage("Error setting entity nick: " + err.Error())
-			return
-		}
+		e.SetNick(nick)
 		// Change the window title if the ID matches the current entity
 		if id == ui.e.DID.Id {
 			ui.msgBox.SetTitle(nick)
@@ -118,7 +110,8 @@ func (ui *ChatUI) handleEntityShowCommand(args []string) {
 
 	if len(args) >= 3 {
 		id := strings.Join(args[2:], separator)
-		e, err := entity.GetOrCreate(entity.DID(id), true)
+		id = entity.Lookup(id)
+		e, err := entity.GetOrCreate(id)
 		if err != nil {
 			ui.displaySystemMessage("Error: " + err.Error())
 			return
@@ -136,11 +129,7 @@ func (ui *ChatUI) handleEntityDeleteCommand(args []string) {
 
 	if len(args) >= 3 {
 		id := strings.Join(args[2:], separator)
-		err := entity.DeleteNick(id)
-		if err != nil {
-			ui.displaySystemMessage("Error deleting nick: " + err.Error())
-			return
-		}
+		entity.DeleteNick(id)
 		ui.displaySystemMessage("Nick deleted for " + id + " if it existed")
 		return
 	}
@@ -152,8 +141,8 @@ func (ui *ChatUI) handleEntityConnectCommand(args []string) {
 
 	if len(args) >= 3 {
 		id := strings.Join(args[2:], separator)
-		id = entity.DID(id)
-		e, err := entity.GetOrCreate(id, false) // Lookup up the entity document properly.
+		id = entity.Lookup(id)
+		e, err := entity.GetOrCreate(id)
 		if err != nil {
 			ui.displaySystemMessage("Error: " + err.Error())
 			return
@@ -175,14 +164,10 @@ func (ui *ChatUI) handleEntityResolveCommand(args []string) {
 
 	if len(args) >= 3 {
 
-		// We must absolutely get the entity, so we can get the DID Document.
-		// So no caching.
-		CACHED := false
-
 		id := strings.Join(args[2:], separator)
-		id = entity.DID(id)
+		id = entity.Lookup(id)
 
-		e, err := entity.GetOrCreate(id, CACHED)
+		e, err := entity.GetOrCreate(id)
 		if err != nil {
 			ui.displaySystemMessage("Error fetching entity: " + err.Error())
 			return

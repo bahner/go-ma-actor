@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/bahner/go-ma-actor/entity/actor"
+	"github.com/bahner/go-ma-actor/ui/web"
 
 	"github.com/bahner/go-ma-actor/p2p"
 )
@@ -47,6 +48,11 @@ func main() {
 
 	actor.HelloWorld(ctx, a)
 	fmt.Println("Sent hello world.")
+
+	// WEB
+	fmt.Println("Initialising web UI...")
+	wh := web.NewEntityHandler(p, a.Entity)
+	go web.Start(wh)
 
 	fmt.Printf("Running in pong mode as %s@%s\n", a.Entity.DID.Id, p.Host.ID())
 	fmt.Println("Press Ctrl-C to stop.")

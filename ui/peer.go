@@ -63,7 +63,7 @@ func (ui *ChatUI) handlePeerShowCommand(args []string) {
 
 	if len(args) >= 3 {
 		id := strings.Join(args[2:], separator)
-		id = peer.ID(id)
+		id = peer.Lookup(id)
 		pid, err := p2peer.Decode(id)
 		if err != nil {
 			ui.displaySystemMessage("Error: " + err.Error())
@@ -71,7 +71,7 @@ func (ui *ChatUI) handlePeerShowCommand(args []string) {
 		}
 
 		ui.displaySystemMessage("ID: " + id)
-		ui.displaySystemMessage("Nick: " + peer.Nick(id))
+		ui.displaySystemMessage("Nick: " + peer.GetOrCreateNick(pid))
 		ui.displaySystemMessage("Maddrs:")
 		for _, maddr := range ui.p.Host.Peerstore().Addrs(pid) {
 			ui.displaySystemMessage(maddr.String())
@@ -87,11 +87,7 @@ func (ui *ChatUI) handlePeerNickListCommand(args []string) {
 	log.Debugf("peer list command: %v", args)
 	if len(args) == 2 {
 
-		nicks, err := peer.Nicks()
-		if err != nil {
-			ui.displaySystemMessage("Error fetching nicks: " + err.Error())
-			return
-		}
+		nicks := peer.Nicks()
 
 		if len(nicks) > 0 {
 			for k, v := range nicks {
@@ -110,14 +106,10 @@ func (ui ChatUI) handlePeerNickCommand(args []string) {
 
 	if len(args) >= 4 {
 
-		id := peer.ID(args[2])
+		id := peer.Lookup(args[2])
 		nick := strings.Join(args[3:], separator)
 
-		err := peer.SetNick(nick, id)
-		if err != nil {
-			ui.displaySystemMessage("Error: " + err.Error())
-			return
-		}
+		peer.SetNick(id, nick)
 		ui.displaySystemMessage(id + " is now known as " + nick)
 	} else {
 		ui.handleHelpCommand(peerNickUsage, peerNickHelp)
@@ -129,7 +121,7 @@ func (ui *ChatUI) handlePeerConnectCommand(args []string) {
 
 	if len(args) == 3 {
 		id := strings.Join(args[2:], separator)
-		id = peer.ID(id)
+		id = peer.Lookup(id)
 
 		addrInfo, err := peer.PeerAddrInfoFromPeerIDString(ui.p.Host, id)
 		if err != nil {
@@ -151,7 +143,7 @@ func (ui *ChatUI) handlePeerFindCommand(args []string) {
 
 	if len(args) >= 3 {
 		id := strings.Join(args[2:], separator)
-		id = peer.ID(id)
+		id = peer.Lookup(id)
 		pid, err := p2peer.Decode(id)
 		if err != nil {
 			ui.displaySystemMessage("Error: " + err.Error())
@@ -176,14 +168,9 @@ func (ui *ChatUI) handlePeerDeleteCommand(args []string) {
 
 	if len(args) >= 3 {
 		id := strings.Join(args[2:], separator)
-		id = peer.ID(id)
-		err := peer.DeleteNick(id)
-		if err != nil {
-			ui.displaySystemMessage("Error: " + err.Error())
-			return
-		}
-
-		ui.displaySystemMessage("Peer " + id + " deleted")
+		id = peer.Lookup(id)
+		peer.DeleteNick(id)
+		ui.displaySystemMessage("Peer " + id + " deleted if it existed")
 	} else {
 		ui.handleHelpCommand(peerDeleteUsage, peerDeleteHelp)
 	}

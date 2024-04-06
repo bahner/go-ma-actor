@@ -26,8 +26,7 @@ func (p *P2P) protectLoop(ctx context.Context) {
 			peers := p.Host.Network().Peers()
 
 			for _, pid := range peers {
-				idStr := pid.String()
-				if peer.IsKnown(idStr) && peer.IsAllowed(idStr) {
+				if peer.IsKnown(pid) {
 					peer.Protect(p.Host, pid)
 				}
 			}

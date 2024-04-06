@@ -13,7 +13,7 @@ import (
 // with the sender's nick highlighted in green.
 // func (ui *ChatUI) displayChatMessage(cm *msg.Message) {
 func (ui *ChatUI) displayChatMessage(cm *msg.Message) {
-	e, err := entity.GetOrCreate(cm.From, true)
+	e, err := entity.GetOrCreate(cm.From)
 	if err != nil {
 		log.Debugf("entity lookup error: %s", err)
 		return
@@ -23,7 +23,7 @@ func (ui *ChatUI) displayChatMessage(cm *msg.Message) {
 }
 
 func (ui *ChatUI) displayBroadcastMessage(cm *msg.Message) {
-	e, err := entity.GetOrCreate(cm.From, true)
+	e, err := entity.GetOrCreate(cm.From)
 	if err != nil {
 		log.Debugf("entity lookup error: %s", err)
 		return
@@ -33,7 +33,7 @@ func (ui *ChatUI) displayBroadcastMessage(cm *msg.Message) {
 }
 
 func (ui *ChatUI) displayPrivateMessage(cm *msg.Message) {
-	e, err := entity.GetOrCreate(cm.From, true)
+	e, err := entity.GetOrCreate(cm.From)
 	if err != nil {
 		log.Debugf("entity lookup error: %s", err)
 		return
@@ -43,7 +43,7 @@ func (ui *ChatUI) displayPrivateMessage(cm *msg.Message) {
 }
 
 func (ui *ChatUI) displaySentPrivateMessage(cm *msg.Message) {
-	e, err := entity.GetOrCreate(cm.To, true)
+	e, err := entity.GetOrCreate(cm.To)
 	if err != nil {
 		log.Debugf("entity lookup error: %s", err)
 		return

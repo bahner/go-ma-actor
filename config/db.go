@@ -6,27 +6,42 @@ import (
 	"github.com/spf13/viper"
 )
 
-var DefaultDbPath = internal.NormalisePath(dataHome + "/." + Profile())
+const CSVMode = 0664
+
+var (
+	defaultPeersPath    = internal.NormalisePath(dataHome + "/peers.csv")
+	defaultEntitiesPath = internal.NormalisePath(dataHome + "/entities.csv")
+)
 
 func init() {
-	pflag.String("db-path", DefaultDbPath, "Directory to use for database.")
-	viper.BindPFlag("db.path", pflag.Lookup("db-path"))
-	viper.SetDefault("db.path", DefaultDbPath)
+	pflag.String("peers", defaultPeersPath, "Filename for CSV peers file.")
+	pflag.String("entities", defaultEntitiesPath, "Filename for CSV entities file.")
+
+	viper.BindPFlag("db.peers", pflag.Lookup("peers"))
+	viper.BindPFlag("db.entities", pflag.Lookup("entities"))
+
+	viper.SetDefault("db.peers", defaultPeersPath)
+	viper.SetDefault("db.entities", defaultEntitiesPath)
 }
 
 type DBConfig struct {
-	Path string `yaml:"path"`
+	Peers    string `yaml:"peers"`
+	Entities string `yaml:"entities"`
 }
 
 func DB() DBConfig {
 
-	viper.SetDefault("db.path", DefaultDbPath)
-
 	return DBConfig{
-		Path: DBPath(),
+		Peers:    DBPeers(),
+		Entities: DBEntities(),
 	}
+
 }
 
-func DBPath() string {
-	return viper.GetString("db.path")
+func DBPeers() string {
+	return viper.GetString("db.peers")
+}
+
+func DBEntities() string {
+	return viper.GetString("db.entities")
 }

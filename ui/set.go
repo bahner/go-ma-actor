@@ -60,7 +60,7 @@ func (ui *ChatUI) handleSetLocationCommand(args []string) {
 		if location == "here" {
 			location = ui.e.DID.Id
 		} else {
-			location = entity.Nick(location)
+			location = entity.Lookup(location)
 		}
 
 		viper.Set("actor.location", location)
