@@ -28,7 +28,7 @@ func GetOrCreate(didString string) (*Entity, error) {
 		return entity.(*Entity), nil
 	}
 
-	entity, err := New(d)
+	entity, err := Fetch(d)
 	if err != nil {
 		return nil, err
 	}

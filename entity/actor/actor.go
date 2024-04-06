@@ -43,9 +43,13 @@ func New(d did.DID, k set.Keyset) (*Actor, error) {
 		Envelopes: make(chan *msg.Envelope, ENVELOPES_BUFFERSIZE),
 	}
 
-	a.CreateEntityDocument(d.Id)
+	a.Entity.Doc, err = a.CreateEntityDocument(d.Id)
+	if err != nil {
+		panic(err)
+	}
 
-	// Cache the entity
+	a.Entity.Doc.Publish()
+
 	store(a)
 
 	return a, nil

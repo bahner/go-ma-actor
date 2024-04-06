@@ -1,14 +1,12 @@
 package config
 
 import (
-	"errors"
 	"fmt"
 	"os"
 
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 
-	"github.com/bahner/go-ma/did/doc"
 	"github.com/bahner/go-ma/key/set"
 	log "github.com/sirupsen/logrus"
 )
@@ -50,12 +48,12 @@ type ActorConfig struct {
 // Eg. ActorFlags()
 func Actor() ActorConfig {
 
-	initActor()
-
 	identity, err := actorIdentity()
 	if err != nil {
 		panic(err)
 	}
+
+	initActorKeyset(identity)
 
 	return ActorConfig{
 		Identity: identity,
@@ -80,42 +78,10 @@ func ActorKeyset() set.Keyset {
 	return keyset
 }
 
-// Load a keyset from string and initiate an Actor.
-// This is optional, but if you want to use the actor package, you need to call this.
-func initActor() {
-
-	keyset_string, err := actorIdentity()
-	// if keyset_string == fakeActorIdentity {
-	// 	panic(ErrFakeIdentity)
-	// }
-	if err != nil {
-		panic(err)
-	}
-
-	log.Debugf("config.initActor: %s", keyset_string)
-	// Create the actor keyset
-	if keyset_string == "" {
-		panic(ErrEmptyIdentity.Error())
-	}
-
-	// This function fails fatally, so no return value
-	initActorKeyset(keyset_string)
-
-	// If publish then publish, unless we are to generate a new keyset.
-	if PublishFlag() && !GenerateFlag() {
-		fmt.Println("Publishing identity to IPFS...")
-		err := PublishIdentityFromKeyset(keyset)
-		if err != nil {
-			log.Warnf("config.initActor: %v", err)
-		}
-	}
-
-}
-
 func actorIdentity() (string, error) {
 
 	if GenerateFlag() {
-		return generateActorIdentity(ActorNick())
+		return generateKeysetString(ActorNick())
 	}
 
 	return viper.GetString("actor.identity"), nil
@@ -133,6 +99,8 @@ func defaultNick() string {
 
 func initActorKeyset(keyset_string string) {
 
+	var err error
+
 	log.Debugf("config.initActor: %s", keyset_string)
 	// Create the actor keyset
 	if keyset_string == "" {
@@ -140,38 +108,11 @@ func initActorKeyset(keyset_string string) {
 		os.Exit(64) // EX_USAGE
 	}
 
-	var err error
-
 	keyset, err = set.Unpack(keyset_string)
 	if err != nil {
 		log.Errorf("config.initActor: %v", err)
 		os.Exit(70) // EX_SOFTWARE
 	}
-}
-
-func generateActorIdentity(nick string) (string, error) {
-
-	log.Debugf("Generating new keyset for %s", nick)
-	keyset_string, err := generateKeysetString(nick)
-	if err != nil {
-		log.Errorf("Failed to generate new keyset: %s", err)
-		return "", fmt.Errorf("failed to generate new keyset: %w", err)
-	}
-
-	// Ignore already published error. That's a good thing.
-	if PublishFlag() {
-		err = publishActorIdentityFromString(keyset_string)
-
-		if err != nil {
-			if errors.Is(err, doc.ErrAlreadyPublished) {
-				log.Debugf("Actor document already published: %v", err)
-			} else {
-				return "", fmt.Errorf("failed to publish actor identity: %w", err)
-			}
-		}
-	}
-
-	return keyset_string, nil
 }
 
 // Generates a new keyset and returns the keyset as a string
@@ -190,19 +131,4 @@ func generateKeysetString(nick string) (string, error) {
 	log.Debugf("Packed keyset: %v", pks)
 
 	return pks, nil
-}
-
-func publishActorIdentityFromString(keyset_string string) error {
-
-	keyset, err := set.Unpack(keyset_string)
-	if err != nil {
-		log.Errorf("publishActorIdentityFromString: Failed to unpack keyset: %v", err)
-	}
-
-	err = PublishIdentityFromKeyset(keyset)
-	if err != nil {
-		return fmt.Errorf("publishActorIdentityFromString: Failed to publish keyset: %w", err)
-	}
-
-	return nil
 }

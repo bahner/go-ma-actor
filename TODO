@@ -10,9 +10,5 @@ Add acl. So that if an ACL exists, then broadcast aren't used
 only acl members can send messages in and outgoing messages
 will be encrypted to all members. So - private actor, basically
 
-## Bugs
-
-There is a nil pointer reference in ther, which make the closet stay closed.
-
-### Pinning
-We should probably handle pinning. Maybe not for DID Docs, as they have timestamp, so wont be reused.
+## BUGS
+Published document doesnøt match local document.

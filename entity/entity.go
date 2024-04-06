@@ -31,9 +31,30 @@ type Entity struct {
 	Messages chan *Message
 }
 
-// Create a new entity from a DID. If the entity is already known, it is returned.
-// The cached parameter is used to determine if the entity should be fetched from the local IPFS node,
-// or if a network search should be performed.
+// Creates a ned Entity from a DID and fetched the live document.
+// This is used mostly for foreign entities.
+func Fetch(d did.DID) (*Entity, error) {
+	e, err := New(d)
+	if err != nil {
+		return nil, fmt.Errorf("entity.Fetch: %w", err)
+	}
+
+	err = e.FetchAndSetDocument()
+	if err != nil {
+		return nil, fmt.Errorf("entity.Fetch: %w", err)
+	}
+
+	err = e.Verify()
+	if err != nil {
+		return nil, fmt.Errorf("entity.Fetch: %w", err)
+	}
+
+	return e, nil
+
+}
+
+// Creates a new Entity from a DID, but does not fetch the document.
+// Use this when creating a new actor for instance
 func New(d did.DID) (*Entity, error) {
 
 	// Only 1 topic, but this is where it's at! One topic per entity.
@@ -45,7 +66,7 @@ func New(d did.DID) (*Entity, error) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	e := &Entity{
+	return &Entity{
 
 		Ctx:    ctx,
 		Cancel: cancel,
@@ -54,19 +75,5 @@ func New(d did.DID) (*Entity, error) {
 		Topic: _topic,
 
 		Messages: make(chan *Message, MESSAGES_BUFFERSIZE),
-	}
-
-	// Fetch the document
-	err = e.FetchAndSetDocument()
-	if err != nil {
-		return nil, fmt.Errorf("GetOrCreateFromDID: %w", err)
-	}
-
-	err = e.Verify()
-	if err != nil {
-		return nil, fmt.Errorf("GetOrCreateFromDID: %w", err)
-	}
-
-	return e, nil
-
+	}, nil
 }
