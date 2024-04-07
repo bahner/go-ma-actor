@@ -172,10 +172,7 @@ linux-amd64: $(RELEASES)
 
 linux-arm64: GOOS=linux
 linux-arm64: GOARCH=arm64
-linux-arm64: CGO_ENABLED=1
 linux-arm64: CC=aarch64-linux-musl-gcc
-linux-arm64: CGO_CFLAGS="-fPIC"
-linux-arm64: CGO_LDFLAGS="-static"
 linux-arm64: FILENAME = $(RELEASES)/$(NAME)-$(GOOS)-$(GOARCH)
 linux-arm64: $(RELEASES)
 	$(GO) build -o $(FILENAME) $(BUILDFLAGS) ./cmd/actor
