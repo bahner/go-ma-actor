@@ -103,9 +103,12 @@ func Nicks() map[string]string {
 
 // SetNick updates or sets a new nick for a given peer ID.
 func SetNick(id, nick string) error {
+
+	// Nicks must be unique, so delete any old ones.
+	DeleteNick(Lookup(nick))
+
 	nicks.Store(id, nick)
-	filename := config.DBPeers()
-	return db.Save(nicks, filename)
+	return db.Save(nicks, config.DBPeers())
 }
 
 func WatchCSV() error {

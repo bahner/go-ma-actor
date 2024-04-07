@@ -28,6 +28,10 @@ func (e Entity) Nick() string {
 // takes new did and nick. If an old  did  for the alias exists it is removed.
 // This makes this the only alias for the DID and the only complex function in this file.
 func (e Entity) SetNick(nick string) error {
+
+	// Delete the nick if it exist.
+	DeleteNick(Lookup(nick))
+
 	nicks.Store(e.DID.Id, nick)
 	return db.Save(nicks, config.DBEntities())
 }
