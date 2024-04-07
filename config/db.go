@@ -1,6 +1,10 @@
 package config
 
 import (
+	"fmt"
+	"os"
+	"sync"
+
 	"github.com/bahner/go-ma-actor/internal"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
@@ -11,21 +15,34 @@ const CSVMode = 0664
 var (
 	defaultPeersPath    = internal.NormalisePath(dataHome + "/peers.csv")
 	defaultEntitiesPath = internal.NormalisePath(dataHome + "/entities.csv")
-	defaultHistoryPath  = internal.NormalisePath(dataHome + "/" + Profile() + ".history")
+	dbFlags             = *pflag.NewFlagSet("db", pflag.ContinueOnError)
+	dbOnce              sync.Once
 )
 
-func init() {
-	pflag.String("peers", defaultPeersPath, "Filename for CSV peers file.")
-	pflag.String("entities", defaultEntitiesPath, "Filename for CSV entities file.")
-	pflag.String("history", defaultHistoryPath, "Filename for CSV history file.")
+func InitDB() {
 
-	viper.BindPFlag("db.peers", pflag.Lookup("peers"))
-	viper.BindPFlag("db.entities", pflag.Lookup("entities"))
-	viper.BindPFlag("db.history", pflag.Lookup("history"))
+	dbOnce.Do(func() {
 
-	viper.SetDefault("db.peers", defaultPeersPath)
-	viper.SetDefault("db.entities", defaultEntitiesPath)
-	viper.SetDefault("db.history", defaultHistoryPath)
+		dbFlags.String("peers", defaultPeersPath, "Filename for CSV peers file.")
+		dbFlags.String("entities", defaultEntitiesPath, "Filename for CSV entities file.")
+		dbFlags.String("history", defaultHistoryPath(), "Filename for CSV history file.")
+
+		viper.BindPFlag("db.peers", dbFlags.Lookup("peers"))
+		viper.BindPFlag("db.entities", dbFlags.Lookup("entities"))
+		viper.BindPFlag("db.history", dbFlags.Lookup("history"))
+
+		viper.SetDefault("db.peers", defaultPeersPath)
+		viper.SetDefault("db.entities", defaultEntitiesPath)
+		viper.SetDefault("db.history", defaultHistoryPath())
+
+		if HelpNeeded() {
+			fmt.Println("DB Flags:")
+			dbFlags.PrintDefaults()
+		} else {
+			dbFlags.Parse(os.Args[1:])
+		}
+	})
+
 }
 
 type DBConfig struct {
@@ -54,4 +71,8 @@ func DBEntities() string {
 
 func DBHistory() string {
 	return viper.GetString("db.history")
+}
+
+func defaultHistoryPath() string {
+	return internal.NormalisePath(dataHome + "/" + Profile() + ".history")
 }

@@ -40,12 +40,12 @@ func getOrCreateActor(id string) (*actor.Actor, error) {
 	}
 
 	// Assuming entity.NewFromKeyset returns *actor.Actor
-	a, err := actor.NewFromKeyset(k)
+	a, err := actor.New(k)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create entity: %w", err)
 	}
 
-	a.Entity.Doc, err = a.CreateEntityDocument(a.Entity.DID.Id)
+	a.Entity.Doc, err = doc.NewFromKeyset(a.Keyset)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create DID Document: %w", err)
 	}

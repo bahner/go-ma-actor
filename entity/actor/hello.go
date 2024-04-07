@@ -11,7 +11,7 @@ import (
 
 const broadcastWait = 3 * time.Second
 
-func HelloWorld(ctx context.Context, a *Actor) {
+func (a *Actor) HelloWorld(ctx context.Context) {
 
 	topic, err := pubsub.GetOrCreateTopic(ma.BROADCAST_TOPIC)
 	if err != nil {

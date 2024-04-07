@@ -29,7 +29,7 @@ func (e Entity) Nick() string {
 // This makes this the only alias for the DID and the only complex function in this file.
 func (e Entity) SetNick(nick string) error {
 	nicks.Store(e.DID.Id, nick)
-	return db.Save(nicks, config.DBPeers())
+	return db.Save(nicks, config.DBEntities())
 }
 
 func DeleteNick(id string) {

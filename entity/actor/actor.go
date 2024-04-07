@@ -5,6 +5,7 @@ import (
 
 	"github.com/bahner/go-ma-actor/entity"
 	"github.com/bahner/go-ma/did"
+	"github.com/bahner/go-ma/did/doc"
 	"github.com/bahner/go-ma/key/set"
 	"github.com/bahner/go-ma/msg"
 )
@@ -25,14 +26,14 @@ type Actor struct {
 // Create a new entity from a DID and a Keyset. We need both.
 // The DID is to verify the entity, and the keyset is to create the
 // DID Document.
-func New(d did.DID, k set.Keyset) (*Actor, error) {
+func New(k set.Keyset) (*Actor, error) {
 
 	err := k.Verify()
 	if err != nil {
 		return nil, fmt.Errorf("entity/new: failed to verify keyset: %w", err)
 	}
 
-	e, err := entity.New(d)
+	e, err := entity.New(k.DID)
 	if err != nil {
 		return nil, err
 	}
@@ -43,32 +44,14 @@ func New(d did.DID, k set.Keyset) (*Actor, error) {
 		Envelopes: make(chan *msg.Envelope, ENVELOPES_BUFFERSIZE),
 	}
 
-	a.Entity.Doc, err = a.CreateEntityDocument(d.Id)
+	a.Entity.Doc, err = doc.NewFromKeyset(a.Keyset)
 	if err != nil {
 		panic(err)
 	}
 
-	a.Entity.Doc.Publish()
-
 	store(a)
 
 	return a, nil
-}
-
-// Create a new entity from a DID and use fragment as nick.
-func NewFromDID(id string, nick string) (*Actor, error) {
-
-	d, err := did.New(id)
-	if err != nil {
-		return nil, fmt.Errorf("entity/newfromdid: failed to create did from ipnsKey: %w", err)
-	}
-
-	k, err := set.GetOrCreate(d.Fragment)
-	if err != nil {
-		return nil, fmt.Errorf("entity/newfromdid: failed to get or create keyset: %w", err)
-	}
-
-	return New(d, k)
 }
 
 // // Get an entity from the global map.
@@ -77,30 +60,21 @@ func NewFromDID(id string, nick string) (*Actor, error) {
 // // And verify the entity.
 func GetOrCreate(id string) (*Actor, error) {
 
-	if id == "" {
-		return nil, fmt.Errorf("entity/getorcreate: empty id")
+	// Creating a DID here implies validation before we try to load the actor.
+	d, err := did.New(id)
+	if err != nil {
+		return nil, fmt.Errorf("actor.GetOrCreate: %w", err)
 	}
 
-	if !did.IsValid(id) {
-		return nil, fmt.Errorf("entity/getorcreate: invalid id")
-	}
-
-	var err error
-
-	e := load(id)
+	e := load(d.Id)
 	if e != nil {
 		return e, nil
 	}
 
-	e, err = NewFromDID(id, "")
+	k, err := set.GetOrCreate(d.Fragment)
 	if err != nil {
-		return nil, fmt.Errorf("entity/getorcreate: failed to create entity: %w", err)
+		return nil, fmt.Errorf("entity/newfromdid: failed to get or create keyset: %w", err)
 	}
 
-	err = e.Verify()
-	if err != nil {
-		return nil, fmt.Errorf("entity/getorcreate: failed to verify created entity: %w", err)
-	}
-
-	return e, nil
+	return New(k)
 }

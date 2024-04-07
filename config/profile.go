@@ -1,13 +1,16 @@
 package config
 
-import "github.com/spf13/pflag"
+import (
+	log "github.com/sirupsen/logrus"
+)
 
 var defaultProfile = "actor"
 
 // Profile is the mode unless overridden by the profile flag.
 func Profile() string {
 
-	flag := pflag.Lookup("profile")
+	flag := CommonFlags.Lookup("profile")
+	log.Debugf("config.Profile: Lookup profile: %v", flag)
 	if flag != nil && flag.Changed {
 		return flag.Value.String()
 	}

@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	log "github.com/sirupsen/logrus"
-	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	"gopkg.in/yaml.v2"
 )
@@ -36,7 +35,7 @@ func Init() error {
 	var err error
 
 	//VIPER CONFIGURATION
-	viper.BindPFlag("http.debug-socket", pflag.Lookup("debug-socket"))
+	viper.BindPFlag("http.debug-socket", CommonFlags.Lookup("debug-socket"))
 	viper.SetDefault("http.debug-socket", defaultDebugSocket)
 
 	// Read the config file and environment variables.
@@ -56,11 +55,11 @@ func Init() error {
 	// We *must* read the config file after we have generated the identity.
 	// Otherwise: Unforeseen consequences.
 	if !GenerateFlag() {
-		log.Infof("Using config file: %s", File()) // This one goes to STDERR
+		log.Infof("Using config file: %s", File()) // This one goes to stderr
 		viper.SetConfigFile(File())
 		err = viper.ReadInConfig()
 		if err != nil {
-			log.Warnf("No config file found: %s", err)
+			panic(err)
 		}
 	}
 

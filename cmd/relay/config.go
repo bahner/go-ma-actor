@@ -4,7 +4,6 @@ import (
 	"os"
 
 	"github.com/bahner/go-ma-actor/config"
-	"github.com/spf13/pflag"
 	"gopkg.in/yaml.v2"
 )
 
@@ -18,8 +17,8 @@ type RelayConfig struct {
 
 func initConfig(defaultProfileName string) RelayConfig {
 
-	pflag.Parse()
 	config.SetDefaultProfileName(defaultProfileName)
+	config.ParseCommonFlags(true)
 	config.Init()
 
 	c := RelayConfig{

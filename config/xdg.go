@@ -8,14 +8,11 @@ import (
 	"github.com/bahner/go-ma"
 	"github.com/bahner/go-ma-actor/internal"
 	"github.com/mitchellh/go-homedir"
-	log "github.com/sirupsen/logrus"
-	"github.com/spf13/pflag"
 )
 
 var (
-	configHome        string = xdg.ConfigHome + "/" + ma.NAME + "/"
-	dataHome          string = xdg.DataHome + "/" + ma.NAME + "/"
-	defaultConfigFile string = internal.NormalisePath(configHome + Profile() + ".yaml")
+	configHome string = xdg.ConfigHome + "/" + ma.NAME + "/"
+	dataHome   string = xdg.DataHome + "/" + ma.NAME + "/"
 )
 
 // Returns the configfile name to use.
@@ -28,16 +25,16 @@ func File() string {
 		err      error
 	)
 
-	config, err := pflag.CommandLine.GetString("config")
+	config, err := CommonFlags.GetString("config")
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
 	// Prefer explicitly requested config. If not, use the name of the profile name.
-	if config != defaultConfigFile && config != "" {
+	if config != defaultConfigFile() && config != "" {
 		filename, err = homedir.Expand(config)
 		if err != nil {
-			log.Fatal(err)
+			panic(err)
 		}
 	} else {
 		filename = configHome + Profile() + ".yaml"
@@ -45,6 +42,10 @@ func File() string {
 
 	return filepath.Clean(filename)
 
+}
+
+func defaultConfigFile() string {
+	return internal.NormalisePath(configHome + Profile() + ".yaml")
 }
 
 func XDGConfigHome() string {

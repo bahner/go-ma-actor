@@ -2,7 +2,6 @@ package actor
 
 import (
 	"github.com/bahner/go-ma-actor/config"
-	"github.com/spf13/pflag"
 	"gopkg.in/yaml.v2"
 )
 
@@ -16,13 +15,11 @@ type ActorConfig struct {
 }
 
 // This is an all-inclusive configuration function that sets up the configuration for the actor.
-// flags and everything. It is used in the main function of siple actors programmes.
-// Remebmer to call check the config.GenerateFlag() and save the configuration if it is set.
+// flags and everything. It is used in the main function of simple actors programmes.
+// It also parses the common flags.
 func Config() ActorConfig {
 
-	config.ActorFlags()
-	pflag.Parse()
-
+	config.ParseActorFlags(true)
 	config.Init()
 
 	return ActorConfig{

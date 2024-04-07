@@ -45,7 +45,7 @@ func main() {
 	go handleMessageEvents(ctx, a)
 	fmt.Println("Started event handlers.")
 
-	actor.HelloWorld(ctx, a)
+	a.HelloWorld(ctx)
 	fmt.Println("Sent hello world.")
 
 	// WEB

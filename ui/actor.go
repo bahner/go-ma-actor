@@ -2,8 +2,6 @@ package ui
 
 import (
 	"context"
-
-	"github.com/bahner/go-ma-actor/entity/actor"
 )
 
 func (ui *ChatUI) startActor() {
@@ -18,5 +16,5 @@ func (ui *ChatUI) startActor() {
 	go ui.a.HandleIncomingEnvelopes(ui.currentActorCtx, ui.chMessages)
 	go ui.a.Entity.HandleIncomingMessages(ui.currentActorCtx, ui.chMessages)
 
-	go actor.HelloWorld(ui.currentActorCtx, ui.a) // This wait a bit before sending the message.
+	go ui.a.HelloWorld(ui.currentActorCtx) // This waits a bit before sending the message.
 }

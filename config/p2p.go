@@ -1,7 +1,10 @@
 package config
 
 import (
+	"fmt"
+	"os"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/spf13/pflag"
@@ -25,28 +28,54 @@ const (
 	defaultMDNS       bool   = true
 )
 
-func init() {
+var (
+	p2pFlags = pflag.NewFlagSet("p2p", pflag.ContinueOnError)
+	p2pOnce  sync.Once
+)
 
-	pflag.Bool("dht", defaultDHT, "Whether to discover using DHT")
-	pflag.Bool("mdns", defaultMDNS, "Whether to discover using MDNS")
-	pflag.Duration("connmgr-grace-period", defaultConnmgrGracePeriod, "Grace period for connection manager.")
-	pflag.Duration("discovery-advertise-interval", defaultDiscoveryAdvertiseInterval, "How often to advertise our presence to libp2p")
-	pflag.Duration("discovery-advertise-ttl", defaultDiscoveryAdvertiseTTL, "Hint of TimeToLive for advertising peer discovery.")
-	pflag.Int("connmgr-high-watermark", defaultConnmgrHighWatermark, "High watermark for peer discovery.")
-	pflag.Int("connmgr-low-watermark", defaultConnmgrLowWatermark, "Low watermark for peer discovery.")
-	pflag.Int("discovery-advertise-limit", defaultDiscoveryAdvertiseLimit, "Limit for advertising peer discovery.")
-	pflag.Int("port", defaultListenPort, "Port for libp2p node to listen on.")
+func InitP2P() {
 
-	// Bind pflags
-	viper.BindPFlag("p2p.connmgr.grace-period", pflag.Lookup("connmgr-grace-period"))
-	viper.BindPFlag("p2p.connmgr.high-watermark", pflag.Lookup("connmgr-high-watermark"))
-	viper.BindPFlag("p2p.connmgr.low-watermark", pflag.Lookup("connmgr-low-watermark"))
-	viper.BindPFlag("p2p.discovery.advertise-interval", pflag.Lookup("discovery-advertise-interval"))
-	viper.BindPFlag("p2p.discovery.advertise-limit", pflag.Lookup("discovery-advertise-limit"))
-	viper.BindPFlag("p2p.discovery.advertise-ttl", pflag.Lookup("discovery-advertise-ttl"))
-	viper.BindPFlag("p2p.discovery.dht", pflag.Lookup("dht"))
-	viper.BindPFlag("p2p.discovery.mdns", pflag.Lookup("mdns"))
-	viper.BindPFlag("p2p.port", pflag.Lookup("port"))
+	p2pOnce.Do(func() {
+
+		p2pFlags.Bool("dht", defaultDHT, "Whether to discover using DHT")
+		p2pFlags.Bool("mdns", defaultMDNS, "Whether to discover using MDNS")
+		p2pFlags.Duration("connmgr-grace-period", defaultConnmgrGracePeriod, "Grace period for connection manager.")
+		p2pFlags.Duration("discovery-advertise-interval", defaultDiscoveryAdvertiseInterval, "How often to advertise our presence to libp2p")
+		p2pFlags.Duration("discovery-advertise-ttl", defaultDiscoveryAdvertiseTTL, "Hint of TimeToLive for advertising peer discovery.")
+		p2pFlags.Int("connmgr-high-watermark", defaultConnmgrHighWatermark, "High watermark for peer discovery.")
+		p2pFlags.Int("connmgr-low-watermark", defaultConnmgrLowWatermark, "Low watermark for peer discovery.")
+		p2pFlags.Int("discovery-advertise-limit", defaultDiscoveryAdvertiseLimit, "Limit for advertising peer discovery.")
+		p2pFlags.Int("port", defaultListenPort, "Port for libp2p node to listen on.")
+
+		// Bind p2pFlagss
+		viper.BindPFlag("p2p.connmgr.grace-period", p2pFlags.Lookup("connmgr-grace-period"))
+		viper.BindPFlag("p2p.connmgr.high-watermark", p2pFlags.Lookup("connmgr-high-watermark"))
+		viper.BindPFlag("p2p.connmgr.low-watermark", p2pFlags.Lookup("connmgr-low-watermark"))
+		viper.BindPFlag("p2p.discovery.advertise-interval", p2pFlags.Lookup("discovery-advertise-interval"))
+		viper.BindPFlag("p2p.discovery.advertise-limit", p2pFlags.Lookup("discovery-advertise-limit"))
+		viper.BindPFlag("p2p.discovery.advertise-ttl", p2pFlags.Lookup("discovery-advertise-ttl"))
+		viper.BindPFlag("p2p.discovery.dht", p2pFlags.Lookup("dht"))
+		viper.BindPFlag("p2p.discovery.mdns", p2pFlags.Lookup("mdns"))
+		viper.BindPFlag("p2p.port", p2pFlags.Lookup("port"))
+
+		viper.SetDefault("p2p.connmgr.grace-period", defaultConnmgrGracePeriod)
+		viper.SetDefault("p2p.connmgr.high-watermark", defaultConnmgrHighWatermark)
+		viper.SetDefault("p2p.connmgr.low-watermark", defaultConnmgrLowWatermark)
+		viper.SetDefault("p2p.discovery.advertise-interval", defaultDiscoveryAdvertiseInterval)
+		viper.SetDefault("p2p.discovery.advertise-limit", defaultDiscoveryAdvertiseLimit)
+		viper.SetDefault("p2p.discovery.advertise-ttl", defaultDiscoveryAdvertiseTTL)
+		viper.SetDefault("p2p.discovery.dht", defaultDHT)
+		viper.SetDefault("p2p.discovery.mdns", defaultMDNS)
+		viper.SetDefault("p2p.port", defaultListenPort)
+
+		if HelpNeeded() {
+			fmt.Println("P2P Flags:")
+			p2pFlags.PrintDefaults()
+		} else {
+			p2pFlags.Parse(os.Args[1:])
+		}
+	})
+
 }
 
 type ConnmgrStruct struct {

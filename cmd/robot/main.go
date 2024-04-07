@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/bahner/go-ma-actor/entity/actor"
 	"github.com/bahner/go-ma-actor/ui/web"
 
 	"github.com/bahner/go-ma-actor/p2p"
@@ -34,7 +33,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	actor.HelloWorld(ctx, i.Robot)
+	i.Robot.HelloWorld(ctx)
 	// i.Robot.HelloWorld(ctx, a)
 
 	fmt.Println("Press Ctrl-C to stop.")

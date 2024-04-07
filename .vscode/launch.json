@@ -32,7 +32,7 @@
             "env": {
                 "GOLOG_FILE": "debug.log",
                 "GOLOG_LOG_LEVEL": "debug",
-                "GOLOG_STDOUT": "false",
+                "GOLOG_stdout": "false",
                 "GOLOG_OUTPUT": "file"
             }
         },
@@ -46,7 +46,7 @@
             "env": {
                 "GOLOG_FILE": "/tmp/debug.log",
                 "GOLOG_LOG_LEVEL": "debug",
-                "GOLOG_STDOUT": "false",
+                "GOLOG_stdout": "false",
                 "GOLOG_OUTPUT": "file"
             }
         },
@@ -60,15 +60,32 @@
             "env": {
                 "GOLOG_FILE": "debug.log",
                 "GOLOG_LOG_LEVEL": "debug",
-                "GOLOG_STDOUT": "false",
+                "GOLOG_stdout": "false",
                 "GOLOG_OUTPUT": "file"
             },
             "args": [
                 "--generate",
-                "--nick",
+                "--profile",
                 "FUBAR",
-                "--publish",
-                "--force",
+                "--nick",
+                "FUBAR"
+            ]
+        },    
+        {
+            "name": "go-ma-actor-relay generate",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/cmd/relay/",
+            "console": "integratedTerminal",
+            "env": {
+                "GOLOG_FILE": "debug.log",
+                "GOLOG_LOG_LEVEL": "debug",
+                "GOLOG_stdout": "false",
+                "GOLOG_OUTPUT": "file"
+            },
+            "args": [
+                "--generate",
             ]
         }    
     ]

@@ -14,22 +14,16 @@ import (
 func Init() *Actor {
 	// The actor is needed for initialisation of the WebHandler.
 	fmt.Println("Creating actor from keyset...")
-	a, err := NewFromKeyset(config.ActorKeyset())
+	a, err := New(config.ActorKeyset())
 	if err != nil {
 		panic(fmt.Sprintf("error creating actor: %s", err))
 	}
 
 	id := a.Entity.DID.Id
 
-	fmt.Println("Creating and setting DID Document for actor...")
-	err = a.CreateAndSetEntityDocument(id)
-	if err != nil {
-		panic(fmt.Sprintf("error creating document: %s", err))
-	}
-
 	// Better safe than sorry.
 	// Without a valid actor, we can't do anything.
-	if a == nil || a.Verify() != nil {
+	if a.Verify() != nil {
 		panic(fmt.Sprintf("%s is not a valid actor: %v", id, err))
 	}
 

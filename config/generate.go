@@ -54,7 +54,7 @@ func writeGeneratedConfigFile(content []byte) {
 		} else {
 			errMsg = fmt.Sprintf("Failed to open file: %v", err)
 		}
-		log.Fatalf(errMsg)
+		panic(errMsg)
 	}
 	defer file.Close()
 

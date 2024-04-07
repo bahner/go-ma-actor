@@ -1,12 +1,20 @@
 package config
 
+// This file contains the configuration for the actor package.
+// It also somewhat strangeky initialises the identoty and generates a new one if needed.
+// This is because it's so low level and the identity is needed for the keyset.
+
 import (
+	"context"
 	"fmt"
 	"os"
+	"sync"
 
+	"github.com/bahner/go-ma/api"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 
+	"github.com/bahner/go-ma/did/doc"
 	"github.com/bahner/go-ma/key/set"
 	log "github.com/sirupsen/logrus"
 )
@@ -17,25 +25,49 @@ const (
 )
 
 var (
-	keyset           set.Keyset
+	ActorFlags       = *pflag.NewFlagSet("actor", pflag.ContinueOnError)
+	actorKeyset      set.Keyset
+	actorOnce        sync.Once
 	ErrEmptyIdentity = fmt.Errorf("identity is empty")
-	ErrFakeIdentity  = fmt.Errorf("your identity is fake. You need to define actorKeyset or generate a new one")
 	ErrEmptyNick     = fmt.Errorf("nick is empty")
+	ErrFakeIdentity  = fmt.Errorf("your identity is fake. You need to define actorKeyset or generate a new one")
 )
 
 // Initialise command line flags for the actor package
 // The actor is optional for some commands, but required for others.
-func ActorFlags() {
+// exitOnHelp means that this function is the last called when help is needed.
+// and the program should exit.
+func ParseActorFlags(exitOnHelp bool) {
 
-	pflag.StringP("nick", "n", "", "Nickname to use in character creation")
-	pflag.StringP("location", "l", defaultLocation, "DID of the location to visit")
+	InitCommon()
+	InitLog()
+	InitDB()
+	InitP2P()
+	InitHTTP()
 
-	viper.BindPFlag("actor.nick", pflag.Lookup("nick"))
-	viper.BindPFlag("actor.location", pflag.Lookup("location"))
+	actorOnce.Do(func() {
 
-	viper.SetDefault("actor.location", defaultLocation)
-	viper.SetDefault("actor.nick", defaultNick())
+		ActorFlags.StringP("nick", "n", "", "Nickname to use in character creation")
+		ActorFlags.StringP("location", "l", defaultLocation, "DID of the location to visit")
 
+		viper.BindPFlag("actor.nick", ActorFlags.Lookup("nick"))
+		viper.BindPFlag("actor.location", ActorFlags.Lookup("location"))
+
+		viper.SetDefault("actor.location", defaultLocation)
+		viper.SetDefault("actor.nick", defaultNick())
+
+		if HelpNeeded() {
+			fmt.Println("Actor Flags:")
+			ActorFlags.PrintDefaults()
+
+			if exitOnHelp {
+				os.Exit(0)
+			}
+
+		} else {
+			ActorFlags.Parse(os.Args[1:])
+		}
+	})
 }
 
 type ActorConfig struct {
@@ -44,22 +76,75 @@ type ActorConfig struct {
 	Location string `yaml:"location"`
 }
 
-// Cofig for actor. Remember to parse the flags first.
+// Config for actor. Remember to parse the flags first.
 // Eg. ActorFlags()
 func Actor() ActorConfig {
 
+	// Fetch the identity from the config or generate one
 	identity, err := actorIdentity()
 	if err != nil {
 		panic(err)
 	}
 
+	// Unpack the keyset from the identity
 	initActorKeyset(identity)
+
+	// If we are generating a new identity we should publish it
+	if GenerateFlag() {
+		renameIPNSKey(actorKeyset.DID.Fragment)
+		publishIdentityFromKeyset(actorKeyset)
+	}
 
 	return ActorConfig{
 		Identity: identity,
 		Nick:     ActorNick(),
 		Location: ActorLocation(),
 	}
+}
+
+func renameIPNSKey(name string) error {
+
+	keyExists := ipnsKeyExists(name)
+
+	if !keyExists {
+		return nil
+	}
+
+	// If the key exists and the force flag is not set, return an error
+	if !ForceFlag() {
+		return fmt.Errorf("config.renameIPNSKey: force flag not set")
+	}
+
+	ctx := context.Background()
+	ipfsAPI := api.GetIPFSAPI()
+
+	backupName := name + "~"
+	_, _, err := ipfsAPI.Key().Rename(ctx, name, backupName)
+
+	log.Infof("Renamed existing IPNS key: %s to %s", name, backupName)
+
+	return err
+}
+
+func ipnsKeyExists(name string) bool {
+
+	ctx := context.Background()
+
+	ipfsAPI := api.GetIPFSAPI()
+
+	keys, err := ipfsAPI.Key().List(ctx)
+	if err != nil {
+		log.Errorf("config.ipnsKeyExists: %v", err)
+		return false
+	}
+
+	for _, key := range keys {
+		if key.Name() == name {
+			return true
+		}
+	}
+
+	return false
 }
 
 // Fetches the actor nick from the config or the command line
@@ -75,7 +160,7 @@ func ActorLocation() string {
 }
 
 func ActorKeyset() set.Keyset {
-	return keyset
+	return actorKeyset
 }
 
 func actorIdentity() (string, error) {
@@ -108,7 +193,7 @@ func initActorKeyset(keyset_string string) {
 		os.Exit(64) // EX_USAGE
 	}
 
-	keyset, err = set.Unpack(keyset_string)
+	actorKeyset, err = set.Unpack(keyset_string)
 	if err != nil {
 		log.Errorf("config.initActor: %v", err)
 		os.Exit(70) // EX_SOFTWARE
@@ -131,4 +216,27 @@ func generateKeysetString(nick string) (string, error) {
 	log.Debugf("Packed keyset: %v", pks)
 
 	return pks, nil
+}
+
+func publishIdentityFromKeyset(k set.Keyset) error {
+
+	d, err := doc.NewFromKeyset(k)
+	if err != nil {
+		return fmt.Errorf("config.publishIdentityFromKeyset: failed to create DOC: %w", err)
+	}
+
+	assertionMethod, err := d.GetAssertionMethod()
+	if err != nil {
+		return fmt.Errorf("config.publishIdentityFromKeyset: %w", err)
+	}
+	d.Sign(k.SigningKey, assertionMethod)
+
+	_, err = d.Publish()
+	if err != nil {
+		return fmt.Errorf("config.publishIdentityFromKeyset: %w", err)
+
+	}
+	log.Debugf("Published identity: %s", d.ID)
+
+	return nil
 }
