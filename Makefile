@@ -50,6 +50,9 @@ $(BINDIR):
 
 install: $(BINDIR) $(CMDS)
 	sudo install -m755 $(CMDS) $(DESTDIR)$(BINDIR)/
+
+upx: $(CMDS)
+	upx $(CMDS)
 	
 debug: BUILDFLAGS = $(BUILDFAGS) -tags=debug
 debug: install
