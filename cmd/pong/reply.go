@@ -24,12 +24,12 @@ func reply(m *entity.Message) []byte {
 }
 
 func replyBytes() []byte {
-	replyMsg := viper.GetString("mode.pong.reply")
+	replyMsg := viper.GetString("pong.reply")
 	return []byte(replyMsg)
 }
 
 func angryBytes() []byte {
-	replyMsg := viper.GetString("mode.pong.reply")
+	replyMsg := viper.GetString("pong.reply")
 	return []byte(fmt.Sprintf("I'm doing the %s here! 😤", replyMsg))
 }
 

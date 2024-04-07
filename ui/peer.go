@@ -71,7 +71,7 @@ func (ui *ChatUI) handlePeerShowCommand(args []string) {
 		}
 
 		ui.displaySystemMessage("ID: " + id)
-		ui.displaySystemMessage("Nick: " + peer.GetOrCreateNick(pid))
+		ui.displaySystemMessage("Nick: " + peer.LookupNick(pid))
 		ui.displaySystemMessage("Maddrs:")
 		for _, maddr := range ui.p.Host.Peerstore().Addrs(pid) {
 			ui.displaySystemMessage(maddr.String())

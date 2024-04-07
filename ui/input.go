@@ -4,24 +4,7 @@ import (
 	"github.com/bahner/go-ma-actor/config"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
-	"github.com/spf13/viper"
 )
-
-func historySize() int {
-	return viper.GetInt("ui.history-size")
-}
-
-func (ui *ChatUI) pushToHistory(line string) {
-
-	historySize := historySize()
-
-	if len(ui.inputHistory) == historySize {
-		// Remove the oldest entry when we reach max size
-		copy(ui.inputHistory, ui.inputHistory[1:])
-		ui.inputHistory = ui.inputHistory[:historySize-1]
-	}
-	ui.inputHistory = append(ui.inputHistory, line)
-}
 
 func (ui *ChatUI) setupInputField() *tview.InputField {
 	inputField := tview.NewInputField().

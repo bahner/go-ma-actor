@@ -109,6 +109,7 @@ func New(p *p2p.P2P, a *actor.Actor) (*ChatUI, error) {
 
 	// Since tview is global we can just run this which sets the style for the whole app.
 	ui.setupApp()
+	ui.loadHistory()
 
 	return ui, nil
 }

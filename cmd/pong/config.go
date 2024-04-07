@@ -15,13 +15,14 @@ func init() {
 	pflag.String("pong-fortune-args", defaultFortuneArgs, "Arguments to pass to the fortune command")
 	pflag.Bool("pong-fortune", defaultFortuneMode, "The message to send back to the sender")
 
-	viper.BindPFlag("mode.pong.reply", pflag.Lookup("pong-reply"))
-	viper.SetDefault("mode.pong.reply", defaultPongReply)
+	viper.BindPFlag("pong.reply", pflag.Lookup("pong-reply"))
+	viper.SetDefault("pong.reply", defaultPongReply)
 
-	viper.BindPFlag("mode.pong.fortune.enable", pflag.Lookup("pong-fortune"))
-	viper.SetDefault("mode.pong.fortune.enable", defaultFortuneMode)
+	viper.BindPFlag("pong.fortune.enable", pflag.Lookup("pong-fortune"))
+	viper.SetDefault("pong.fortune.enable", defaultFortuneMode)
 
-	viper.SetDefault("mode.pong.fortune.args", defaultFortuneArgs)
+	viper.BindPFlag("pong.fortune.args", pflag.Lookup("pong-fortune-args"))
+	viper.SetDefault("pong.fortune.args", defaultFortuneArgs)
 }
 
 type PongFortuneStruct struct {
@@ -93,13 +94,13 @@ func (c *PongConfig) Save() error {
 }
 
 func pongFortuneMode() bool {
-	return viper.GetBool("mode.pong.fortune.enable")
+	return viper.GetBool("pong.fortune.enable")
 }
 
 func pongFortuneArgs() []string {
-	return viper.GetStringSlice("mode.pong.fortune.args")
+	return viper.GetStringSlice("pong.fortune.args")
 }
 
 func pongReply() string {
-	return viper.GetString("mode.pong.reply")
+	return viper.GetString("pong.reply")
 }

@@ -28,11 +28,9 @@ func AssertNick(pid p2peer.ID) error {
 	return SetNick(id, nick)
 }
 
-// GetOrCreateNick looks for a peer's nick by its ID.
-// If it does not exist, creates a default nick, stores, and returns it.
-// Takes a peerID as input, to make sure it's valid so we don't have to
-// do any more error checking.
-func GetOrCreateNick(peerID p2peer.ID) string {
+// LookupNick looks for a peer's nick by its ID.
+// If it does not exist it returns the input
+func LookupNick(peerID p2peer.ID) string {
 
 	id := peerID.String()
 
@@ -40,8 +38,7 @@ func GetOrCreateNick(peerID p2peer.ID) string {
 		return nick.(string)
 	}
 
-	// If not found, create a default nick
-	return createNick(id)
+	return id
 }
 
 func DeleteNick(id string) {
