@@ -15,9 +15,8 @@ const (
 	defaultFortuneMode = false
 	pong               = "pong"
 	defaultProfileName = pong
+	defaultFortuneArgs = "-s"
 )
-
-var defaultFortuneArgs = []string{"-s"}
 
 // Run the pong actor. Cancel it from outside to stop it.
 func main() {

@@ -12,6 +12,8 @@ import (
 
 func init() {
 	pflag.String("pong-reply", defaultPongReply, "The message to send back to the sender")
+	pflag.String("pong-fortune-args", defaultFortuneArgs, "Arguments to pass to the fortune command")
+	pflag.Bool("pong-fortune", defaultFortuneMode, "The message to send back to the sender")
 
 	viper.BindPFlag("mode.pong.reply", pflag.Lookup("pong-reply"))
 	viper.SetDefault("mode.pong.reply", defaultPongReply)
