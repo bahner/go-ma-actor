@@ -7,11 +7,13 @@ import (
 
 	"github.com/bahner/go-ma-actor/config"
 
+	_ "net/http/pprof"
+
 	log "github.com/sirupsen/logrus"
 )
 
 // Start the WebU with the given handler.
-func Start(h WebHandler) {
+func Start(handler WebHandler) {
 
 	fmt.Println("Starting web server...")
 
@@ -21,7 +23,11 @@ func Start(h WebHandler) {
 	// Start a simple web server to handle incoming requests.
 	// This is defined in web.go. It makes it possible to add extra parameters to the handler.
 	mux := http.NewServeMux()
-	mux.Handle("/", h)
+	mux.Handle("/", handler)
+
+	if config.Debug() {
+		mux.Handle("/debug/pprof/", http.DefaultServeMux)
+	}
 
 	log.Infof("Listening on %s", config.HttpSocket())
 

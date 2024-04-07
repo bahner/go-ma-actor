@@ -5,7 +5,6 @@ import (
 	"os"
 	"sync"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/pflag"
 )
 
@@ -13,6 +12,13 @@ var (
 	CommonFlags = pflag.NewFlagSet("common", pflag.ContinueOnError)
 
 	commonOnce sync.Once
+
+	debugFlag bool = false
+	forceFlag bool = false
+
+	generateCommandFlag   bool = false
+	showConfigCommandFlag bool = false
+	versionCommandFlag    bool = false
 )
 
 func InitCommon() {
@@ -23,14 +29,14 @@ func InitCommon() {
 		CommonFlags.StringP("config", "c", "", "Config file to use.")
 		CommonFlags.StringP("profile", "p", "", "Config profile (name) to use.")
 
-		CommonFlags.Bool("show-config", false, "Whether to print the config.")
+		// COmmands
+		CommonFlags.BoolVar(&showConfigCommandFlag, "show-config", false, "Whether to print the config.")
+		CommonFlags.BoolVarP(&versionCommandFlag, "version", "v", false, "Print version and exit.")
+		CommonFlags.BoolVar(&generateCommandFlag, "generate", false, "Generates a new keyset")
 
-		CommonFlags.BoolP("version", "v", false, "Print version and exit.")
-
-		CommonFlags.Bool("generate", false, "Generates a new keyset")
-		CommonFlags.Bool("force", false, "Forces regneration of config keyset and publishing")
-
-		CommonFlags.String("debug-socket", defaultDebugSocket, "Port to listen on for debug endpoints")
+		// Flags
+		CommonFlags.BoolVar(&forceFlag, "force", false, "Forces regneration of config keyset and publishing")
+		CommonFlags.BoolVar(&debugFlag, "debug", false, "Port to listen on for debug endpoints")
 
 		if HelpNeeded() {
 			fmt.Println("Common flags:")
@@ -39,57 +45,6 @@ func InitCommon() {
 			CommonFlags.Parse(os.Args[1:])
 		}
 	})
-}
-
-func GenerateFlag() bool {
-	// This will exit when done. It will also publish if applicable.
-	generateFlag, err := CommonFlags.GetBool("generate")
-	if err != nil {
-		log.Warnf("config.init: %v", err)
-		return false
-	}
-
-	return generateFlag
-}
-
-func PublishFlag() bool {
-	publishFlag, err := CommonFlags.GetBool("publish")
-	if err != nil {
-		log.Warnf("config.init: %v", err)
-		return false
-	}
-
-	return publishFlag
-}
-
-func ShowConfigFlag() bool {
-	showConfigFlag, err := CommonFlags.GetBool("show-config")
-	if err != nil {
-		log.Warnf("config.init: %v", err)
-		return false
-	}
-
-	return showConfigFlag
-}
-
-func versionFlag() bool {
-	versionFlag, err := CommonFlags.GetBool("version")
-	if err != nil {
-		log.Warnf("config.init: %v", err)
-		return false
-	}
-
-	return versionFlag
-}
-
-func ForceFlag() bool {
-	forceFlag, err := CommonFlags.GetBool("force")
-	if err != nil {
-		log.Warnf("config.init: %v", err)
-		return false
-	}
-
-	return forceFlag
 }
 
 /*
@@ -102,6 +57,7 @@ Set exitOnHelp to true if you want the program to exit
 after help is printed. This is useful for the main function,
 when this is the last flag parsing function called.
 */
+
 func ParseCommonFlags(exitOnHelp bool) {
 
 	InitCommon()
@@ -113,4 +69,24 @@ func ParseCommonFlags(exitOnHelp bool) {
 	if HelpNeeded() && exitOnHelp {
 		os.Exit(0)
 	}
+}
+
+func Debug() bool {
+	return debugFlag
+}
+
+func ForceFlag() bool {
+	return forceFlag
+}
+
+func GenerateFlag() bool {
+	return generateCommandFlag
+}
+
+func ShowConfigFlag() bool {
+	return showConfigCommandFlag
+}
+
+func VersionFlag() bool {
+	return versionCommandFlag
 }

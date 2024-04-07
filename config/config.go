@@ -18,8 +18,6 @@ const (
 	configDirMode  os.FileMode = 0700
 	configFileMode os.FileMode = 0600
 	dataHomeMode   os.FileMode = 0755
-
-	defaultDebugSocket = "127.0.0.1:6060"
 )
 
 type Config interface {
@@ -33,11 +31,6 @@ type Config interface {
 func Init() error {
 
 	var err error
-
-	//VIPER CONFIGURATION
-	viper.BindPFlag("http.debug-socket", CommonFlags.Lookup("debug-socket"))
-	viper.SetDefault("http.debug-socket", defaultDebugSocket)
-
 	// Read the config file and environment variables.
 	viper.SetEnvPrefix(ENV_PREFIX)
 	viper.AutomaticEnv()
@@ -64,7 +57,7 @@ func Init() error {
 	}
 
 	// Handle the easy flags first.
-	if versionFlag() {
+	if versionCommandFlag {
 		fmt.Println(VERSION)
 		os.Exit(0)
 	}
