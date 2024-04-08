@@ -5,277 +5,213 @@ MODULE_NAME = github.com/bahner/go-ma-actor
 export VERSION = "v0.0.2"
 
 GO ?= go
-# This is required for sqlite3 cross-compilation
 BUILDFLAGS ?= -ldflags="-s -w"
 PREFIX ?= /usr/local
-XZ ?= xz -zf
+TAR = tar cJf
+ZIP = 7z u -tzip
+UPX = -qqq
+CC = gcc
 
-ACTOR = $(NAME)
-RELAY = $(NAME)-relay
-PONG = $(NAME)-pong
-NODE = $(NAME)-node
-ROBOT = $(NAME)-robot
-KEYSET = $(NAME)-create-keyset
-FETCH = $(NAME)-fetch-document
-# DEBUG = $(NAME)-debug
-CMDS = $(ACTOR) $(RELAY) $(NODE) $(ROBOT) $(PONG)
-ALL =  $(FETCH) $(KEYSET) $(CMDS) $(DEBUG)
-
-ANDROID = android-arm64
-DARWIN = darwin-amd64
-FREEBSD = freebsd-amd64
-LINUX = linux-amd64 linux-mips64 linux-mips64le linux-ppc64 linux-ppc64le linux-s390x
-NETBSD = netbsd-amd64
-OPENBSD = openbsd-amd64
-WINDOWS =  windows-386 windows-amd64
-PLATFORMS =  $(ANDROID) $(DARWIN) $(FREEBSD) $(LINUX) $(NETBSD) $(OPENBSD) $(WINDOWS)
-ARM64=android-arm64 darwin-arm64 netbsd-arm64 openbsd-arm64 
 BINDIR = $(PREFIX)/bin
 RELEASES = releases
-VAULT_TOKEN ?= space
+
+CMDS = actor relay node robot pong document keyset
+
+ANDROID = android-arm64
+DARWIN = darwin-amd64 darwin-arm64
+FREEBSD = freebsd-amd64 freebsd-arm64
+LINUX = linux-amd64 linux-mips64 linux-mips64le linux-ppc64 linux-ppc64le linux-s390x linux-arm64
+NETBSD = netbsd-amd64 netbsd-arm64
+OPENBSD = openbsd-amd64 openbsd-arm64
+WINDOWS =  windows-386 windows-amd64 windows-arm64
+
+ARM64 = android-arm64 darwin-arm64 netbsd-arm64 openbsd-arm64 
+AMD64 = darwin-amd64 freebsd-amd64 linux-amd64 netbsd-amd64 openbsd-amd64 windows-amd64
+
+PLATFORMS =  $(ANDROID) $(DARWIN) $(FREEBSD) $(LINUX) $(NETBSD) $(OPENBSD) $(WINDOWS)
 
 ifneq (,$(wildcard ./.env))
     include .env
     export
 endif
 
+ifeq ($(GOOS), windows)
+    EXTENSION = .exe
+endif
+
 default: clean tidy $(NAME)
 
-all: tidy releases $(PLATFORMS)
+all: $(addprefix build-,$(PLATFORMS))
 
 local: clean tidy install
 
 $(BINDIR):
-	test -d $(BINDIR)
+	test -d $(BINDIR) || mkdir -p $(BINDIR)
 
-install: $(BINDIR) $(CMDS)
-	sudo install -m755 $(CMDS) $(DESTDIR)$(BINDIR)/
+install: linux-amd64 $(BINDIR)
+	@$(foreach cmd,$(CMDS), \
+		echo Installing $(cmd) for $(GOOS)-$(GOARCH); \
+		sudo install -m755 $(GOOS)-$(GOARCH)/$(cmd)$(EXTENSION) $(DESTDIR)$(BINDIR)/; \
+	)
 
-upx: $(CMDS)
-	upx $(CMDS)
-	
-debug: BUILDFLAGS = $(BUILDFAGS) -tags=debug
+debug: BUILDFLAGS += -tags=debug
 debug: install
-
-$(ACTOR): tidy
-	$(GO) build -o $(ACTOR) $(BUILDFLAGS) ./cmd/actor
-
-$(FETCH): tidy
-	$(GO) build -o $(FETCH) $(BUILDFLAGS) ./cmd/fetch_document
-	
-$(KEYSET): tidy
-	$(GO) build -o $(KEYSET) $(BUILDFLAGS) ./cmd/create_keyset
-
-$(NODE): tidy
-	$(GO) build -o $(NODE) $(BUILDFLAGS) ./cmd/node
-
-$(PONG): tidy
-	$(GO) build -o $(PONG) $(BUILDFLAGS) ./cmd/pong
-
-$(RELAY): tidy
-	$(GO) build -o $(RELAY) $(BUILDFLAGS) ./cmd/relay
-
-$(ROBOT): tidy
-	$(GO) build -o $(ROBOT) $(BUILDFLAGS) ./cmd/robot
-
-	
-init: go.mod tidy
-
-go.mod:
-	$(GO) mod init $(MODULE_NAME)
 
 tidy: go.mod
 	$(GO) mod tidy
 
 clean:
-	rm -rf $(PLATFORMS)
-	rm -f $(NAME)-*.tar
-	find -type f -name "*.log" -delete
-	rm -f actor.exe
-	rm -f go-ma-actor*
+	rm -rf $(PLATFORMS) $(RELEASES)/* $(CMDS) *.tar *.zip *.log
 
 distclean: clean
-	rm -rf releases
-	rm -f $(shell git ls-files --others)
+	rm -rf $(RELEASES) $(shell git ls-files --others)
 
-
-release: VERSION = $(shell ./.version)
-release: clean $(RELEASES) $(PLATFORMS)
+release: VERSION := $(shell ./.version)
+release: clean $(RELEASES)
 	git tag -a $(VERSION) -m "Release $(VERSION)"
 
-vault:
-	#vault server --dev -dev-root-token-id=$(VAULT_TOKEN) &
-	vault server -config vault.hcl &
-
-
-$(RELEASES): 
+$(RELEASES):
 	mkdir -p $(RELEASES)
 
+# Dynamic build commands
+build-%: GOOS = $(firstword $(subst -, ,$*))
+build-%: GOARCH = $(word 2, $(subst -, ,$*))
+build-%: BUILD = $(GOOS)-$(GOARCH)
+build-%:
+	$(eval TARGET_GOOS := $(word 1, $(subst -, ,$*)))
+	$(eval TARGET_GOARCH := $(word 2, $(subst -, ,$*)))
+
+    # Conditionally set EXTENSION for Windows targets
+	$(if $(findstring windows,$(TARGET_GOOS)), $(eval EXTENSION := .exe))
+
+	@echo "Building for $(TARGET_GOOS)-$(TARGET_GOARCH)..."
+	$(foreach cmd,$(CMDS), \
+		echo "Building $(cmd) for $(TARGET_GOOS)-$(TARGET_GOARCH)"; \
+		mkdir -p $(TARGET_GOOS)-$(TARGET_GOARCH); \
+		GOOS=$(TARGET_GOOS) GOARCH=$(TARGET_GOARCH) $(GO) build -o $(TARGET_GOOS)-$(TARGET_GOARCH)/$(cmd)$(EXTENSION) $(BUILDFLAGS) ./cmd/$(cmd) || exit 1; \
+)
+
+# Dynamic release packaging
+package-%: GOOS = $(firstword $(subst -, ,$*))
+package-%: GOARCH = $(word 2, $(subst -, ,$*))
+package-%: BUILD = $(GOOS)-$(GOARCH)
+package-%: $(RELEASES)
+	@echo "Packaging $(BUILD)..."
+	@if [ "$(GOOS)" = "windows" ]; then \
+		$(ZIP) $(RELEASES)/$(NAME)-$(BUILD).zip $(BUILD)/*$(EXTENSION); \
+	else \
+		$(TAR) $(RELEASES)/$(NAME)-$(BUILD).tar $(BUILD); \
+	fi
+
+android-arm64: export CC=aarch64-linux-android-gcc
+android-arm64:
+	$(MAKE) build-$@
+	$(MAKE) package-$@
+
+darwin-amd64: export CC=x86_64-apple-darwin20-clang
+darwin-amd64:
+	$(MAKE) build-$@
+	$(MAKE) package-$@
+
+darwin-arm64: export CC=aarch64-apple-darwin20-clang
+darwin-arm64:
+	$(MAKE) build-$@
+	$(MAKE) package-$@
+
+freebsd-amd64: export CC=x86_64-unknown-freebsd13-clang
+freebsd-amd64:
+	$(MAKE) build-$@
+	$(MAKE) package-$@
+
+freebsd-arm64: export CC=aarch64-unknown-freebsd13-clang
+freebsd-arm64:
+	$(MAKE) build-$@
+	$(MAKE) package-$@
+
+linux-amd64: export CC=x86_64-linux-musl-gcc
+linux-amd64:
+	$(MAKE) build-$@
+	$(MAKE) package-$@
+
+linux-mips64: export CC=mips64-linux-musl-gcc
+linux-mips64:
+	$(MAKE) build-$@
+	$(MAKE) package-$@
+
+linux-mips64le: export CC=mips64el-linux-musl-gcc
+linux-mips64le:
+	$(MAKE) build-$@
+	$(MAKE) package-$@
+
+linux-ppc64: export CC=powerpc64-linux-musl-gcc
+linux-ppc64:
+	$(MAKE) build-$@
+	$(MAKE) package-$@
+
+linux-ppc64le: export CC=powerpc64le-linux-musl-gcc
+linux-ppc64le:
+	$(MAKE) build-$@
+	$(MAKE) package-$@
+
+linux-s390x: export CC=s390x-linux-musl-gcc
+linux-s390x:
+	$(MAKE) build-$@
+	$(MAKE) package-$@
+
+linux-arm64: export CC=aarch64-linux-musl-gcc
+linux-arm64:
+	$(MAKE) build-$@
+	$(MAKE) package-$@
+
+netbsd-amd64: export CC=x86_64-unknown-netbsd9-clang
+netbsd-amd64:
+	$(MAKE) build-$@
+	$(MAKE) package-$@
+
+netbsd-arm64: export CC=aarch64-unknown-netbsd9-clang
+netbsd-arm64:
+	$(MAKE) build-$@
+	$(MAKE) package-$@
+
+openbsd-amd64: export CC=x86_64-unknown-openbsd7-clang
+openbsd-amd64:
+	$(MAKE) build-$@
+	$(MAKE) package-$@
+
+openbsd-arm64: export CC=aarch64-unknown-openbsd7-clang
+openbsd-arm64:
+	$(MAKE) build-$@
+	$(MAKE) package-$@
+
+windows-386: export CC=i686-w64-mingw32-gcc
+windows-386:
+	$(MAKE) build-$@
+	$(MAKE) package-$@
+
+windows-amd64: export CC=x86_64-w64-mingw32-gcc
+windows-amd64:
+	$(MAKE) build-$@
+	$(MAKE) package-$@
+
+windows-arm64: export CC=aarch64-w64-mingw32-gcc
+windows-arm64:
+	$(MAKE) build-$@
+	$(MAKE) package-$@
+
 android: $(ANDROID)
-
 darwin: $(DARWIN)
-
 freebsd: $(FREEBSD)
-
 linux: $(LINUX)
-
 netbsd: $(NETBSD)
-
 openbsd: $(OPENBSD)
-
 windows: $(WINDOWS)
 
-# I need to build these on another computer, so they get their own targets
 arm64: $(ARM64)
-
-android-arm64: GOOS=android
-android-arm64: GOARCH=arm64
-android-arm64: FILENAME = $(RELEASES)/$(NAME)-$(GOOS)-$(GOARCH)
-android-arm64: $(RELEASES)
-	$(GO) build -o $(FILENAME) $(BUILDFLAGS) ./cmd/actor
-	$(XZ) $(FILENAME)
-
-darwin-amd64: GOOS=darwin
-darwin-amd64: GOARCH=amd64
-darwin-amd64: FILENAME = $(RELEASES)/$(NAME)-$(GOOS)-$(GOARCH)
-darwin-amd64: $(RELEASES)
-	$(GO) build -o $(FILENAME) $(BUILDFLAGS) ./cmd/actor
-	$(XZ) $(FILENAME)
-
-darwin-arm64: GOOS=darwin
-darwin-arm64: GOARCH=arm64
-darwin-arm64: FILENAME = $(RELEASES)/$(NAME)-$(GOOS)-$(GOARCH)
-darwin-arm64: $(RELEASES)
-	$(GO) build -o $(FILENAME) $(BUILDFLAGS) ./cmd/actor
-	$(XZ) $(FILENAME)
-
-freebsd-amd64: GOOS=freebsd
-freebsd-amd64: GOARCH=amd64
-freebsd-amd64: FILENAME = $(RELEASES)/$(NAME)-$(GOOS)-$(GOARCH)
-freebsd-amd64: $(RELEASES)
-	$(GO) build -o $(FILENAME) $(BUILDFLAGS) ./cmd/actor
-	$(XZ) $(FILENAME)
-
-freebsd-arm64: GOOS=freebsd
-freebsd-arm64: GOARCH=arm64
-freebsd-arm64: FILENAME = $(RELEASES)/$(NAME)-$(GOOS)-$(GOARCH)
-freebsd-arm64: $(RELEASES)
-	$(GO) build -o $(FILENAME) $(BUILDFLAGS) ./cmd/actor
-	$(XZ) $(FILENAME)
-
-linux-amd64: GOOS=linux
-linux-amd64: GOARCH=amd64
-linux-amd64: FILENAME = $(RELEASES)/$(NAME)-$(GOOS)-$(GOARCH)
-linux-amd64: $(RELEASES)
-	$(GO) build -o $(FILENAME) $(BUILDFLAGS) ./cmd/actor
-	$(XZ) $(FILENAME)
-
-linux-arm64: GOOS=linux
-linux-arm64: GOARCH=arm64
-linux-arm64: CC=aarch64-linux-musl-gcc
-linux-arm64: FILENAME = $(RELEASES)/$(NAME)-$(GOOS)-$(GOARCH)
-linux-arm64: $(RELEASES)
-	$(GO) build -o $(FILENAME) $(BUILDFLAGS) ./cmd/actor
-	$(XZ) $(FILENAME)
-
-linux-mips64: GOOS=linux
-linux-mips64: GOARCH=mips64
-linux-mips64: FILENAME = $(RELEASES)/$(NAME)-$(GOOS)-$(GOARCH)
-linux-mips64: $(RELEASES)
-	$(GO) build -o $(FILENAME) $(BUILDFLAGS) ./cmd/actor
-	$(XZ) $(FILENAME)
-
-linux-mips64le: GOOS=linux
-linux-mips64le: GOARCH=mips64le
-linux-mips64le: FILENAME = $(RELEASES)/$(NAME)-$(GOOS)-$(GOARCH)
-linux-mips64le: $(RELEASES)
-	$(GO) build -o $(FILENAME) $(BUILDFLAGS) ./cmd/actor
-	$(XZ) $(FILENAME)
-
-linux-ppc64: GOOS=linux
-linux-ppc64: GOARCH=ppc64
-linux-ppc64: FILENAME = $(RELEASES)/$(NAME)-$(GOOS)-$(GOARCH)
-linux-ppc64: $(RELEASES)
-	$(GO) build -o $(FILENAME) $(BUILDFLAGS) ./cmd/actor
-	$(XZ) $(FILENAME)
-
-linux-ppc64le: GOOS=linux
-linux-ppc64le: GOARCH=ppc64le
-linux-ppc64le: FILENAME = $(RELEASES)/$(NAME)-$(GOOS)-$(GOARCH)
-linux-ppc64le: $(RELEASES)
-	$(GO) build -o $(FILENAME) $(BUILDFLAGS) ./cmd/actor
-	$(XZ) $(FILENAME)
-
-linux-s390x: GOOS=linux
-linux-s390x: GOARCH=s390x
-linux-s390x: FILENAME = $(RELEASES)/$(NAME)-$(GOOS)-$(GOARCH)
-linux-s390x: $(RELEASES)
-	$(GO) build -o $(FILENAME) $(BUILDFLAGS) ./cmd/actor
-	$(XZ) $(FILENAME)
-
-netbsd-amd64: GOOS=netbsd
-netbsd-amd64: GOARCH=amd64
-netbsd-amd64: FILENAME = $(RELEASES)/$(NAME)-$(GOOS)-$(GOARCH)
-netbsd-amd64: $(RELEASES)
-	$(GO) build -o $(FILENAME) $(BUILDFLAGS) ./cmd/actor
-	$(XZ) $(FILENAME)
-
-netbsd-arm64: GOOS=netbsd
-netbsd-arm64: GOARCH=arm64
-netbsd-arm64: FILENAME = $(RELEASES)/$(NAME)-$(GOOS)-$(GOARCH)
-netbsd-arm64: $(RELEASES)
-	$(GO) build -o $(FILENAME) $(BUILDFLAGS) ./cmd/actor
-	$(XZ) $(FILENAME)
-
-openbsd-amd64: GOOS=openbsd
-openbsd-amd64: GOARCH=amd64
-openbsd-amd64: FILENAME = $(RELEASES)/$(NAME)-$(GOOS)-$(GOARCH)
-openbsd-amd64: $(RELEASES)
-	$(GO) build -o $(FILENAME) $(BUILDFLAGS) ./cmd/actor
-	$(XZ) $(FILENAME)
-
-openbsd-arm64: GOOS=openbsd
-openbsd-arm64: GOARCH=arm64
-openbsd-arm64: FILENAME = $(RELEASES)/$(NAME)-$(GOOS)-$(GOARCH)
-openbsd-arm64: $(RELEASES)
-	$(GO) build -o $(FILENAME) $(BUILDFLAGS) ./cmd/actor
-	$(XZ) $(FILENAME)
-
-windows-386: GOOS=windows
-windows-386: GOARCH=386
-windows-386: CGO_ENABLED=1
-windows-386: CC=i686-w64-mingw32-gcc
-windows-386: FILENAME = actor.exe
-windows-386: BUILDDIR=$(GOOS)-$(GOARCH)
-windows-386: $(RELEASES)
-	mkdir -p $(BUILDDIR)
-	# $(GO) build -o $(BUILDDIR)/$(FILENAME) $(BUILDFLAGS) ./cmd/actor
-	$(GO) build -o $(BUILDDIR)/$(FILENAME) $(BUILDFLAGS) ./cmd/actor
-	zip -j $(RELEASES)/$(NAME)-$(GOOS)-$(GOARCH).zip $(BUILDDIR)/$(FILENAME)
-
-windows-amd64: GOOS=windows
-windows-amd64: GOARCH=amd64
-windows-amd64: CGO_ENABLED=1
-windows-amd64: CC=x86_64-w64-mingw32-gcc
-windows-amd64: FILENAME = actor.exe
-windows-amd64: BUILDDIR=$(GOOS)-$(GOARCH)
-windows-amd64: $(RELEASES)
-	mkdir -p $(BUILDDIR)
-	$(GO) build -o $(BUILDDIR)/$(FILENAME) $(BUILDFLAGS) ./cmd/actor
-	zip -j $(RELEASES)/$(NAME)-$(GOOS)-$(GOARCH).zip $(BUILDDIR)/$(FILENAME)
-
-windows-arm64: GOOS=windows
-windows-arm64: GOARCH=arm64
-windows-arm64: CGO_ENABLED=1
-windows-arm64: CC=aarch64-w64-mingw32-gcc
-windows-arm64: FILENAME = actor.exe
-windows-arm64: BUILDDIR=$(GOOS)-$(GOARCH)
-windows-arm64: $(RELEASES)
-	mkdir -p $(BUILDDIR)
-	$(GO) build -o $(BUILDDIR)/$(FILENAME) $(BUILDFLAGS) ./cmd/actor
-	zip -j $(RELEASES)/$(NAME)-$(GOOS)-$(GOARCH).zip $(BUILDDIR)/$(FILENAME)
+amd64: $(AMD64)
 
 lint:
 	find -name "*.yaml" -exec yamllint -c .yamllintrc {} \;
 
-.PHONY: default init tidy build client serve install clean distclean lint vault
+.PHONY: default all local install debug tidy clean distclean release lint \
+	android darwin freebsd linux netbsd openbsd windows \
+	arm64 amd64
