@@ -24,19 +24,17 @@ Cross-compiling for Windows requires gcc-mingw-w64 and gcc-multilib tools to be 
 # Generate persistent config file with *SECRETS*
 # The public parts needs to be published to the IPFS network to be useful, hence
 # this takes a while. Sometimes 10 seconds, but also 3 minutes.
-./go-ma-actor --generate --nick "asj" --publish > actor.yaml
-./go-ma-actor # Share and enjoy!
+./actor --generate
+./actor # Share and enjoy!
 ```
 
 ## Configuration
 
-type `./go-ma-actor -help`. Most config settings can be set with environment variables, as follows:
+type `./go-ma-actor -help`.
 
-```bash
-export GO_MA_LOG_LEVEL="error"
-export GO_MA_LIBP2P_DISCOVERY_TIMEOUT="300"
-export GO_MA_ACTOR_IDENTITY="myBase58EncodedPrivkeyGeneratedByGenerate"
-```
+The configuration is store in the appropriate XDG folders. To see the config use `./actor --show-config`.
+
+On POSIX system this file is in `~/.config/ma`.
 
 ## Identity
 
