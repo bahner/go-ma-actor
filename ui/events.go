@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/bahner/go-ma"
+	"github.com/bahner/go-ma/msg"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -62,7 +62,7 @@ func (ui *ChatUI) handleEvents() {
 			ui.handleChatMessage(input)
 
 		case m := <-ui.chMessages:
-			if m.Message.Type == ma.BROADCAST_MESSAGE_TYPE {
+			if m.Message.Type == msg.BROADCAST {
 				ui.displayBroadcastMessage(m.Message)
 				continue
 			}

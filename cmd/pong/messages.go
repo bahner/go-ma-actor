@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/bahner/go-ma"
 	"github.com/bahner/go-ma-actor/entity"
 	"github.com/bahner/go-ma-actor/entity/actor"
 	"github.com/bahner/go-ma/msg"
@@ -51,7 +50,7 @@ func handleMessageEvents(ctx context.Context, a *actor.Actor) {
 				continue
 			}
 
-			if to == me && _type == ma.MESSAGE_TYPE {
+			if to == me && _type == msg.PLAIN {
 				messageReply(ctx, a, m)
 			}
 		}
