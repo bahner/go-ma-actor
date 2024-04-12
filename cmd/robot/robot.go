@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/bahner/go-ma"
 	"github.com/bahner/go-ma-actor/config"
 	"github.com/bahner/go-ma-actor/entity"
 	"github.com/bahner/go-ma-actor/entity/actor"
@@ -98,7 +97,7 @@ func (i *RobotStruct) handleEntityMessageEvents() {
 				continue
 			}
 
-			if m.Message.Type == ma.MESSAGE_TYPE {
+			if m.Message.Type == msg.PLAIN {
 				i.handleMessage(ctx, m)
 			}
 		}

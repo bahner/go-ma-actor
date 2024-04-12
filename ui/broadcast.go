@@ -127,7 +127,7 @@ func (ui *ChatUI) subscribeBroadcasts() {
 
 			m, err := msg.UnmarshalAndVerifyMessageFromCBOR(message.Data)
 			if err == nil {
-				if m.Type == ma.BROADCAST_MESSAGE_TYPE {
+				if m.Type == msg.BROADCAST {
 					log.Debugf("handleBroadcastMessages: Received broadcast message: %v\n", m)
 					ui.displayBroadcastMessage(m)
 					continue

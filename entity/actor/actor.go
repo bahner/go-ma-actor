@@ -14,13 +14,18 @@ const ENVELOPES_BUFFERSIZE = 100
 
 // An actor is just an entity with a keyset.
 type Actor struct {
+	// The entity is the core of the actor.
 	Entity *entity.Entity
 
+	// The keyset is used to sign messages.
 	Keyset set.Keyset
 
 	// Envelopes are here. Messages comes to the entity.
 	// So Entity.Messages
 	Envelopes chan *msg.Envelope
+
+	// A handler for the dot messages.
+	MessageHandler func(*msg.Message)
 }
 
 // Create a new entity from a DID and a Keyset. We need both.
