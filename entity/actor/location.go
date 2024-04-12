@@ -1,0 +1,77 @@
+package actor
+
+import (
+	"fmt"
+
+	"github.com/bahner/go-ma-actor/entity"
+	"github.com/bahner/go-ma/did"
+	"github.com/bahner/go-ma/msg"
+	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
+)
+
+const defaultLocationReply = "Location unknown"
+
+var ErrNoLocation = fmt.Errorf("actor: no location set")
+
+func (a *Actor) SetLocation(e *entity.Entity) error {
+
+	err := e.Verify()
+	if err != nil {
+		return err
+	}
+
+	a.Location = e
+
+	return nil
+}
+
+func (a *Actor) SetLocationFromDID(did did.DID) error {
+
+	e, err := entity.New(did)
+	if err != nil {
+		return err
+	}
+
+	return a.SetLocation(e)
+}
+
+func (a *Actor) SetLocationFromDIDString(didStr string) error {
+
+	d, err := did.New(didStr)
+	if err != nil {
+		return err
+	}
+
+	return a.SetLocationFromDID(d)
+}
+
+func (a *Actor) GetLocation() (string, error) {
+
+	if a.Location == nil {
+		return "", ErrNoLocation
+	}
+
+	return a.Location.DID.Id, nil
+}
+
+func (a *Actor) HandleLocationMessage(m *msg.Message) error {
+
+	replyBytes := []byte(defaultLocationReply)
+
+	// Set the reply to the currentLocation, if it is set.
+	loc, err := a.GetLocation()
+	if err == nil {
+		replyBytes = []byte(loc)
+	}
+
+	e, err := entity.GetOrCreate(m.From)
+	if err != nil {
+		return fmt.Errorf("failed to get or create entity: %w", errors.Cause(err))
+	}
+
+	log.Debugf("Sending location to %s over %s", m.From, a.Entity.Topic.String())
+
+	return m.Reply(replyBytes, msg.PLAIN, a.Keyset.SigningKey.PrivKey, e.Topic)
+
+}

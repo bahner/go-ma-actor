@@ -1,28 +1,46 @@
 package actor
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/bahner/go-ma/msg"
 )
 
-func (a *Actor) DefaultMessageHandler(m *msg.Message) error {
+var ErrInvalidDotContentType = fmt.Errorf("actor: invalid content type for dot message. Must be '%s'", msg.DEFAULT_CONTENT_TYPE)
+
+func (a *Actor) defaultMessageHandler(m *msg.Message) error {
 
 	switch m.Type {
 	case msg.DOT:
-		return handleDotMessage(m)
-	case msg.BROADCAST:
-		return handleBroadcastMessage(m)
-
+		return a.handleDotMessage(m)
 	default:
 		return msg.ErrInvalidType
 	}
 }
 
-func handleDotMessage(m *msg.Message) error {
-	// Do something with the message
-	return nil
-}
+func (a *Actor) handleDotMessage(m *msg.Message) error {
 
-func handleBroadcastMessage(m *msg.Message) error {
-	// Do something with the message
-	return nil
+	// Only receive messages with default content type
+	if m.ContentType != msg.DEFAULT_CONTENT_TYPE {
+		return ErrInvalidDotContentType
+	}
+
+	var cmd string
+
+	msgStr := strings.TrimPrefix(string(m.Content), ".")
+	elements := strings.Split(msgStr, " ")
+
+	if len(elements) == 0 {
+		return fmt.Errorf("actor: empty dot message")
+	}
+
+	cmd = elements[0]
+
+	switch cmd {
+	case "location":
+		return a.HandleLocationMessage(m)
+	default:
+		return fmt.Errorf("actor: unknown dot command: %s", cmd)
+	}
 }

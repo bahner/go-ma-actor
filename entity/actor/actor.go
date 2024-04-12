@@ -24,8 +24,11 @@ type Actor struct {
 	// So Entity.Messages
 	Envelopes chan *msg.Envelope
 
+	// Location of the actor.
+	Location *entity.Entity
+
 	// A handler for the dot messages.
-	MessageHandler func(*msg.Message)
+	MessageHandler func(*msg.Message) error
 }
 
 // Create a new entity from a DID and a Keyset. We need both.
@@ -49,6 +52,10 @@ func New(k set.Keyset) (*Actor, error) {
 		Envelopes: make(chan *msg.Envelope, ENVELOPES_BUFFERSIZE),
 	}
 
+	// Set a default message handler
+	a.MessageHandler = a.defaultMessageHandler
+
+	// Set and publish the actor DID Document
 	a.Entity.Doc, err = doc.NewFromKeyset(a.Keyset)
 	if err != nil {
 		panic(err)
