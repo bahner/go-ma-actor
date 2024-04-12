@@ -34,7 +34,7 @@ func (ui *ChatUI) pushToHistory(line string) {
 func appendToPersistentHistory(text string) error {
 
 	if !(strings.HasPrefix(text, "/") ||
-		strings.HasPrefix(text, "@")) {
+		strings.HasPrefix(text, ".")) {
 		return nil
 	}
 

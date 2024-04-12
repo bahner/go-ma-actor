@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	msgUsage = "/@<DID|NICK> <message>"
+	msgUsage = "/.<DID|NICK> <message>"
 	msgHelp  = "Sends a private message directly the specified DID"
 )
 
@@ -22,7 +22,7 @@ func (ui *ChatUI) handleMsgCommand(input string) {
 
 	if len(parts) == 2 {
 
-		recipient := parts[0][1:] // The recipient is the first argument, without the leading @
+		recipient := parts[0][1:] // The recipient is the first argument, without the leading .
 		if !did.IsValid(recipient) {
 			recipient = entity.Lookup(recipient)
 		}

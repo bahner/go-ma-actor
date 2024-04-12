@@ -48,7 +48,7 @@ func (ui *ChatUI) displaySentPrivateMessage(cm *msg.Message) {
 		log.Debugf("entity lookup error: %s", err)
 		return
 	}
-	prompt := withColor("green", fmt.Sprintf("@%s:", e.Nick()))
+	prompt := withColor("green", fmt.Sprintf(".%s:", e.Nick()))
 	fmt.Fprintf(ui.msgW, "%s %s\n", prompt, string(cm.Content))
 }
 

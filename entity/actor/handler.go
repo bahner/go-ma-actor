@@ -12,14 +12,14 @@ var ErrInvalidDotContentType = fmt.Errorf("actor: invalid content type for dot m
 func (a *Actor) defaultMessageHandler(m *msg.Message) error {
 
 	switch m.Type {
-	case msg.DOT:
-		return a.handleDotMessage(m)
+	case msg.AT:
+		return a.handleAtMessage(m)
 	default:
 		return msg.ErrInvalidType
 	}
 }
 
-func (a *Actor) handleDotMessage(m *msg.Message) error {
+func (a *Actor) handleAtMessage(m *msg.Message) error {
 
 	// Only receive messages with default content type
 	if m.ContentType != msg.DEFAULT_CONTENT_TYPE {
@@ -28,7 +28,7 @@ func (a *Actor) handleDotMessage(m *msg.Message) error {
 
 	var cmd string
 
-	msgStr := strings.TrimPrefix(string(m.Content), ".")
+	msgStr := strings.TrimPrefix(string(m.Content), "@")
 	elements := strings.Split(msgStr, " ")
 
 	if len(elements) == 0 {

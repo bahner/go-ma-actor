@@ -49,7 +49,7 @@ func (ui *ChatUI) handleEvents() {
 				ui.handleCommands(input)
 				continue
 			}
-			if strings.HasPrefix(input, "@") {
+			if strings.HasPrefix(input, ".") {
 				log.Debug("handleEvents got command: ", input)
 				ui.handleMsgCommand(input)
 				continue

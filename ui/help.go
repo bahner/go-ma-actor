@@ -37,7 +37,7 @@ func (ui *ChatUI) handleHelpCommands(args []string) {
 		ui.displayHelpText(helpText)
 		ui.displaySystemMessage("")
 		ui.displaySystemMessage("Available commands:")
-		ui.displaySystemMessage("/help @")
+		ui.displaySystemMessage("/help .")
 		ui.displaySystemMessage("/help '")
 		ui.displaySystemMessage("/help broadcast")
 		ui.displaySystemMessage("/help enter")
@@ -56,7 +56,7 @@ func (ui *ChatUI) handleHelpCommands(args []string) {
 		ui.displaySystemMessage("/help")
 	} else {
 		switch args[1] {
-		case "@":
+		case ".":
 			ui.handleHelpCommand(msgUsage, msgHelp)
 		case "'":
 			ui.handleHelpCommand(editorUsage, editorHelp)
