@@ -8,6 +8,7 @@ import (
 	"github.com/bahner/go-ma-actor/p2p/connmgr"
 	"github.com/bahner/go-ma-actor/p2p/node"
 	"github.com/bahner/go-ma-actor/p2p/pubsub"
+	"github.com/ipfs/boxo/namesys"
 	libp2p "github.com/libp2p/go-libp2p"
 	p2ppubsub "github.com/libp2p/go-libp2p-pubsub"
 	"github.com/libp2p/go-libp2p/core/host"
@@ -21,11 +22,13 @@ var _p2p *P2P
 // It contains a libp2p node, a pubsub service and a DHT instance.
 // It also contains a list of connected peers.
 type P2P struct {
-	PubSub   *p2ppubsub.PubSub
-	DHT      *DHT
-	MDNS     *MDNS
-	Host     host.Host
-	AddrInfo p2peer.AddrInfo
+	PubSub        *p2ppubsub.PubSub
+	DHT           *DHT
+	MDNS          *MDNS
+	Host          host.Host
+	AddrInfo      p2peer.AddrInfo
+	IPNSPublisher *namesys.IPNSPublisher
+	IPNSResolver  *namesys.IPNSResolver
 }
 
 // Initialise everything needed for p2p communication. The function forces use of a specific IPNS key.
@@ -76,12 +79,17 @@ func Init(opts Options) (*P2P, error) {
 		Addrs: d.Host.Addrs(),
 	}
 
+	iPublisher := newIPNSPublisher(d.IpfsDHT)
+	iResolve := newIPNSResolver(d.IpfsDHT)
+
 	_p2p = &P2P{
-		AddrInfo: ai,
-		DHT:      d,
-		Host:     d.Host,
-		MDNS:     m,
-		PubSub:   ps,
+		AddrInfo:      ai,
+		DHT:           d,
+		Host:          d.Host,
+		MDNS:          m,
+		PubSub:        ps,
+		IPNSPublisher: iPublisher,
+		IPNSResolver:  iResolve,
 	}
 
 	go _p2p.protectLoop(ctx)

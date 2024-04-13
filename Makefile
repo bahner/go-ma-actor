@@ -7,13 +7,19 @@ export VERSION = "v0.0.2"
 GO ?= go
 BUILDFLAGS ?= -ldflags="-s -w"
 PREFIX ?= /usr/local
-TAR = tar cJf
+TAR = tar cf -
+ZSTD = zstdmt --ultra -22 -o
 ZIP = 7z u -tzip
 UPX = -qqq
+CKSUM = sha256sum
 CC = gcc
+GOOS = $(shell go env GOOS)
+GOARCH = $(shell go env GOARCH)
 
 BINDIR = $(PREFIX)/bin
-RELEASES = releases
+RELEASEDIR = releases
+SIGNATURE_FILE = signature
+SIGNATURES = $(RELEASEDIR)/$(SIGNATURE_FILE)
 
 CMDS = actor relay node robot pong document keyset
 
@@ -24,6 +30,8 @@ LINUX = linux-amd64 linux-mips64 linux-mips64le linux-ppc64 linux-ppc64le linux-
 NETBSD = netbsd-amd64 netbsd-arm64
 OPENBSD = openbsd-amd64 openbsd-arm64
 WINDOWS =  windows-386 windows-amd64 windows-arm64
+
+POSIX = $(ANDROID) $(DARWIN) $(FREEBSD) $(LINUX) $(NETBSD) $(OPENBSD)
 
 ARM64 = android-arm64 darwin-arm64 netbsd-arm64 openbsd-arm64 
 AMD64 = darwin-amd64 freebsd-amd64 linux-amd64 netbsd-amd64 openbsd-amd64 windows-amd64
@@ -48,7 +56,7 @@ local: clean tidy install
 $(BINDIR):
 	test -d $(BINDIR) || mkdir -p $(BINDIR)
 
-install: linux-amd64 $(BINDIR)
+install: build-$(GOOS)-$(GOARCH) $(BINDIR)
 	@$(foreach cmd,$(CMDS), \
 		echo Installing $(cmd) for $(GOOS)-$(GOARCH); \
 		sudo install -m755 $(GOOS)-$(GOARCH)/$(cmd)$(EXTENSION) $(DESTDIR)$(BINDIR)/; \
@@ -61,23 +69,31 @@ tidy: go.mod
 	$(GO) mod tidy
 
 clean:
-	rm -rf $(PLATFORMS) $(RELEASES)/* $(CMDS) *.tar *.zip *.log
+	rm -rf $(PLATFORMS) $(RELEASEDIR)/* $(CMDS) *.tar *.zip *.log
 
 distclean: clean
-	rm -rf $(RELEASES) $(shell git ls-files --others)
+	rm -rf $(RELEASEDIR) $(shell git ls-files --others)
 
 release: VERSION := $(shell ./.version)
-release: clean $(RELEASES)
-	git tag -a $(VERSION) -m "Release $(VERSION)"
+release: clean $(RELEASEDIR) \
+	$(addsuffix .tar,$(RELEASEDIR)/$(POSIX)) \
+	$(addsuffix .zip,$(RELEASEDIR)/$(WINDOWS))
 
-$(RELEASES):
-	mkdir -p $(RELEASES)
+	#git tag -a $(VERSION) -m "Release $(VERSION)"
+
+$(SIGNATURES): $(RELEASEDIR)
+
+	cd $(RELEASEDIR) && \
+	$(CKSUM) *.zip *.tar > $(SIGNATURE_FILE)
+
+$(RELEASEDIR):
+	mkdir -p $(RELEASEDIR)
 
 # Dynamic build commands
 build-%: GOOS = $(firstword $(subst -, ,$*))
 build-%: GOARCH = $(word 2, $(subst -, ,$*))
 build-%: BUILD = $(GOOS)-$(GOARCH)
-build-%:
+build-%: $(addprefix $(BUILD),$(CMDS))
 	$(eval TARGET_GOOS := $(word 1, $(subst -, ,$*)))
 	$(eval TARGET_GOARCH := $(word 2, $(subst -, ,$*)))
 
@@ -88,115 +104,117 @@ build-%:
 	$(foreach cmd,$(CMDS), \
 		echo "Building $(cmd) for $(TARGET_GOOS)-$(TARGET_GOARCH)"; \
 		mkdir -p $(TARGET_GOOS)-$(TARGET_GOARCH); \
-		GOOS=$(TARGET_GOOS) GOARCH=$(TARGET_GOARCH) $(GO) build -o $(TARGET_GOOS)-$(TARGET_GOARCH)/$(cmd)$(EXTENSION) $(BUILDFLAGS) ./cmd/$(cmd) || exit 1; \
-)
+		GOOS=$(TARGET_GOOS) GOARCH=$(TARGET_GOARCH) $(GO) build \
+			-o $(TARGET_GOOS)-$(TARGET_GOARCH)/$(cmd)$(EXTENSION) \
+			$(BUILDFLAGS) ./cmd/$(cmd) || exit 1; \
+	)
 
 # Dynamic release packaging
-package-%: GOOS = $(firstword $(subst -, ,$*))
-package-%: GOARCH = $(word 2, $(subst -, ,$*))
-package-%: BUILD = $(GOOS)-$(GOARCH)
-package-%: $(RELEASES)
-	@echo "Packaging $(BUILD)..."
+$(RELEASEDIR)/%: GOOS = $(firstword $(subst -, ,$*))
+$(RELEASEDIR)/%: GOARCH = $(firstword $(subst ., ,$(word 2, $(subst -, ,$*))))
+$(RELEASEDIR)/%: BUILD = $(GOOS)-$(GOARCH)
+$(RELEASEDIR)/%: $(RELEASEDIR) $(BUILD)/$(CMDS)
+	@echo "Packaging $(BUILD) build..."
 	@if [ "$(GOOS)" = "windows" ]; then \
-		$(ZIP) $(RELEASES)/$(NAME)-$(BUILD).zip $(BUILD)/*$(EXTENSION); \
+		$(ZIP) $(RELEASEDIR)/$(NAME)-$(BUILD).zip $(BUILD)/*$(EXTENSION); \
 	else \
-		$(TAR) $(RELEASES)/$(NAME)-$(BUILD).tar $(BUILD); \
+		$(TAR) $(BUILD) | $(ZSTD) $(RELEASEDIR)/$(BUILD).tar; \
 	fi
 
 android-arm64: export CC=aarch64-linux-android-gcc
 android-arm64:
 	$(MAKE) build-$@
-	$(MAKE) package-$@
+	$(MAKE) $(RELEASEDIR)/$@.tar
 
 darwin-amd64: export CC=x86_64-apple-darwin20-clang
 darwin-amd64:
 	$(MAKE) build-$@
-	$(MAKE) package-$@
+	$(MAKE) $(RELEASEDIR)/$@.tar
 
 darwin-arm64: export CC=aarch64-apple-darwin20-clang
 darwin-arm64:
 	$(MAKE) build-$@
-	$(MAKE) package-$@
+	$(MAKE) $(RELEASEDIR)/$@.tar
 
 freebsd-amd64: export CC=x86_64-unknown-freebsd13-clang
 freebsd-amd64:
 	$(MAKE) build-$@
-	$(MAKE) package-$@
+	$(MAKE) $(RELEASEDIR)/$@.tar
 
 freebsd-arm64: export CC=aarch64-unknown-freebsd13-clang
 freebsd-arm64:
 	$(MAKE) build-$@
-	$(MAKE) package-$@
+	$(MAKE) $(RELEASEDIR)/$@.tar
 
 linux-amd64: export CC=x86_64-linux-musl-gcc
 linux-amd64:
 	$(MAKE) build-$@
-	$(MAKE) package-$@
+	$(MAKE) $(RELEASEDIR)/$@.tar
 
 linux-mips64: export CC=mips64-linux-musl-gcc
 linux-mips64:
 	$(MAKE) build-$@
-	$(MAKE) package-$@
+	$(MAKE) $(RELEASEDIR)/$@.tar
 
 linux-mips64le: export CC=mips64el-linux-musl-gcc
 linux-mips64le:
 	$(MAKE) build-$@
-	$(MAKE) package-$@
+	$(MAKE) $(RELEASEDIR)/$@
 
 linux-ppc64: export CC=powerpc64-linux-musl-gcc
 linux-ppc64:
 	$(MAKE) build-$@
-	$(MAKE) package-$@
+	$(MAKE) $(RELEASEDIR)/$@
 
 linux-ppc64le: export CC=powerpc64le-linux-musl-gcc
 linux-ppc64le:
 	$(MAKE) build-$@
-	$(MAKE) package-$@
+	$(MAKE) $(RELEASEDIR)/$@
 
 linux-s390x: export CC=s390x-linux-musl-gcc
 linux-s390x:
 	$(MAKE) build-$@
-	$(MAKE) package-$@
+	$(MAKE) $(RELEASEDIR)/$@
 
 linux-arm64: export CC=aarch64-linux-musl-gcc
 linux-arm64:
 	$(MAKE) build-$@
-	$(MAKE) package-$@
+	$(MAKE) $(RELEASEDIR)/$@
 
 netbsd-amd64: export CC=x86_64-unknown-netbsd9-clang
 netbsd-amd64:
 	$(MAKE) build-$@
-	$(MAKE) package-$@
+	$(MAKE) $(RELEASEDIR)/$@
 
 netbsd-arm64: export CC=aarch64-unknown-netbsd9-clang
 netbsd-arm64:
 	$(MAKE) build-$@
-	$(MAKE) package-$@
+	$(MAKE) $(RELEASEDIR)/$@
 
 openbsd-amd64: export CC=x86_64-unknown-openbsd7-clang
 openbsd-amd64:
 	$(MAKE) build-$@
-	$(MAKE) package-$@
+	$(MAKE) $(RELEASEDIR)/$@
 
 openbsd-arm64: export CC=aarch64-unknown-openbsd7-clang
 openbsd-arm64:
 	$(MAKE) build-$@
-	$(MAKE) package-$@
+	$(MAKE) $(RELEASEDIR)/$@
 
 windows-386: export CC=i686-w64-mingw32-gcc
 windows-386:
 	$(MAKE) build-$@
-	$(MAKE) package-$@
+	$(MAKE) $(RELEASEDIR)/$@
 
 windows-amd64: export CC=x86_64-w64-mingw32-gcc
 windows-amd64:
 	$(MAKE) build-$@
-	$(MAKE) package-$@
+	$(MAKE) $(RELEASEDIR)/$@
 
 windows-arm64: export CC=aarch64-w64-mingw32-gcc
 windows-arm64:
 	$(MAKE) build-$@
-	$(MAKE) package-$@
+	$(MAKE) $(RELEASEDIR)/$@
 
 android: $(ANDROID)
 darwin: $(DARWIN)

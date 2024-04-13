@@ -1,24 +1,45 @@
 package entity
 
-import "github.com/bahner/go-ma/did/doc"
+import (
+	"context"
+	"fmt"
 
-func (e *Entity) FetchDocument(cached bool) (*doc.Document, error) {
+	"github.com/bahner/go-ma/api"
+	"github.com/bahner/go-ma/did/doc"
+	"github.com/fxamacker/cbor/v2"
+	"github.com/ipfs/go-cid"
+	log "github.com/sirupsen/logrus"
+)
 
-	var (
-		err error
-	)
+func (e *Entity) FetchDocument() (*doc.Document, error) {
 
-	d := new(doc.Document)
+	var document = &doc.Document{}
 
-	if e.Doc == nil {
-		// Fetch the document
-		d, _, err = doc.FetchFromDID(e.DID, cached)
-		if err != nil {
-			return d, err
-		}
+	c, err := api.ResolveRootCID(ip.String(), cached)
+	if err != nil {
+		return nil, cid.Cid{}, fmt.Errorf("fetchFromDID: %w", err)
 	}
 
-	return e.Doc, nil
+	log.Debugf("Fetching CID: %s", c)
+
+	node, err := ipfsAPI.Dag().Get(context.Background(), c)
+	if err != nil {
+		return nil, cid.Cid{}, fmt.Errorf("fetchFromDID: %w", err)
+	}
+
+	err = cbor.Unmarshal(node.RawData(), document)
+	if err != nil {
+		return nil, cid.Cid{}, fmt.Errorf("fetchFromDID: %w", err)
+	}
+
+	err = document.Verify()
+	if err != nil {
+		return nil, cid.Cid{}, fmt.Errorf("fetchFromDID: %w", err)
+	}
+
+	log.Debugf("Fetched and cached document for : %s", d.Id)
+	return document, c, nil
+
 }
 
 // Fetch the document and set it in the entity.

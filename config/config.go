@@ -12,7 +12,7 @@ import (
 
 const (
 	NAME       string = "go-ma-actor"
-	VERSION    string = "v0.3.1"
+	VERSION    string = "v0.4.1"
 	ENV_PREFIX string = "GO_MA_ACTOR"
 
 	configDirMode  os.FileMode = 0700

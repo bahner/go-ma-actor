@@ -5,13 +5,16 @@ go 1.22
 require (
 	github.com/adrg/xdg v0.4.0
 	github.com/ayush6624/go-chatgpt v0.3.0
-	github.com/bahner/go-ma v0.7.7-0.20240412235320-63dbdd4090f2
+	github.com/bahner/go-ma v0.7.7-0.20240413011115-38cc258af89e
 	github.com/ergo-services/ergo v1.999.224
 	github.com/fsnotify/fsnotify v1.7.0
 	github.com/fxamacker/cbor/v2 v2.6.0
 	github.com/gdamore/tcell/v2 v2.7.4
 	github.com/hashicorp/vault/api v1.12.1
 	github.com/ipfs/boxo v0.18.0
+	github.com/ipfs/go-cid v0.4.1
+	github.com/ipfs/go-datastore v0.6.0
+	github.com/ipfs/kubo v0.26.0
 	github.com/libp2p/go-libp2p v0.32.2
 	github.com/libp2p/go-libp2p-kad-dht v0.24.4
 	github.com/libp2p/go-libp2p-pubsub v0.10.0
@@ -72,8 +75,6 @@ require (
 	github.com/huin/goupnp v1.3.0 // indirect
 	github.com/ipfs/bbloom v0.0.4 // indirect
 	github.com/ipfs/go-block-format v0.2.0 // indirect
-	github.com/ipfs/go-cid v0.4.1 // indirect
-	github.com/ipfs/go-datastore v0.6.0 // indirect
 	github.com/ipfs/go-ds-measure v0.2.0 // indirect
 	github.com/ipfs/go-fs-lock v0.0.7 // indirect
 	github.com/ipfs/go-ipfs-cmds v0.10.0 // indirect
@@ -84,7 +85,6 @@ require (
 	github.com/ipfs/go-log v1.0.5 // indirect
 	github.com/ipfs/go-log/v2 v2.5.1 // indirect
 	github.com/ipfs/go-metrics-interface v0.0.1 // indirect
-	github.com/ipfs/kubo v0.26.0 // indirect
 	github.com/ipld/go-codec-dagpb v1.6.0 // indirect
 	github.com/ipld/go-ipld-prime v0.21.0 // indirect
 	github.com/jackpal/go-nat-pmp v1.0.2 // indirect
