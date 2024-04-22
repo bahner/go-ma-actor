@@ -5,12 +5,11 @@ package config
 // This is because it's so low level and the identity is needed for the keyset.
 
 import (
-	"context"
 	"fmt"
 	"os"
 	"sync"
 
-	"github.com/bahner/go-ma/api"
+	"github.com/libp2p/go-libp2p/core/crypto"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 
@@ -91,7 +90,6 @@ func Actor() ActorConfig {
 
 	// If we are generating a new identity we should publish it
 	if GenerateFlag() {
-		renameIPNSKey(actorKeyset.DID.Fragment)
 		publishIdentityFromKeyset(actorKeyset)
 	}
 
@@ -100,51 +98,6 @@ func Actor() ActorConfig {
 		Nick:     ActorNick(),
 		Location: ActorLocation(),
 	}
-}
-
-func renameIPNSKey(name string) error {
-
-	keyExists := ipnsKeyExists(name)
-
-	if !keyExists {
-		return nil
-	}
-
-	// If the key exists and the force flag is not set, return an error
-	if !ForceFlag() {
-		return fmt.Errorf("config.renameIPNSKey: force flag not set")
-	}
-
-	ctx := context.Background()
-	ipfsAPI := api.GetIPFSAPI()
-
-	backupName := name + "~"
-	_, _, err := ipfsAPI.Key().Rename(ctx, name, backupName)
-
-	log.Infof("Renamed existing IPNS key: %s to %s", name, backupName)
-
-	return err
-}
-
-func ipnsKeyExists(name string) bool {
-
-	ctx := context.Background()
-
-	ipfsAPI := api.GetIPFSAPI()
-
-	keys, err := ipfsAPI.Key().List(ctx)
-	if err != nil {
-		log.Errorf("config.ipnsKeyExists: %v", err)
-		return false
-	}
-
-	for _, key := range keys {
-		if key.Name() == name {
-			return true
-		}
-	}
-
-	return false
 }
 
 // Fetches the actor nick from the config or the command line
@@ -203,13 +156,17 @@ func initActorKeyset(keyset_string string) {
 // Generates a new keyset and returns the keyset as a string
 func generateKeysetString(nick string) (string, error) {
 
-	ks, err := set.GetOrCreate(nick)
+	privKey, err := getOrCreateIdentity(nick)
+	if err != nil {
+		return "", fmt.Errorf("failed to generate identity: %w", err)
+	}
+	keyset, err := set.New(privKey, nick)
 	if err != nil {
 		return "", fmt.Errorf("failed to generate new keyset: %w", err)
 	}
-	log.Debugf("Created new keyset: %v", ks)
+	log.Debugf("Created new keyset: %v", keyset)
 
-	pks, err := ks.Pack()
+	pks, err := keyset.Pack()
 	if err != nil {
 		return "", fmt.Errorf("failed to pack keyset: %w", err)
 	}
@@ -239,4 +196,31 @@ func publishIdentityFromKeyset(k set.Keyset) error {
 	log.Debugf("Published identity: %s", d.ID)
 
 	return nil
+}
+
+func getOrCreateIdentity(name string) (crypto.PrivKey, error) {
+
+	hasKey, err := Keystore().Has(name)
+	if hasKey {
+		return Keystore().Get(name)
+	}
+	if err != nil {
+		log.Errorf("failed to get private key from keystore: %s", err)
+		return nil, err
+	}
+
+	privKey, _, err := crypto.GenerateKeyPair(crypto.Ed25519, -1)
+	if err != nil {
+		log.Errorf("failed to generate node identity: %s", err)
+		return nil, err
+	}
+
+	err = Keystore().Put(name, privKey)
+	if err != nil {
+		log.Errorf("failed to store private key to keystore: %s", err)
+		return nil, err
+	}
+
+	return privKey, nil
+
 }

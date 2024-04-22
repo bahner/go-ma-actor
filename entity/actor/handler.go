@@ -12,10 +12,10 @@ var ErrInvalidDotContentType = fmt.Errorf("actor: invalid content type for dot m
 func (a *Actor) defaultMessageHandler(m *msg.Message) error {
 
 	switch m.Type {
-	case msg.AT:
+	case msg.REQUEST:
 		return a.handleAtMessage(m)
 	default:
-		return msg.ErrInvalidType
+		return msg.ErrInvalidMessageType
 	}
 }
 

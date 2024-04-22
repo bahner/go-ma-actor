@@ -18,20 +18,18 @@ func main() {
 	ctx := context.Background()
 	initConfig(defaultProfileName)
 
-	// THese are the relay specific parts.
+	i, err := NewRobot()
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	p, err := p2p.Init(p2p.DefaultOptions())
+	p, err := p2p.Init(i.Robot.Keyset.Identity, p2p.DefaultOptions())
 	if err != nil {
 		fmt.Printf("Failed to initialize p2p: %v\n", err)
 		return
 	}
 
 	go p.StartDiscoveryLoop(ctx)
-
-	i, err := NewRobot()
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	i.Robot.HelloWorld(ctx)
 	// i.Robot.HelloWorld(ctx, a)

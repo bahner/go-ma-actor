@@ -16,16 +16,13 @@ func main() {
 
 	Config(config.Profile())
 
-	// Init config and logger
-	// actor.InitConfig(config.Profile())
+	// Init of actor requires P2P to be initialized
+	a := actor.Init()
 
-	p, err := p2p.Init(p2p.DefaultOptions())
+	p, err := p2p.Init(a.Keyset.Identity, p2p.DefaultOptions())
 	if err != nil {
 		log.Fatalf("Error initialising P2P: %v", err)
 	}
-
-	// Init of actor requires P2P to be initialized
-	a := actor.Init()
 
 	go web.Start(web.NewEntityHandler(p, a.Entity))
 	go p.StartDiscoveryLoop(ctx)

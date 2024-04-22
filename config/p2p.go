@@ -93,7 +93,6 @@ type DiscoveryStruct struct {
 }
 
 type P2PConfig struct {
-	Identity  string          `yaml:"identity"`
 	Port      int             `yaml:"port"`
 	Connmgr   ConnmgrStruct   `yaml:"connmgr"`
 	Discovery DiscoveryStruct `yaml:"discovery"`
@@ -102,14 +101,8 @@ type P2PConfig struct {
 func P2P() P2PConfig {
 	viper.SetDefault("p2p.identity", fakeP2PIdentity)
 
-	p2pIdentity, err := P2PIdentity()
-	if err != nil {
-		panic(err)
-	}
-
 	return P2PConfig{
-		Identity: p2pIdentity,
-		Port:     P2PPort(),
+		Port: P2PPort(),
 		Connmgr: ConnmgrStruct{
 			LowWatermark:  P2PConnmgrLowWatermark(),
 			HighWatermark: P2PConnmgrHighWatermark(),
@@ -121,15 +114,6 @@ func P2P() P2PConfig {
 			DHT:               P2PDiscoveryDHT(),
 			MDNS:              P2PDiscoveryMDNS()},
 	}
-}
-
-func P2PIdentity() (string, error) {
-
-	if GenerateFlag() {
-		return generateNodeIdentity()
-	}
-
-	return viper.GetString("p2p.identity"), nil
 }
 
 func P2PDiscoveryAdvertiseInterval() time.Duration {

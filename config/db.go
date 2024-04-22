@@ -10,30 +10,35 @@ import (
 	"github.com/spf13/viper"
 )
 
-const CSVMode = 0664
+const (
+	CSVMode = 0664
+)
 
 var (
-	defaultPeersPath    = internal.NormalisePath(dataHome + "/peers.csv")
-	defaultEntitiesPath = internal.NormalisePath(dataHome + "/entities.csv")
-	dbFlags             = *pflag.NewFlagSet("db", pflag.ContinueOnError)
-	dbOnce              sync.Once
+	err    error
+	dbOnce sync.Once
+
+	dbFlags = *pflag.NewFlagSet("db", pflag.ContinueOnError)
 )
 
 func InitDB() {
 
 	dbOnce.Do(func() {
 
-		dbFlags.String("peers", defaultPeersPath, "Filename for CSV peers file.")
-		dbFlags.String("entities", defaultEntitiesPath, "Filename for CSV entities file.")
+		dbFlags.String("entities", defaultEntitiesPath(), "Filename for CSV entities file.")
 		dbFlags.String("history", defaultHistoryPath(), "Filename for CSV history file.")
+		dbFlags.String("keystore", defaultKeystorePath(), "Folder name to store keys in.")
+		dbFlags.String("peers", defaultPeersPath(), "Filename for CSV peers file.")
 
-		viper.BindPFlag("db.peers", dbFlags.Lookup("peers"))
 		viper.BindPFlag("db.entities", dbFlags.Lookup("entities"))
 		viper.BindPFlag("db.history", dbFlags.Lookup("history"))
+		viper.BindPFlag("db.keystore", dbFlags.Lookup("keystore"))
+		viper.BindPFlag("db.peers", dbFlags.Lookup("peers"))
 
-		viper.SetDefault("db.peers", defaultPeersPath)
-		viper.SetDefault("db.entities", defaultEntitiesPath)
+		viper.SetDefault("db.entities", defaultEntitiesPath())
 		viper.SetDefault("db.history", defaultHistoryPath())
+		viper.SetDefault("db.keystore", defaultKeystorePath())
+		viper.SetDefault("db.peers", defaultPeersPath())
 
 		if HelpNeeded() {
 			fmt.Println("DB Flags:")
@@ -41,28 +46,27 @@ func InitDB() {
 		} else {
 			dbFlags.Parse(os.Args[1:])
 		}
+
 	})
 
 }
 
 type DBConfig struct {
-	Peers    string `yaml:"peers"`
 	Entities string `yaml:"entities"`
 	History  string `yaml:"history"`
+	Keystore string `yaml:"keystore"`
+	Peers    string `yaml:"peers"`
 }
 
 func DB() DBConfig {
 
 	return DBConfig{
-		Peers:    DBPeers(),
 		Entities: DBEntities(),
 		History:  DBHistory(),
+		Keystore: DBKeystore(),
+		Peers:    DBPeers(),
 	}
 
-}
-
-func DBPeers() string {
-	return viper.GetString("db.peers")
 }
 
 func DBEntities() string {
@@ -73,6 +77,22 @@ func DBHistory() string {
 	return viper.GetString("db.history")
 }
 
+func DBKeystore() string {
+	return viper.GetString("db.keystore")
+}
+
+func DBPeers() string {
+	return viper.GetString("db.peers")
+}
+
 func defaultHistoryPath() string {
 	return internal.NormalisePath(dataHome + "/" + Profile() + ".history")
+}
+
+func defaultEntitiesPath() string {
+	return internal.NormalisePath(dataHome + "/entities.csv")
+}
+
+func defaultPeersPath() string {
+	return internal.NormalisePath(dataHome + "/peers.csv")
 }

@@ -174,7 +174,7 @@ func (ui *ChatUI) handleEntityResolveCommand(args []string) {
 		}
 
 		ui.displaySystemMessage("Resolving DID Document for " + e.DID.Id + "...")
-		d, c, err := doc.Fetch(id, false)
+		d, c, err := doc.Fetch(e.DID.Id)
 		if err != nil {
 			ui.displaySystemMessage("Error fetching DID Document: " + err.Error())
 			return

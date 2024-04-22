@@ -19,7 +19,7 @@ func init() {
 // to perform a network search. This might take time at the scale of minutes.
 func GetOrCreate(didString string) (*Entity, error) {
 
-	d, err := did.New(didString)
+	d, err := did.NewFromString(didString)
 	if err != nil {
 		return nil, fmt.Errorf("entity/getorcreate: %w", err)
 	}

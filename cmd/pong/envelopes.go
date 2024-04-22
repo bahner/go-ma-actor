@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/bahner/go-ma-actor/entity"
 	"github.com/bahner/go-ma-actor/entity/actor"
 	"github.com/bahner/go-ma/msg"
 	"github.com/pkg/errors"
@@ -47,28 +48,15 @@ func handleEnvelopeEvents(ctx context.Context, a *actor.Actor) {
 
 func envelopeReply(ctx context.Context, a *actor.Actor, m *msg.Message) error {
 
-	// We need to reverse the to and from here. The message is from the other actor, and we are sending to them.
+	// We need a topic to send the message over
 	replyTo := m.From
-	replyFrom := m.To
-	replyMsg := []byte(viper.GetString("pong.reply"))
-
-	// Broadcast are sent to the topic, and the topic is the DID of the recipient
-	reply, err := msg.New(replyFrom, replyTo, replyMsg, "text/plain", a.Keyset.SigningKey.PrivKey)
+	replyToEntity, err := entity.GetOrCreate(replyTo)
 	if err != nil {
-		return fmt.Errorf("failed creating new message: %w", errors.Cause(err))
-	}
-
-	envelope, err := reply.Enclose()
-	if err != nil {
-		return fmt.Errorf("failed creating envelope: %w", errors.Cause(err))
-	}
-
-	err = envelope.Send(ctx, a.Entity.Topic)
-	if err != nil {
-		return fmt.Errorf("failed sending message: %w", errors.Cause(err))
+		return fmt.Errorf("failed getting or creating entity: %w", errors.Cause(err))
 	}
 
 	fmt.Printf("Sending private envelope to %s over %s\n", replyTo, a.Entity.Topic.String())
 
-	return nil
+	replyMsg := []byte(viper.GetString("pong.reply"))
+	return m.Reply(ctx, replyMsg, a.Keyset.SigningKey.PrivKey, replyToEntity.Topic)
 }

@@ -74,7 +74,13 @@ func (ui *ChatUI) handleChatMessage(input string) error {
 	log.Debugf("Handling chatMessage: %s, from %s to %s", input, from, to)
 	msgBytes := []byte(input)
 
-	msg, err := msg.New(from, to, msgBytes, "text/plain", ui.a.Keyset.SigningKey.PrivKey)
+	msg, err := msg.New(
+		from,
+		to,
+		msg.CHAT,
+		msgBytes,
+		msg.DEFAULT_CONTENT_TYPE,
+		ui.a.Keyset.SigningKey.PrivKey)
 	if err != nil {
 		log.Debugf("message creation error: %s", err)
 		return fmt.Errorf("message creation error: %w", err)

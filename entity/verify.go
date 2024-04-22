@@ -6,7 +6,7 @@ import (
 
 func (e *Entity) Verify() error {
 
-	err := e.DID.Verify()
+	err := e.DID.Validate()
 	if err != nil {
 		return fmt.Errorf("entity/verify: %w", err)
 	}

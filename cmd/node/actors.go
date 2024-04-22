@@ -53,7 +53,7 @@ func getOrCreateActor(id string) (*actor.Actor, error) {
 	// Force publication of document.
 	o := doc.DefaultPublishOptions()
 	o.Force = true
-	a.Entity.Doc.Publish(o)
+	a.Entity.Doc.Publish()
 
 	// Cache the newly created entity for future retrievals
 	actors.Set(id, a)

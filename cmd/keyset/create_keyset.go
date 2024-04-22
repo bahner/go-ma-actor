@@ -1,12 +1,14 @@
 package main
 
 import (
+	"crypto/rand"
 	"flag"
 	"fmt"
 	"os"
 
 	doc "github.com/bahner/go-ma/did/doc"
-	keyset "github.com/bahner/go-ma/key/set"
+	"github.com/bahner/go-ma/key/set"
+	"github.com/libp2p/go-libp2p/core/crypto"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -19,7 +21,7 @@ func main() {
 
 	log.SetLevel(log.ErrorLevel)
 
-	name := flag.String("name", "", "Name of the entity to create")
+	name := flag.String("name", "", "(Nick)name of the entity to create")
 	publish := flag.Bool("publish", false, "Publish the entity document to IPFS")
 	logLevel := flag.String("loglevel", "error", "Set the log level (debug, info, warn, error, fatal, panic)")
 
@@ -32,7 +34,12 @@ func main() {
 	log.Debugf("main: log level set to %v", _level)
 
 	// Create a new keyset for the entity
-	keyset, err := keyset.GetOrCreate(*name)
+	privKey, _, err := crypto.GenerateEd25519Key(rand.Reader)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	keyset, err := set.New(privKey, *name)
 	if err != nil {
 		log.Fatal(err)
 	}

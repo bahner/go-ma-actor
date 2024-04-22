@@ -97,7 +97,7 @@ func (i *RobotStruct) handleEntityMessageEvents() {
 				continue
 			}
 
-			if m.Message.Type == msg.PLAIN {
+			if m.Message.Type == msg.CHAT {
 				i.handleMessage(ctx, m)
 			}
 		}
@@ -107,37 +107,23 @@ func (i *RobotStruct) handleEntityMessageEvents() {
 func (i *RobotStruct) handleMessage(ctx context.Context, m *entity.Message) error {
 
 	// Switch sender and receiver. Reply back to from :-)
-	// Broadcast are sent to the topic, and the topic is the DID of the recipient
-	replyFrom := i.Robot.Entity.DID.Id
 	replyTo, err := entity.GetOrCreate(m.Message.From)
 	if err != nil {
 		return fmt.Errorf("failed to create new entity: %w", errors.Cause(err))
 	}
-
-	r, err := msg.New(replyFrom, replyTo.DID.Id, reply(m), "text/plain", i.Robot.Keyset.SigningKey.PrivKey)
+	replyToEntity, err := entity.GetOrCreate(replyTo.DID.Id)
 	if err != nil {
-		return fmt.Errorf("failed creating new message: %w", errors.Cause(err))
+		log.Errorf("failed to create new entity: %v", err)
 	}
 
-	if m.Enveloped {
-		env, err := r.Enclose()
-		if err != nil {
-			return fmt.Errorf("failed enclose message: %w", errors.Cause(err))
-		}
+	replyBytes := reply(m)
 
-		env.Send(ctx, i.Robot.Entity.Topic)
-		fmt.Printf("Sending private message to %s over %s\n", replyTo.DID.Id, replyTo.Topic.String())
-
-	} else {
-
-		err = r.Send(ctx, i.Location.Topic)
-		if err != nil {
-			return fmt.Errorf("failed sending message: %w", errors.Cause(err))
-		}
-		fmt.Printf("Sending public message to %s over %s\n", replyTo.DID.Id, i.Location.Topic.String())
+	err = m.Message.Reply(ctx, replyBytes, i.Robot.Keyset.SigningKey.PrivKey, replyToEntity.Topic)
+	if err != nil {
+		log.Errorf("failed to reply to message: %v", err)
 	}
 
-	return nil
+	return err
 }
 
 func reply(m *entity.Message) []byte {

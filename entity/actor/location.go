@@ -1,6 +1,7 @@
 package actor
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/bahner/go-ma-actor/entity"
@@ -36,15 +37,15 @@ func (a *Actor) SetLocationFromDID(did did.DID) error {
 	return a.SetLocation(e)
 }
 
-func (a *Actor) SetLocationFromDIDString(didStr string) error {
+// func (a *Actor) SetLocationFromDIDString(didStr string) error {
 
-	d, err := did.New(didStr)
-	if err != nil {
-		return err
-	}
+// 	d, err := did.NewFromString(didStr)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	return a.SetLocationFromDID(d)
-}
+// 	return a.SetLocationFromDID(d)
+// }
 
 func (a *Actor) GetLocation() (string, error) {
 
@@ -57,6 +58,7 @@ func (a *Actor) GetLocation() (string, error) {
 
 func (a *Actor) HandleLocationMessage(m *msg.Message) error {
 
+	ctx := context.Background()
 	replyBytes := []byte(defaultLocationReply)
 
 	// Set the reply to the currentLocation, if it is set.
@@ -72,6 +74,6 @@ func (a *Actor) HandleLocationMessage(m *msg.Message) error {
 
 	log.Debugf("Sending location to %s over %s", m.From, a.Entity.Topic.String())
 
-	return m.Reply(replyBytes, msg.PLAIN, a.Keyset.SigningKey.PrivKey, e.Topic)
+	return m.Reply(ctx, replyBytes, a.Keyset.SigningKey.PrivKey, e.Topic)
 
 }

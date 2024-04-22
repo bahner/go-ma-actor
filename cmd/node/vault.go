@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/bahner/go-ma-actor/db"
 	"github.com/bahner/go-ma/key/set"
 	"github.com/hashicorp/vault/api"
 	"github.com/spf13/pflag"
@@ -132,7 +133,9 @@ func getOrCreateKeysetFromVault(id string) (set.Keyset, error) {
 			return set.Keyset{}, fmt.Errorf("error retrieving keyset: %s", err)
 		}
 
-		keyset, err = set.GetOrCreate(id)
+		privKey, err := db.GetOrCreateIdentity(id)
+
+		keyset, err = set.New(privKey, id)
 		if err != nil {
 			return set.Keyset{}, fmt.Errorf("error getting or creating keyset: %s", err)
 		}

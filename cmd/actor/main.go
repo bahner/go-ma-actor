@@ -22,18 +22,18 @@ func main() {
 	fmt.Println("Initialising actor configuation...")
 	// actor.InitConfig(config.Profile())
 
+	// ACTOR
+	fmt.Println("Initialising actor...")
+	a := actor.Init()
+
 	// P2P
 	fmt.Println("Setting default p2p options...")
 	p2pOpts := p2p.DefaultOptions()
 	fmt.Println("Initialising p2p...")
-	p2P, err := p2p.Init(p2pOpts)
+	p2P, err := p2p.Init(a.Keyset.Identity, p2pOpts)
 	if err != nil {
 		panic(fmt.Sprintf("failed to initialize p2p: %v", err))
 	}
-
-	// ACTOR
-	fmt.Println("Initialising actor...")
-	a := actor.Init()
 
 	// WEB
 	fmt.Println("Initialising web UI...")

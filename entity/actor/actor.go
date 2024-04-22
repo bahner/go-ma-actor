@@ -3,6 +3,7 @@ package actor
 import (
 	"fmt"
 
+	"github.com/bahner/go-ma-actor/db"
 	"github.com/bahner/go-ma-actor/entity"
 	"github.com/bahner/go-ma/did"
 	"github.com/bahner/go-ma/did/doc"
@@ -66,24 +67,25 @@ func New(k set.Keyset) (*Actor, error) {
 	return a, nil
 }
 
-// // Get an entity from the global map.
-// // The input is a full did string. If one is created it will have no Nick.
-// // The function should do the required lookups to get the nick.
-// // And verify the entity.
+// Takes a DID String as input and returns the actor.
 func GetOrCreate(id string) (*Actor, error) {
 
-	// Creating a DID here implies validation before we try to load the actor.
-	d, err := did.New(id)
+	a := load(id)
+	if a != nil {
+		return a, nil
+	}
+
+	d, err := did.NewFromString(id)
+	if err != nil {
+		return nil, fmt.Errorf("actor.GetOrCreate: failed to create DID: %w", err)
+	}
+
+	identity, err := db.GetOrCreateIdentity(d.Fragment)
 	if err != nil {
 		return nil, fmt.Errorf("actor.GetOrCreate: %w", err)
 	}
 
-	e := load(d.Id)
-	if e != nil {
-		return e, nil
-	}
-
-	k, err := set.GetOrCreate(d.Fragment)
+	k, err := set.New(identity, d.Fragment)
 	if err != nil {
 		return nil, fmt.Errorf("entity/newfromdid: failed to get or create keyset: %w", err)
 	}

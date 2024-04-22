@@ -8,9 +8,9 @@ import (
 	"github.com/bahner/go-ma-actor/p2p/connmgr"
 	"github.com/bahner/go-ma-actor/p2p/node"
 	"github.com/bahner/go-ma-actor/p2p/pubsub"
-	"github.com/ipfs/boxo/namesys"
 	libp2p "github.com/libp2p/go-libp2p"
 	p2ppubsub "github.com/libp2p/go-libp2p-pubsub"
+	"github.com/libp2p/go-libp2p/core/crypto"
 	"github.com/libp2p/go-libp2p/core/host"
 	p2peer "github.com/libp2p/go-libp2p/core/peer"
 	log "github.com/sirupsen/logrus"
@@ -22,19 +22,17 @@ var _p2p *P2P
 // It contains a libp2p node, a pubsub service and a DHT instance.
 // It also contains a list of connected peers.
 type P2P struct {
-	PubSub        *p2ppubsub.PubSub
-	DHT           *DHT
-	MDNS          *MDNS
-	Host          host.Host
-	AddrInfo      p2peer.AddrInfo
-	IPNSPublisher *namesys.IPNSPublisher
-	IPNSResolver  *namesys.IPNSResolver
+	PubSub   *p2ppubsub.PubSub
+	DHT      *DHT
+	MDNS     *MDNS
+	Host     host.Host
+	AddrInfo p2peer.AddrInfo
 }
 
 // Initialise everything needed for p2p communication. The function forces use of a specific IPNS key.
 // Taken from the config package. It would be an error to initialise the node with a different key.
 // The input is derived from Config() in the config package.
-func Init(opts Options) (*P2P, error) {
+func Init(identity crypto.PrivKey, opts Options) (*P2P, error) {
 
 	ctx := context.Background()
 
@@ -51,7 +49,7 @@ func Init(opts Options) (*P2P, error) {
 	)
 
 	// Initialise the libp2p node with the options.
-	n, err := node.New(config.NodeIdentity(), opts.P2P...)
+	n, err := node.New(identity, opts.P2P...)
 	if err != nil {
 		return nil, fmt.Errorf("pong: failed to create libp2p node: %w", err)
 	}
@@ -79,17 +77,12 @@ func Init(opts Options) (*P2P, error) {
 		Addrs: d.Host.Addrs(),
 	}
 
-	iPublisher := newIPNSPublisher(d.IpfsDHT)
-	iResolve := newIPNSResolver(d.IpfsDHT)
-
 	_p2p = &P2P{
-		AddrInfo:      ai,
-		DHT:           d,
-		Host:          d.Host,
-		MDNS:          m,
-		PubSub:        ps,
-		IPNSPublisher: iPublisher,
-		IPNSResolver:  iResolve,
+		AddrInfo: ai,
+		DHT:      d,
+		Host:     d.Host,
+		MDNS:     m,
+		PubSub:   ps,
 	}
 
 	go _p2p.protectLoop(ctx)

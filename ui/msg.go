@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/bahner/go-ma-actor/entity"
-	"github.com/bahner/go-ma/did"
 	"github.com/bahner/go-ma/msg"
 	log "github.com/sirupsen/logrus"
 )
@@ -23,9 +22,7 @@ func (ui *ChatUI) handleMsgCommand(input string) {
 	if len(parts) == 2 {
 
 		recipient := parts[0][1:] // The recipient is the first argument, without the leading .
-		if !did.IsValid(recipient) {
-			recipient = entity.Lookup(recipient)
-		}
+		recipient = entity.Lookup(recipient)
 
 		if recipient == "" {
 			ui.displaySystemMessage(fmt.Sprintf("Invalid DID: %s", recipient))
@@ -38,7 +35,7 @@ func (ui *ChatUI) handleMsgCommand(input string) {
 			ui.displayDebugMessage(fmt.Sprintf("Sending message to %s: %s", recipient, message))
 		}
 
-		msg, err := msg.New(ui.a.Entity.DID.Id, recipient, msgBytes, "text/plain", ui.a.Keyset.SigningKey.PrivKey)
+		msg, err := msg.Chat(ui.a.Entity.DID.Id, recipient, msgBytes, ui.a.Keyset.SigningKey.PrivKey)
 		if err != nil {
 			ui.displaySystemMessage(fmt.Sprintf("message creation error: %s", err))
 		}

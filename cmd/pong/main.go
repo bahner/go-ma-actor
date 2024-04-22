@@ -25,15 +25,15 @@ func main() {
 
 	initConfig(defaultProfileName)
 
+	// Init of actor requires P2P to be initialized
+	a := actor.Init()
+
 	// THese are the relay specific parts.
-	p, err := p2p.Init(p2p.DefaultOptions())
+	p, err := p2p.Init(a.Keyset.Identity, p2p.DefaultOptions())
 	if err != nil {
 		fmt.Printf("Failed to initialize p2p: %v\n", err)
 		return
 	}
-
-	// Init of actor requires P2P to be initialized
-	a := actor.Init()
 
 	fmt.Printf("Starting pong mode as %s\n", a.Entity.DID.Id)
 	go p.StartDiscoveryLoop(ctx)
