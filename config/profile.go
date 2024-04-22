@@ -1,18 +1,13 @@
 package config
 
-import (
-	log "github.com/sirupsen/logrus"
-)
-
 var defaultProfile = "actor"
 
 // Profile is the mode unless overridden by the profile flag.
 func Profile() string {
 
-	flag := CommonFlags.Lookup("profile")
-	log.Debugf("config.Profile: Lookup profile: %v", flag)
-	if flag != nil && flag.Changed {
-		return flag.Value.String()
+	// This is used early so command line takes precedence
+	if commonFlagset.Lookup("profile").Changed {
+		return commonFlagset.Lookup("profile").Value.String()
 	}
 
 	return defaultProfile

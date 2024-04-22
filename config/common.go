@@ -2,16 +2,15 @@ package config
 
 import (
 	"fmt"
-	"os"
 	"sync"
 
 	"github.com/spf13/pflag"
 )
 
 var (
-	CommonFlags = pflag.NewFlagSet("common", pflag.ContinueOnError)
+	commonFlagset = pflag.NewFlagSet("common", pflag.ExitOnError)
 
-	commonOnce sync.Once
+	commonFlagsOnce sync.Once
 
 	debugFlag bool = false
 	forceFlag bool = false
@@ -21,29 +20,28 @@ var (
 	versionCommandFlag    bool = false
 )
 
-func InitCommon() {
+func InitCommonFlagset() {
 
-	commonOnce.Do(func() {
+	commonFlagsOnce.Do(func() {
 
 		// Allow to set config file via command line flag.
-		CommonFlags.StringP("config", "c", "", "Config file to use.")
-		CommonFlags.StringP("profile", "p", "", "Config profile (name) to use.")
+		commonFlagset.StringP("config", "c", "", "Config file to use.")
+		commonFlagset.StringP("profile", "p", "", "Config profile (name) to use.")
 
-		// COmmands
-		CommonFlags.BoolVar(&showConfigCommandFlag, "show-config", false, "Whether to print the config.")
-		CommonFlags.BoolVarP(&versionCommandFlag, "version", "v", false, "Print version and exit.")
-		CommonFlags.BoolVar(&generateCommandFlag, "generate", false, "Generates a new keyset")
+		// Commands
+		commonFlagset.BoolVar(&showConfigCommandFlag, "show-config", false, "Whether to print the config.")
+		commonFlagset.BoolVarP(&versionCommandFlag, "version", "v", false, "Print version and exit.")
+		commonFlagset.BoolVar(&generateCommandFlag, "generate", false, "Generates a new keyset")
 
 		// Flags
-		CommonFlags.BoolVar(&forceFlag, "force", false, "Forces regneration of config keyset and publishing")
-		CommonFlags.BoolVar(&debugFlag, "debug", false, "Port to listen on for debug endpoints")
+		commonFlagset.BoolVar(&forceFlag, "force", false, "Forces regneration of config keyset and publishing")
+		commonFlagset.BoolVar(&debugFlag, "debug", false, "Port to listen on for debug endpoints")
 
 		if HelpNeeded() {
-			fmt.Println("Common flags:")
-			CommonFlags.PrintDefaults()
-		} else {
-			CommonFlags.Parse(os.Args[1:])
+			fmt.Println("Common Flags:")
+			commonFlagset.PrintDefaults()
 		}
+
 	})
 }
 
@@ -57,19 +55,6 @@ Set exitOnHelp to true if you want the program to exit
 after help is printed. This is useful for the main function,
 when this is the last flag parsing function called.
 */
-
-func ParseCommonFlags(exitOnHelp bool) {
-
-	InitCommon()
-	InitLog()
-	InitDB()
-	InitP2P()
-	InitHTTP()
-
-	if HelpNeeded() && exitOnHelp {
-		os.Exit(0)
-	}
-}
 
 func Debug() bool {
 	return debugFlag

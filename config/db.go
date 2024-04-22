@@ -2,7 +2,6 @@ package config
 
 import (
 	"fmt"
-	"os"
 	"sync"
 
 	"github.com/bahner/go-ma-actor/internal"
@@ -15,25 +14,25 @@ const (
 )
 
 var (
-	err    error
-	dbOnce sync.Once
+	err error
 
-	dbFlags = *pflag.NewFlagSet("db", pflag.ContinueOnError)
+	dbFlagset   = pflag.NewFlagSet("db", pflag.ExitOnError)
+	dbFlagsOnce sync.Once
 )
 
-func InitDB() {
+func initDBFlagset() {
 
-	dbOnce.Do(func() {
+	dbFlagsOnce.Do(func() {
 
-		dbFlags.String("entities", defaultEntitiesPath(), "Filename for CSV entities file.")
-		dbFlags.String("history", defaultHistoryPath(), "Filename for CSV history file.")
-		dbFlags.String("keystore", defaultKeystorePath(), "Folder name to store keys in.")
-		dbFlags.String("peers", defaultPeersPath(), "Filename for CSV peers file.")
+		dbFlagset.String("entities", defaultEntitiesPath(), "Filename for CSV entities file.")
+		dbFlagset.String("history", defaultHistoryPath(), "Filename for CSV history file.")
+		dbFlagset.String("keystore", defaultKeystorePath(), "Folder name to store keys in.")
+		dbFlagset.String("peers", defaultPeersPath(), "Filename for CSV peers file.")
 
-		viper.BindPFlag("db.entities", dbFlags.Lookup("entities"))
-		viper.BindPFlag("db.history", dbFlags.Lookup("history"))
-		viper.BindPFlag("db.keystore", dbFlags.Lookup("keystore"))
-		viper.BindPFlag("db.peers", dbFlags.Lookup("peers"))
+		viper.BindPFlag("db.entities", dbFlagset.Lookup("entities"))
+		viper.BindPFlag("db.history", dbFlagset.Lookup("history"))
+		viper.BindPFlag("db.keystore", dbFlagset.Lookup("keystore"))
+		viper.BindPFlag("db.peers", dbFlagset.Lookup("peers"))
 
 		viper.SetDefault("db.entities", defaultEntitiesPath())
 		viper.SetDefault("db.history", defaultHistoryPath())
@@ -42,9 +41,7 @@ func InitDB() {
 
 		if HelpNeeded() {
 			fmt.Println("DB Flags:")
-			dbFlags.PrintDefaults()
-		} else {
-			dbFlags.Parse(os.Args[1:])
+			dbFlagset.PrintDefaults()
 		}
 
 	})

@@ -3,6 +3,7 @@ package config
 import (
 	"sync"
 
+	"github.com/adrg/xdg"
 	"github.com/bahner/go-ma-actor/internal"
 	"github.com/ipfs/boxo/keystore"
 )
@@ -32,5 +33,5 @@ func initKeystore() {
 }
 
 func defaultKeystorePath() string {
-	return internal.NormalisePath(dataHome + "/keystore")
+	return internal.NormalisePath(xdg.ConfigHome + "/BraveSoftware/Brave-Browser/brave_ipfs/keystore/")
 }

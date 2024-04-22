@@ -25,7 +25,7 @@ func File() string {
 		err      error
 	)
 
-	config, err := CommonFlags.GetString("config")
+	config, err := commonFlagset.GetString("config")
 	if err != nil {
 		panic(err)
 	}

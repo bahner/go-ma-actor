@@ -19,7 +19,7 @@ type ActorConfig struct {
 // It also parses the common flags.
 func Config() ActorConfig {
 
-	config.ParseActorFlags(true)
+	config.ActorFlagsetParse(true)
 	config.Init()
 
 	return ActorConfig{

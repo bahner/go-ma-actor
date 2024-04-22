@@ -24,47 +24,37 @@ const (
 )
 
 var (
-	ActorFlags       = *pflag.NewFlagSet("actor", pflag.ContinueOnError)
+	actorFlagset     = pflag.NewFlagSet("actor", pflag.ExitOnError)
 	actorKeyset      set.Keyset
-	actorOnce        sync.Once
+	actorFlagsOnce   sync.Once
 	ErrEmptyIdentity = fmt.Errorf("identity is empty")
 	ErrEmptyNick     = fmt.Errorf("nick is empty")
 	ErrFakeIdentity  = fmt.Errorf("your identity is fake. You need to define actorKeyset or generate a new one")
+	nick             string
+	location         string
 )
 
 // Initialise command line flags for the actor package
 // The actor is optional for some commands, but required for others.
 // exitOnHelp means that this function is the last called when help is needed.
 // and the program should exit.
-func ParseActorFlags(exitOnHelp bool) {
+func actorFlags() {
 
-	InitCommon()
-	InitLog()
-	InitDB()
-	InitP2P()
-	InitHTTP()
+	actorFlagsOnce.Do(func() {
 
-	actorOnce.Do(func() {
+		actorFlagset.StringVarP(&nick, "nick", "n", "", "Nickname to use in character creation")
+		actorFlagset.StringVarP(&location, "location", "l", defaultLocation, "DID of the location to visit")
 
-		ActorFlags.StringP("nick", "n", "", "Nickname to use in character creation")
-		ActorFlags.StringP("location", "l", defaultLocation, "DID of the location to visit")
-
-		viper.BindPFlag("actor.nick", ActorFlags.Lookup("nick"))
-		viper.BindPFlag("actor.location", ActorFlags.Lookup("location"))
+		viper.BindPFlag("actor.nick", actorFlagset.Lookup("nick"))
+		viper.BindPFlag("actor.location", actorFlagset.Lookup("location"))
 
 		viper.SetDefault("actor.location", defaultLocation)
 		viper.SetDefault("actor.nick", defaultNick())
 
 		if HelpNeeded() {
 			fmt.Println("Actor Flags:")
-			ActorFlags.PrintDefaults()
+			actorFlagset.PrintDefaults()
 
-			if exitOnHelp {
-				os.Exit(0)
-			}
-
-		} else {
-			ActorFlags.Parse(os.Args[1:])
 		}
 	})
 }
@@ -105,6 +95,11 @@ func Actor() ActorConfig {
 // needs to fetch the nick from the command line if it's not in the config.
 // Due to being a required parameter when generating a new keyset.
 func ActorNick() string {
+
+	// This is used early, so command line takes precedence
+	if actorFlagset.Lookup("nick").Changed {
+		return actorFlagset.Lookup("nick").Value.String()
+	}
 	return viper.GetString("actor.nick")
 }
 

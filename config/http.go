@@ -2,7 +2,6 @@ package config
 
 import (
 	"fmt"
-	"os"
 	"sync"
 
 	"github.com/spf13/pflag"
@@ -15,8 +14,8 @@ const (
 )
 
 var (
-	httpFlags = pflag.NewFlagSet("http", pflag.ContinueOnError)
-	httpOnce  sync.Once
+	httpFlagset   = pflag.NewFlagSet("http", pflag.ExitOnError)
+	httpFlagsOnce sync.Once
 )
 
 type HTTPConfig struct {
@@ -25,24 +24,23 @@ type HTTPConfig struct {
 	DebugSocket string `yaml:"debug_socket"`
 }
 
-func InitHTTP() {
+func initHTTPFlagset() {
 
-	httpOnce.Do(func() {
-		httpFlags.String("http-socket", defaultHttpSocket, "Address for webserver to listen on")
-		httpFlags.Int("http-refresh", defaultHttpRefresh, "Number of seconds for webpages to wait before refresh")
+	httpFlagsOnce.Do(func() {
+		httpFlagset.String("http-socket", defaultHttpSocket, "Address for webserver to listen on")
+		httpFlagset.Int("http-refresh", defaultHttpRefresh, "Number of seconds for webpages to wait before refresh")
 
-		viper.BindPFlag("http.socket", httpFlags.Lookup("http-socket"))
-		viper.BindPFlag("http.refresh", httpFlags.Lookup("http-refresh"))
+		viper.BindPFlag("http.socket", httpFlagset.Lookup("http-socket"))
+		viper.BindPFlag("http.refresh", httpFlagset.Lookup("http-refresh"))
 
 		viper.SetDefault("http.socket", defaultHttpSocket)
 		viper.SetDefault("http.refresh", defaultHttpRefresh)
 
 		if HelpNeeded() {
 			fmt.Println("HTTP Flags:")
-			httpFlags.PrintDefaults()
-		} else {
-			httpFlags.Parse(os.Args[1:])
+			httpFlagset.PrintDefaults()
 		}
+
 	})
 }
 

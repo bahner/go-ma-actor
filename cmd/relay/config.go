@@ -18,7 +18,7 @@ type RelayConfig struct {
 func initConfig(defaultProfileName string) RelayConfig {
 
 	config.SetDefaultProfileName(defaultProfileName)
-	config.ParseCommonFlags(true)
+	config.CommonFlagsetParse(true)
 	config.Init()
 
 	c := RelayConfig{

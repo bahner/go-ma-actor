@@ -20,31 +20,29 @@ const (
 )
 
 var (
-	logFlags = pflag.NewFlagSet("log", pflag.ContinueOnError)
-	logOnce  sync.Once
+	logFlagset   = pflag.NewFlagSet("log", pflag.ExitOnError)
+	logFlagsOnce sync.Once
 )
 
 func init() {
 	os.Setenv("GOLOG_OUTPUT", "")
 }
 
-func InitLog() {
+func initLogFlagset() {
 
-	logOnce.Do(func() {
-		logFlags.String("loglevel", defaultLogLevel, "Loglevel to use for application.")
-		logFlags.String("logfile", defaultLogfile(), "Logfile to use for application. Accepts 'stderr' and 'stdout' as such.")
+	logFlagsOnce.Do(func() {
+		logFlagset.String("loglevel", defaultLogLevel, "Loglevel to use for application.")
+		logFlagset.String("logfile", defaultLogfile(), "Logfile to use for application. Accepts 'stderr' and 'stdout' as such.")
 
-		viper.BindPFlag("log.file", logFlags.Lookup("logfile"))
-		viper.BindPFlag("log.level", logFlags.Lookup("loglevel"))
+		viper.BindPFlag("log.file", logFlagset.Lookup("logfile"))
+		viper.BindPFlag("log.level", logFlagset.Lookup("loglevel"))
 
 		viper.SetDefault("log.level", defaultLogLevel)
 		viper.SetDefault("log.file", defaultLogfile)
 
 		if HelpNeeded() {
 			fmt.Println("Log Flags:")
-			logFlags.PrintDefaults()
-		} else {
-			logFlags.Parse(os.Args[1:])
+			logFlagset.PrintDefaults()
 		}
 
 	})

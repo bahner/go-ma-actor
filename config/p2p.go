@@ -2,7 +2,6 @@ package config
 
 import (
 	"fmt"
-	"os"
 	"strconv"
 	"sync"
 	"time"
@@ -29,34 +28,34 @@ const (
 )
 
 var (
-	p2pFlags = pflag.NewFlagSet("p2p", pflag.ContinueOnError)
-	p2pOnce  sync.Once
+	p2pFlagset   = pflag.NewFlagSet("p2p", pflag.ExitOnError)
+	p2pFlagsOnce sync.Once
 )
 
-func InitP2P() {
+func initP2PFlagset() {
 
-	p2pOnce.Do(func() {
+	p2pFlagsOnce.Do(func() {
 
-		p2pFlags.Bool("dht", defaultDHT, "Whether to discover using DHT")
-		p2pFlags.Bool("mdns", defaultMDNS, "Whether to discover using MDNS")
-		p2pFlags.Duration("connmgr-grace-period", defaultConnmgrGracePeriod, "Grace period for connection manager.")
-		p2pFlags.Duration("discovery-advertise-interval", defaultDiscoveryAdvertiseInterval, "How often to advertise our presence to libp2p")
-		p2pFlags.Duration("discovery-advertise-ttl", defaultDiscoveryAdvertiseTTL, "Hint of TimeToLive for advertising peer discovery.")
-		p2pFlags.Int("connmgr-high-watermark", defaultConnmgrHighWatermark, "High watermark for peer discovery.")
-		p2pFlags.Int("connmgr-low-watermark", defaultConnmgrLowWatermark, "Low watermark for peer discovery.")
-		p2pFlags.Int("discovery-advertise-limit", defaultDiscoveryAdvertiseLimit, "Limit for advertising peer discovery.")
-		p2pFlags.Int("port", defaultListenPort, "Port for libp2p node to listen on.")
+		p2pFlagset.Bool("dht", defaultDHT, "Whether to discover using DHT")
+		p2pFlagset.Bool("mdns", defaultMDNS, "Whether to discover using MDNS")
+		p2pFlagset.Duration("connmgr-grace-period", defaultConnmgrGracePeriod, "Grace period for connection manager.")
+		p2pFlagset.Duration("discovery-advertise-interval", defaultDiscoveryAdvertiseInterval, "How often to advertise our presence to libp2p")
+		p2pFlagset.Duration("discovery-advertise-ttl", defaultDiscoveryAdvertiseTTL, "Hint of TimeToLive for advertising peer discovery.")
+		p2pFlagset.Int("connmgr-high-watermark", defaultConnmgrHighWatermark, "High watermark for peer discovery.")
+		p2pFlagset.Int("connmgr-low-watermark", defaultConnmgrLowWatermark, "Low watermark for peer discovery.")
+		p2pFlagset.Int("discovery-advertise-limit", defaultDiscoveryAdvertiseLimit, "Limit for advertising peer discovery.")
+		p2pFlagset.Int("port", defaultListenPort, "Port for libp2p node to listen on.")
 
 		// Bind p2pFlagss
-		viper.BindPFlag("p2p.connmgr.grace-period", p2pFlags.Lookup("connmgr-grace-period"))
-		viper.BindPFlag("p2p.connmgr.high-watermark", p2pFlags.Lookup("connmgr-high-watermark"))
-		viper.BindPFlag("p2p.connmgr.low-watermark", p2pFlags.Lookup("connmgr-low-watermark"))
-		viper.BindPFlag("p2p.discovery.advertise-interval", p2pFlags.Lookup("discovery-advertise-interval"))
-		viper.BindPFlag("p2p.discovery.advertise-limit", p2pFlags.Lookup("discovery-advertise-limit"))
-		viper.BindPFlag("p2p.discovery.advertise-ttl", p2pFlags.Lookup("discovery-advertise-ttl"))
-		viper.BindPFlag("p2p.discovery.dht", p2pFlags.Lookup("dht"))
-		viper.BindPFlag("p2p.discovery.mdns", p2pFlags.Lookup("mdns"))
-		viper.BindPFlag("p2p.port", p2pFlags.Lookup("port"))
+		viper.BindPFlag("p2p.connmgr.grace-period", p2pFlagset.Lookup("connmgr-grace-period"))
+		viper.BindPFlag("p2p.connmgr.high-watermark", p2pFlagset.Lookup("connmgr-high-watermark"))
+		viper.BindPFlag("p2p.connmgr.low-watermark", p2pFlagset.Lookup("connmgr-low-watermark"))
+		viper.BindPFlag("p2p.discovery.advertise-interval", p2pFlagset.Lookup("discovery-advertise-interval"))
+		viper.BindPFlag("p2p.discovery.advertise-limit", p2pFlagset.Lookup("discovery-advertise-limit"))
+		viper.BindPFlag("p2p.discovery.advertise-ttl", p2pFlagset.Lookup("discovery-advertise-ttl"))
+		viper.BindPFlag("p2p.discovery.dht", p2pFlagset.Lookup("dht"))
+		viper.BindPFlag("p2p.discovery.mdns", p2pFlagset.Lookup("mdns"))
+		viper.BindPFlag("p2p.port", p2pFlagset.Lookup("port"))
 
 		viper.SetDefault("p2p.connmgr.grace-period", defaultConnmgrGracePeriod)
 		viper.SetDefault("p2p.connmgr.high-watermark", defaultConnmgrHighWatermark)
@@ -70,9 +69,7 @@ func InitP2P() {
 
 		if HelpNeeded() {
 			fmt.Println("P2P Flags:")
-			p2pFlags.PrintDefaults()
-		} else {
-			p2pFlags.Parse(os.Args[1:])
+			p2pFlagset.PrintDefaults()
 		}
 	})
 

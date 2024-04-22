@@ -44,6 +44,8 @@ github.com/bahner/go-ma v0.7.7-rc1.0.20240422171029-5932675a8c22 h1:JRPuG2tDrHUy
 github.com/bahner/go-ma v0.7.7-rc1.0.20240422171029-5932675a8c22/go.mod h1:ytzDlAZA1k5jewWtxK8n1KpplA3f9xM017JPUGmUWys=
 github.com/bahner/go-ma v0.7.7-rc1.0.20240422175125-9de585c25b26 h1:s2GmBhExgpHIk9SqIL0rXs7y2377EUj0Nt8b7XGifag=
 github.com/bahner/go-ma v0.7.7-rc1.0.20240422175125-9de585c25b26/go.mod h1:ytzDlAZA1k5jewWtxK8n1KpplA3f9xM017JPUGmUWys=
+github.com/bahner/go-ma v0.7.7-rc1.0.20240422182336-4bc562a182a9 h1:iHbIgUbS9TKAA/9lhsJ/DS3pQ2DcsR07smKifCSH4jc=
+github.com/bahner/go-ma v0.7.7-rc1.0.20240422182336-4bc562a182a9/go.mod h1:ytzDlAZA1k5jewWtxK8n1KpplA3f9xM017JPUGmUWys=
 github.com/benbjohnson/clock v1.1.0/go.mod h1:J11/hYXuz8f4ySSvYwY0FKfm+ezbsZBKZxNJlLklBHA=
 github.com/benbjohnson/clock v1.3.0/go.mod h1:J11/hYXuz8f4ySSvYwY0FKfm+ezbsZBKZxNJlLklBHA=
 github.com/benbjohnson/clock v1.3.5 h1:VvXlSJBzZpA/zum6Sj74hxwYI2DIxRWuNIoXAzHZz5o=
