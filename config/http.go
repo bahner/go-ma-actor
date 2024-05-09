@@ -19,9 +19,8 @@ var (
 )
 
 type HTTPConfig struct {
-	Socket      string `yaml:"socket"`
-	Refresh     int    `yaml:"refresh"`
-	DebugSocket string `yaml:"debug_socket"`
+	Socket  string `yaml:"socket"`
+	Refresh int    `yaml:"refresh"`
 }
 
 func initHTTPFlagset() {
@@ -47,9 +46,8 @@ func initHTTPFlagset() {
 func HTTP() HTTPConfig {
 
 	return HTTPConfig{
-		Socket:      HttpSocket(),
-		Refresh:     HttpRefresh(),
-		DebugSocket: HttpDebugSocket(),
+		Socket:  HttpSocket(),
+		Refresh: HttpRefresh(),
 	}
 }
 
@@ -59,8 +57,4 @@ func HttpSocket() string {
 
 func HttpRefresh() int {
 	return viper.GetInt("http.refresh")
-}
-
-func HttpDebugSocket() string {
-	return viper.GetString("http.debug-socket")
 }

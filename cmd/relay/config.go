@@ -30,7 +30,7 @@ func initConfig(defaultProfileName string) RelayConfig {
 	}
 
 	if config.GenerateFlag() {
-		config.Generate(&c)
+		config.GenerateConfig(&c)
 	}
 
 	if config.ShowConfigFlag() {

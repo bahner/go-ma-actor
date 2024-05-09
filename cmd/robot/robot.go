@@ -7,7 +7,7 @@ import (
 	"github.com/bahner/go-ma-actor/config"
 	"github.com/bahner/go-ma-actor/entity"
 	"github.com/bahner/go-ma-actor/entity/actor"
-	"github.com/bahner/go-ma/msg"
+	"github.com/bahner/go-ma-actor/msg"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 )
@@ -97,7 +97,13 @@ func (i *RobotStruct) handleEntityMessageEvents() {
 				continue
 			}
 
-			if m.Message.Type == msg.CHAT {
+			messageType, err := m.Message.MessageType()
+			if err != nil {
+				log.Debugf(errPrefix+"Failed to get message type: %v", err)
+				continue
+			}
+
+			if messageType == msg.CHAT_MESSAGE_TYPE {
 				i.handleMessage(ctx, m)
 			}
 		}
@@ -118,7 +124,7 @@ func (i *RobotStruct) handleMessage(ctx context.Context, m *entity.Message) erro
 
 	replyBytes := reply(m)
 
-	err = m.Message.Reply(ctx, replyBytes, i.Robot.Keyset.SigningKey.PrivKey, replyToEntity.Topic)
+	err = msg.Reply(ctx, *m.Message, replyBytes, i.Robot.Keyset.SigningKey.PrivKey, replyToEntity.Topic)
 	if err != nil {
 		log.Errorf("failed to reply to message: %v", err)
 	}

@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/bahner/go-ma-actor/entity"
+	actormsg "github.com/bahner/go-ma-actor/msg"
 	"github.com/bahner/go-ma/did"
 	"github.com/bahner/go-ma/msg"
 	"github.com/pkg/errors"
@@ -37,16 +38,6 @@ func (a *Actor) SetLocationFromDID(did did.DID) error {
 	return a.SetLocation(e)
 }
 
-// func (a *Actor) SetLocationFromDIDString(didStr string) error {
-
-// 	d, err := did.NewFromString(didStr)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	return a.SetLocationFromDID(d)
-// }
-
 func (a *Actor) GetLocation() (string, error) {
 
 	if a.Location == nil {
@@ -74,6 +65,12 @@ func (a *Actor) HandleLocationMessage(m *msg.Message) error {
 
 	log.Debugf("Sending location to %s over %s", m.From, a.Entity.Topic.String())
 
-	return m.Reply(ctx, replyBytes, a.Keyset.SigningKey.PrivKey, e.Topic)
+	return actormsg.Reply(
+		ctx,
+		*m,
+		replyBytes,
+		a.Keyset.SigningKey.PrivKey,
+		e.Topic,
+	)
 
 }

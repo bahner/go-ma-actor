@@ -177,12 +177,6 @@ func publishIdentityFromKeyset(k set.Keyset) error {
 		return fmt.Errorf("config.publishIdentityFromKeyset: failed to create DOC: %w", err)
 	}
 
-	assertionMethod, err := d.GetAssertionMethod()
-	if err != nil {
-		return fmt.Errorf("config.publishIdentityFromKeyset: %w", err)
-	}
-	d.Sign(k.SigningKey, assertionMethod)
-
 	_, err = d.Publish()
 	if err != nil {
 		return fmt.Errorf("config.publishIdentityFromKeyset: %w", err)

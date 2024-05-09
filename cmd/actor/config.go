@@ -17,7 +17,7 @@ func initConfig(defaultProfileName string) actor.ActorConfig {
 	c := actor.Config()
 
 	if config.GenerateFlag() {
-		config.Generate(&c)
+		config.GenerateConfig(&c)
 	}
 
 	if config.ShowConfigFlag() {

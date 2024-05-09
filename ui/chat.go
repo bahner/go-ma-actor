@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/bahner/go-ma-actor/entity"
+	actormsg "github.com/bahner/go-ma-actor/msg"
 	"github.com/bahner/go-ma/msg"
 	log "github.com/sirupsen/logrus"
 )
@@ -74,17 +75,7 @@ func (ui *ChatUI) handleChatMessage(input string) error {
 	log.Debugf("Handling chatMessage: %s, from %s to %s", input, from, to)
 	msgBytes := []byte(input)
 
-	msg, err := msg.New(
-		from,
-		to,
-		msg.CHAT,
-		msgBytes,
-		msg.DEFAULT_CONTENT_TYPE,
-		ui.a.Keyset.SigningKey.PrivKey)
-	if err != nil {
-		log.Debugf("message creation error: %s", err)
-		return fmt.Errorf("message creation error: %w", err)
-	}
+	msg, err := actormsg.Chat(from, to, msgBytes, ui.a.Keyset.SigningKey.PrivKey)
 
 	err = msg.Send(ctx, ui.e.Topic)
 	if err != nil {

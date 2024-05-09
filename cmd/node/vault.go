@@ -134,6 +134,9 @@ func getOrCreateKeysetFromVault(id string) (set.Keyset, error) {
 		}
 
 		privKey, err := db.GetOrCreateIdentity(id)
+		if err != nil {
+			return set.Keyset{}, fmt.Errorf("error getting or creating identity: %s", err)
+		}
 
 		keyset, err = set.New(privKey, id)
 		if err != nil {

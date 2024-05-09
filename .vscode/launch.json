@@ -65,10 +65,9 @@
             },
             "args": [
                 "--generate",
-                "--profile",
-                "FUBAR",
                 "--nick",
-                "FUBAR"
+                "FUBAR",
+                "--force"
             ]
         },    
         {

@@ -78,7 +78,7 @@ func Config(defaultProfileName string) NodeConfig {
 	}
 
 	if config.GenerateFlag() {
-		config.Generate(&c)
+		config.GenerateConfig(&c)
 	}
 
 	if config.ShowConfigFlag() {

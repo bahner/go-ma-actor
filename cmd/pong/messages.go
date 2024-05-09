@@ -6,6 +6,7 @@ import (
 
 	"github.com/bahner/go-ma-actor/entity"
 	"github.com/bahner/go-ma-actor/entity/actor"
+	actormsg "github.com/bahner/go-ma-actor/msg"
 	"github.com/bahner/go-ma/msg"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -43,7 +44,18 @@ func handleMessageEvents(ctx context.Context, a *actor.Actor) {
 				continue
 			}
 
-			if m.Message.To == me && m.Message.Type == msg.CHAT {
+			messageType, err := m.Message.MessageType()
+			if err != nil {
+				log.Debugf("Failed to get message type: %v", err)
+				continue
+			}
+
+			if messageType != actormsg.CHAT_MESSAGE_TYPE {
+				log.Debugf("Received message of unknown type: %s, ignoring...", messageType)
+				continue
+			}
+
+			if m.Message.To == me {
 				messageReply(ctx, a, m.Message)
 			}
 		}
@@ -63,7 +75,7 @@ func messageReply(ctx context.Context, a *actor.Actor, m *msg.Message) error {
 	reply := []byte(viper.GetString("pong.reply"))
 	fmt.Printf("Sending private message to %s over %s\n", replyTo, a.Entity.Topic.String())
 
-	err = m.Reply(ctx, reply, a.Keyset.SigningKey.PrivKey, replyToEntity.Topic)
+	err = actormsg.Reply(ctx, *m, reply, a.Keyset.SigningKey.PrivKey, replyToEntity.Topic)
 	if err != nil {
 		log.Errorf("messageReply: %v", err)
 	}

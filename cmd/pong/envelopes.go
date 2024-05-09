@@ -6,6 +6,7 @@ import (
 
 	"github.com/bahner/go-ma-actor/entity"
 	"github.com/bahner/go-ma-actor/entity/actor"
+	actormsg "github.com/bahner/go-ma-actor/msg"
 	"github.com/bahner/go-ma/msg"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
@@ -58,5 +59,6 @@ func envelopeReply(ctx context.Context, a *actor.Actor, m *msg.Message) error {
 	fmt.Printf("Sending private envelope to %s over %s\n", replyTo, a.Entity.Topic.String())
 
 	replyMsg := []byte(viper.GetString("pong.reply"))
-	return m.Reply(ctx, replyMsg, a.Keyset.SigningKey.PrivKey, replyToEntity.Topic)
+
+	return actormsg.Reply(ctx, *m, replyMsg, a.Keyset.SigningKey.PrivKey, replyToEntity.Topic)
 }

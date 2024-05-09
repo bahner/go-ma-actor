@@ -50,10 +50,10 @@ func getOrCreateActor(id string) (*actor.Actor, error) {
 		return nil, fmt.Errorf("failed to create DID Document: %w", err)
 	}
 
-	// Force publication of document.
-	o := doc.DefaultPublishOptions()
-	o.Force = true
-	a.Entity.Doc.Publish()
+	_, err = a.Entity.Doc.Publish()
+	if err != nil {
+		return nil, fmt.Errorf("failed to publish DID Document: %w", err)
+	}
 
 	// Cache the newly created entity for future retrievals
 	actors.Set(id, a)

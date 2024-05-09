@@ -36,3 +36,5 @@ go.work
 /.vault
 vault/**
 /robot
+go.work
+go.work.sum

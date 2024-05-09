@@ -55,7 +55,7 @@ func initConfig(defaultProfileName string) RobotConfig {
 	c := robotConfig
 
 	if config.GenerateFlag() {
-		config.Generate(&c)
+		config.GenerateConfig(&c)
 	}
 
 	if config.ShowConfigFlag() {

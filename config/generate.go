@@ -9,7 +9,7 @@ import (
 
 // This is a function that'll handle generateing and possible printing of the config.
 // You can called his after gerenating your config to properly handle generate and show-config flags.
-func Generate(c Config) {
+func GenerateConfig(c Config) {
 
 	// Just a precaution, if the generate flag is not set, we don't want to generate the config.
 	if !GenerateFlag() {

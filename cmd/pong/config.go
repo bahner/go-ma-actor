@@ -66,7 +66,7 @@ func initConfig(defaultProfileName string) PongConfig {
 	}
 
 	if config.GenerateFlag() {
-		config.Generate(&c)
+		config.GenerateConfig(&c)
 	}
 
 	if config.ShowConfigFlag() {

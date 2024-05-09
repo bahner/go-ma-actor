@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/bahner/go-ma-actor/entity"
-	"github.com/bahner/go-ma/msg"
+	"github.com/bahner/go-ma-actor/msg"
 	log "github.com/sirupsen/logrus"
 )
 

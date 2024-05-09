@@ -14,7 +14,7 @@ import (
 func (e *Entity) ConnectPeer() (pai p2peer.AddrInfo, err error) {
 
 	p := p2p.Get()
-	pid := e.DID.Name.Peer()
+	pid := e.DID.IPNSName().Peer()
 
 	// If we're already connected, return
 	if p.Host.Network().Connectedness(pid) == network.Connected {
