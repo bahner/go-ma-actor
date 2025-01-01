@@ -8,6 +8,8 @@ import (
 	"github.com/bahner/go-ma-actor/db"
 	"github.com/bahner/go-ma-actor/p2p"
 	"github.com/bahner/go-ma-actor/ui/web"
+	"github.com/libp2p/go-libp2p"
+	"github.com/libp2p/go-libp2p/p2p/protocol/circuitv2/relay"
 )
 
 const defaultProfileName = "relay"
@@ -24,10 +26,21 @@ func main() {
 		panic(err)
 	}
 
-	// FIXME. Not default here
-	p, err := p2p.Init(identity, p2p.DefaultOptions())
+	opts := p2p.DefaultOptions()
+	opts.P2P = append(opts.P2P,
+		libp2p.EnableRelay(),        // Enable relay support for relayed connections
+		libp2p.EnableRelayService(), // Allow acting as a relay server
+	)
+
+	p, err := p2p.Init(identity, opts)
 	if err != nil {
 		fmt.Printf("Failed to initialize p2p: %v\n", err)
+		return
+	}
+
+	_, err = relay.New(p.Host)
+	if err != nil {
+		fmt.Printf("Failed to initialize relay: %v\n", err)
 		return
 	}
 
