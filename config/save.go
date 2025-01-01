@@ -11,7 +11,6 @@ import (
 // NB! This fails fatally in case of an error.
 func Save(c Config) error {
 	filePath := File()
-	var errMsg string
 
 	// Determine the file open flags based on the forceFlag
 	var flags int
@@ -27,11 +26,9 @@ func Save(c Config) error {
 	file, err := os.OpenFile(filePath, flags, configFileMode)
 	if err != nil {
 		if os.IsExist(err) {
-			errMsg = fmt.Sprintf("File %s already exists.", filePath)
-		} else {
-			errMsg = fmt.Sprintf("Failed to open file: %v", err)
+			return fmt.Errorf("File %s already exists", filePath)
 		}
-		return fmt.Errorf(errMsg)
+		return fmt.Errorf("failed to open file: %w", err)
 	}
 	defer file.Close()
 
