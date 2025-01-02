@@ -49,12 +49,18 @@ func getListenAddrStrings() []string {
 
 	port := config.P2PPortString()
 
+	// This specifically adds "/quic" and "/ws" to the listen addresses.
 	return []string{
 		"/ip4/0.0.0.0/tcp/" + port,
+		"/ip4/0.0.0.0/tcp/" + port + "/ws",
+
 		"/ip4/0.0.0.0/udp/" + port + "/quic",
 		"/ip4/0.0.0.0/udp/" + port + "/quic-v1",
 		"/ip4/0.0.0.0/udp/" + port + "/quic-v1/webtransport",
+
 		"/ip6/::/tcp/" + port,
+		"/ip6/::/tcp/" + port + "/ws",
+
 		"/ip6/::/udp/" + port + "/quic",
 		"/ip6/::/udp/" + port + "/quic-v1",
 		"/ip6/::/udp/" + port + "/quic-v1/webtransport",
