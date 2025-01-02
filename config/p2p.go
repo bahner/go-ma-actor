@@ -21,10 +21,11 @@ const (
 
 	ALLOW_ALL_PEERS bool = true // Allow all peers by default. This is the norm for now. Use connmgr threshold and protection instead.
 
-	defaultListenPort int    = 0
-	fakeP2PIdentity   string = "NO_DEFAULT_NODE_IDENITY"
-	defaultDHT        bool   = true
-	defaultMDNS       bool   = true
+	defaultListenPort   int    = 0
+	defaultWSListenPort int    = 0
+	fakeP2PIdentity     string = "NO_DEFAULT_NODE_IDENITY"
+	defaultDHT          bool   = true
+	defaultMDNS         bool   = true
 )
 
 var (
@@ -45,6 +46,7 @@ func initP2PFlagset() {
 		p2pFlagset.Int("connmgr-low-watermark", defaultConnmgrLowWatermark, "Low watermark for peer discovery.")
 		p2pFlagset.Int("discovery-advertise-limit", defaultDiscoveryAdvertiseLimit, "Limit for advertising peer discovery.")
 		p2pFlagset.Int("port", defaultListenPort, "Port for libp2p node to listen on.")
+		p2pFlagset.Int("port-ws", defaultWSListenPort, "Port for libp2p node to listen on for websocket connections.")
 
 		// Bind p2pFlagss
 		viper.BindPFlag("p2p.connmgr.grace-period", p2pFlagset.Lookup("connmgr-grace-period"))
@@ -56,6 +58,7 @@ func initP2PFlagset() {
 		viper.BindPFlag("p2p.discovery.dht", p2pFlagset.Lookup("dht"))
 		viper.BindPFlag("p2p.discovery.mdns", p2pFlagset.Lookup("mdns"))
 		viper.BindPFlag("p2p.port", p2pFlagset.Lookup("port"))
+		viper.BindPFlag("p2p.port-ws", p2pFlagset.Lookup("port-ws"))
 
 		viper.SetDefault("p2p.connmgr.grace-period", defaultConnmgrGracePeriod)
 		viper.SetDefault("p2p.connmgr.high-watermark", defaultConnmgrHighWatermark)
@@ -66,6 +69,7 @@ func initP2PFlagset() {
 		viper.SetDefault("p2p.discovery.dht", defaultDHT)
 		viper.SetDefault("p2p.discovery.mdns", defaultMDNS)
 		viper.SetDefault("p2p.port", defaultListenPort)
+		viper.SetDefault("p2p.port-ws", defaultWSListenPort)
 
 		if HelpNeeded() {
 			fmt.Println("P2P Flags:")
@@ -91,6 +95,7 @@ type DiscoveryStruct struct {
 
 type P2PConfig struct {
 	Port      int             `yaml:"port"`
+	PortWS    int             `yaml:"port-ws"`
 	Connmgr   ConnmgrStruct   `yaml:"connmgr"`
 	Discovery DiscoveryStruct `yaml:"discovery"`
 }
@@ -99,7 +104,8 @@ func P2P() P2PConfig {
 	viper.SetDefault("p2p.identity", fakeP2PIdentity)
 
 	return P2PConfig{
-		Port: P2PPort(),
+		Port:   P2PPort(),
+		PortWS: P2PPortWS(),
 		Connmgr: ConnmgrStruct{
 			LowWatermark:  P2PConnmgrLowWatermark(),
 			HighWatermark: P2PConnmgrHighWatermark(),
@@ -149,8 +155,16 @@ func P2PPort() int {
 	return viper.GetInt("p2p.port")
 }
 
+func P2PPortWS() int {
+	return viper.GetInt("p2p.port-ws")
+}
+
 // String functions
 
 func P2PPortString() string {
 	return strconv.Itoa(P2PPort())
+}
+
+func P2PPortWSString() string {
+	return strconv.Itoa(P2PPortWS())
 }
