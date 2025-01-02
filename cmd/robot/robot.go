@@ -72,12 +72,12 @@ func (i *RobotStruct) handleEntityMessageEvents() {
 
 		case m, ok := <-myMessages: // Attempt to receive a message
 			if !ok {
-				log.Debugf(errPrefix + "channel closed, exiting...")
+				log.Debug(errPrefix + "channel closed, exiting...")
 				return
 			}
 
 			if m == nil {
-				log.Debugf(errPrefix + "received nil message, ignoring...")
+				log.Debug(errPrefix + "received nil message, ignoring...")
 				continue
 			}
 
@@ -93,7 +93,7 @@ func (i *RobotStruct) handleEntityMessageEvents() {
 			log.Debugf(errPrefix+"Handling message: %v from %s to %s", content, from, to)
 
 			if from == me {
-				log.Debugf(errPrefix + "Received message from self, ignoring...")
+				log.Debug(errPrefix + "Received message from self, ignoring...")
 				continue
 			}
 

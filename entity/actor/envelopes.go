@@ -15,7 +15,7 @@ import (
 // UI or wherever you want to handle them and you know they were private messages.
 func (a *Actor) HandleIncomingEnvelopes(ctx context.Context, messages chan *entity.Message) {
 
-	mesg := fmt.Sprintf("Handling incoming envelopes to " + a.Entity.DID.Id)
+	mesg := fmt.Sprint("Handling incoming envelopes to " + a.Entity.DID.Id)
 	log.Info(mesg)
 
 	for {
