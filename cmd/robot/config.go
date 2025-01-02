@@ -11,7 +11,6 @@ import (
 )
 
 func init() {
-	pflag.String("openai-key", "", "The (paid) key to use with the OpenAI API")
 
 	viper.BindPFlag("robot.openai.key", pflag.Lookup("openai-key"))
 }
@@ -25,7 +24,6 @@ type OpenAIConfigStruct struct {
 }
 type RobotConfig struct {
 	Actor config.ActorConfig `yaml:"actor"`
-	API   config.APIConfig   `yaml:"api"`
 	DB    config.DBConfig    `yaml:"db"`
 	HTTP  config.HTTPConfig  `yaml:"http"`
 	Log   config.LogConfig   `yaml:"log"`
@@ -41,7 +39,6 @@ func initConfig(defaultProfileName string) RobotConfig {
 	// Create a new RobotConfig with the base config and the new key
 	robotConfig := RobotConfig{
 		Actor: config.Actor(),
-		API:   config.API(),
 		DB:    config.DB(),
 		HTTP:  config.HTTP(),
 		Log:   config.Log(),

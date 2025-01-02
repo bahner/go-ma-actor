@@ -37,7 +37,6 @@ type PongConfigStruct struct {
 
 type PongConfig struct {
 	Actor config.ActorConfig `yaml:"actor"`
-	API   config.APIConfig   `yaml:"api"`
 	DB    config.DBConfig    `yaml:"db"`
 	HTTP  config.HTTPConfig  `yaml:"http"`
 	Log   config.LogConfig   `yaml:"log"`
@@ -52,7 +51,6 @@ func initConfig(defaultProfileName string) PongConfig {
 
 	c := PongConfig{
 		Actor: config.Actor(),
-		API:   config.API(),
 		DB:    config.DB(),
 		HTTP:  config.HTTP(),
 		Log:   config.Log(),

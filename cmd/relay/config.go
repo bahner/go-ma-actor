@@ -8,7 +8,6 @@ import (
 )
 
 type RelayConfig struct {
-	API  config.APIConfig  `yaml:"api"`
 	DB   config.DBConfig   `yaml:"db"`
 	HTTP config.HTTPConfig `yaml:"http"`
 	Log  config.LogConfig  `yaml:"log"`
@@ -22,7 +21,6 @@ func initConfig(defaultProfileName string) RelayConfig {
 	config.Init()
 
 	c := RelayConfig{
-		API:  config.API(),
 		DB:   config.DB(),
 		HTTP: config.HTTP(),
 		Log:  config.Log(),
