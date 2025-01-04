@@ -28,8 +28,8 @@ func main() {
 
 	opts := p2p.DefaultOptions()
 	opts.P2P = append(opts.P2P,
-		libp2p.EnableRelay(),        // Enable relay support for relayed connections
-		libp2p.EnableRelayService(), // Allow acting as a relay server
+		libp2p.EnableRelayService(),
+		libp2p.ForceReachabilityPublic(),
 	)
 
 	p, err := p2p.Init(identity, opts)
