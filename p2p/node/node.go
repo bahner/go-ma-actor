@@ -20,11 +20,11 @@ var (
 func New(i crypto.PrivKey, opts ...libp2p.Option) (host.Host, error) {
 
 	p2pOptions := []libp2p.Option{
-		libp2p.ListenAddrStrings(getListenAddrStrings()...),
+		libp2p.ListenAddrStrings(config.P2PMaddrs()...),
 		libp2p.Identity(i),
 	}
 
-	log.Debugf("p2p: listen addresses: %v", getListenAddrStrings())
+	log.Debugf("p2p: listen addresses: %v", config.P2PMaddrs())
 
 	p2pOptions = append(p2pOptions, opts...)
 
@@ -45,27 +45,4 @@ func Get() host.Host {
 	}
 
 	return p2pNode
-}
-
-func getListenAddrStrings() []string {
-
-	port := config.P2PPortString()
-	portws := config.P2PPortWSString()
-
-	// This specifically adds "/quic" and "/ws" to the listen addresses.
-	return []string{
-		"/ip4/0.0.0.0/tcp/" + port,
-		"/ip4/0.0.0.0/tcp/" + portws + "/ws",
-
-		"/ip4/0.0.0.0/udp/" + port + "/quic",
-		"/ip4/0.0.0.0/udp/" + port + "/quic-v1",
-		"/ip4/0.0.0.0/udp/" + port + "/quic-v1/webtransport",
-
-		"/ip6/::/tcp/" + port,
-		"/ip6/::/tcp/" + portws + "/ws",
-
-		"/ip6/::/udp/" + port + "/quic",
-		"/ip6/::/udp/" + port + "/quic-v1",
-		"/ip6/::/udp/" + port + "/quic-v1/webtransport",
-	}
 }

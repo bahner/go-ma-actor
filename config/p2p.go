@@ -45,8 +45,8 @@ func initP2PFlagset() {
 		p2pFlagset.Int("connmgr-high-watermark", defaultConnmgrHighWatermark, "High watermark for peer discovery.")
 		p2pFlagset.Int("connmgr-low-watermark", defaultConnmgrLowWatermark, "Low watermark for peer discovery.")
 		p2pFlagset.Int("discovery-advertise-limit", defaultDiscoveryAdvertiseLimit, "Limit for advertising peer discovery.")
-		p2pFlagset.Int("port", defaultListenPort, "Port for libp2p node to listen on.")
-		p2pFlagset.Int("port-ws", defaultWSListenPort, "Port for libp2p node to listen on for websocket connections.")
+		p2pFlagset.Int("port", defaultListenPort, "Port for tcp to listen on. Only used for generating listen addresses, not runtime")
+		p2pFlagset.Int("port-ws", defaultWSListenPort, "Port for ws to listen on. Only used for generating listen addresses, not runtime")
 
 		// Bind p2pFlagss
 		viper.BindPFlag("p2p.connmgr.grace-period", p2pFlagset.Lookup("connmgr-grace-period"))
@@ -94,8 +94,7 @@ type DiscoveryStruct struct {
 }
 
 type P2PConfig struct {
-	Port      int             `yaml:"port"`
-	PortWS    int             `yaml:"port-ws"`
+	Maddrs    []string        `yaml:"maddrs"`
 	Connmgr   ConnmgrStruct   `yaml:"connmgr"`
 	Discovery DiscoveryStruct `yaml:"discovery"`
 }
@@ -104,8 +103,7 @@ func P2P() P2PConfig {
 	viper.SetDefault("p2p.identity", fakeP2PIdentity)
 
 	return P2PConfig{
-		Port:   P2PPort(),
-		PortWS: P2PPortWS(),
+		Maddrs: generateListenAddrs(),
 		Connmgr: ConnmgrStruct{
 			LowWatermark:  P2PConnmgrLowWatermark(),
 			HighWatermark: P2PConnmgrHighWatermark(),
@@ -151,20 +149,33 @@ func P2PDiscoveryMDNS() bool {
 	return viper.GetBool("p2p.discovery.mdns")
 }
 
-func P2PPort() int {
+func P2PMaddrs() []string {
+	return viper.GetStringSlice("p2p.maddrs")
+}
+
+func port() int {
 	return viper.GetInt("p2p.port")
 }
 
-func P2PPortWS() int {
+func portws() int {
 	return viper.GetInt("p2p.port-ws")
 }
 
-// String functions
+func generateListenAddrs() []string {
+	port := strconv.Itoa(port())
+	portws := strconv.Itoa(portws())
 
-func P2PPortString() string {
-	return strconv.Itoa(P2PPort())
-}
+	return []string{
+		// Default addresses
+		"/ip4/0.0.0.0/tcp/" + port,
+		"/ip6/::/tcp/" + port,
+		"/ip4/0.0.0.0/udp/" + port + "/quic-v1",
+		"/ip6/::/udp/" + port + "/quic-v1",
+		"/ip4/0.0.0.0/udp/" + port + "/quic-v1/webtransport",
+		"/ip6/::/udp/" + port + "/quic-v1/webtransport",
 
-func P2PPortWSString() string {
-	return strconv.Itoa(P2PPortWS())
+		// WebSocket addresses
+		"/ip4/0.0.0.0/tcp/" + portws + "/ws",
+		"/ip6/::/tcp/" + portws + "/ws",
+	}
 }
