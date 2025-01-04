@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/bahner/go-ma-actor/config"
 	"github.com/bahner/go-ma-actor/db"
@@ -26,10 +27,20 @@ func main() {
 		panic(err)
 	}
 
+	relayResources := relay.Resources{
+		Limit: &relay.RelayLimit{
+			Duration: 10 * time.Minute, // Allow longer connection durations
+			Data:     10 << 20,         // Allow larger data transfer (10 MB)
+		},
+		MaxReservations: 256, // Allow more reservations
+		MaxCircuits:     32,  // Allow more relayed streams per peer
+	}
+
 	opts := p2p.DefaultOptions()
 	opts.P2P = append(opts.P2P,
 		libp2p.EnableRelayService(),
 		libp2p.ForceReachabilityPublic(),
+		libp2p.EnableRelayService(relay.WithResources(relayResources)),
 	)
 
 	p, err := p2p.Init(identity, opts)
