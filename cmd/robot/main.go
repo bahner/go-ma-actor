@@ -23,7 +23,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	p, err := p2p.Init(i.Robot.Keyset.Identity, p2p.DefaultOptions())
+	p, err := p2p.Init(p2p.DefaultP2POptions())
 	if err != nil {
 		fmt.Printf("Failed to initialize p2p: %v\n", err)
 		return

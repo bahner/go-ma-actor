@@ -76,6 +76,10 @@ func (ui *ChatUI) handleChatMessage(input string) error {
 	msgBytes := []byte(input)
 
 	msg, err := actormsg.Chat(from, to, msgBytes, ui.a.Keyset.SigningKey.PrivKey)
+	if err != nil {
+		log.Debugf("failed to create chat message: %s", err)
+		return fmt.Errorf("failed to create chat message: %w", err)
+	}
 
 	err = msg.Send(ctx, ui.e.Topic)
 	if err != nil {

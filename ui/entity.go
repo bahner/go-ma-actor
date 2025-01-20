@@ -116,7 +116,7 @@ func (ui *ChatUI) handleEntityShowCommand(args []string) {
 			ui.displaySystemMessage("Error: " + err.Error())
 			return
 		}
-		entityInfo := fmt.Sprintf(e.DID.Id + aliasSeparator + e.Nick())
+		entityInfo := e.DID.Id + aliasSeparator + e.Nick()
 		ui.displaySystemMessage(entityInfo)
 		return
 	}

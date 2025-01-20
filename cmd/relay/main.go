@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/bahner/go-ma-actor/config"
-	"github.com/bahner/go-ma-actor/db"
 	"github.com/bahner/go-ma-actor/p2p"
 	"github.com/bahner/go-ma-actor/ui/web"
 	"github.com/libp2p/go-libp2p"
@@ -21,12 +19,6 @@ func main() {
 	ctx := context.Background()
 	initConfig(defaultProfileName)
 
-	identity, err := db.GetOrCreateIdentity(config.Profile())
-	if err != nil {
-		fmt.Printf("Failed to get or create identity: %v\n", err)
-		panic(err)
-	}
-
 	relayResources := relay.Resources{
 		Limit: &relay.RelayLimit{
 			Duration: 10 * time.Minute, // Allow longer connection durations
@@ -36,14 +28,14 @@ func main() {
 		MaxCircuits:     32,  // Allow more relayed streams per peer
 	}
 
-	opts := p2p.DefaultOptions()
-	opts.P2P = append(opts.P2P,
+	p2pOpts := p2p.DefaultP2POptions()
+	p2pOpts.P2P = append(p2pOpts.P2P,
 		libp2p.EnableRelayService(),
 		libp2p.ForceReachabilityPublic(),
 		libp2p.EnableRelayService(relay.WithResources(relayResources)),
 	)
 
-	p, err := p2p.Init(identity, opts)
+	p, err := p2p.Init(p2pOpts)
 	if err != nil {
 		fmt.Printf("Failed to initialize p2p: %v\n", err)
 		return

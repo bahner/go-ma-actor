@@ -15,7 +15,7 @@ func GetOrCreateIdentity(name string) (crypto.PrivKey, error) {
 		return keystore.Get(name)
 	}
 	if err != nil {
-		log.Errorf("failed to get private key from keystore: %s", err)
+		log.Warnf("failed to get private key from keystore: %s", err)
 		return nil, err
 	}
 

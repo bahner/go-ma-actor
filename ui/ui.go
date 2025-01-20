@@ -89,13 +89,12 @@ type ChatUI struct {
 // New returns a new ChatUI struct that controls the text UI.
 // It won't actually do anything until you call Run().
 // The enity is the "room" we are convering with.
-func New(p *p2p.P2P, a *actor.Actor) (*ChatUI, error) {
+func New(a *actor.Actor) (*ChatUI, error) {
 
 	app := tview.NewApplication()
 
 	ui := &ChatUI{
 		a:          a,
-		p:          p,
 		app:        app,
 		chInput:    make(chan string, 32),
 		chMessages: make(chan *entity.Message, UI_MESSAGES_CHANNEL_BUFFERSIZE),

@@ -7,7 +7,6 @@ import (
 	"github.com/bahner/go-ma-actor/entity/actor"
 	"github.com/bahner/go-ma-actor/p2p"
 	"github.com/bahner/go-ma-actor/ui/web"
-	log "github.com/sirupsen/logrus"
 )
 
 func main() {
@@ -16,13 +15,10 @@ func main() {
 
 	Config(config.Profile())
 
-	// Init of actor requires P2P to be initialized
-	a := actor.Init()
+	p2pOpts := p2p.DefaultP2POptions()
 
-	p, err := p2p.Init(a.Keyset.Identity, p2p.DefaultOptions())
-	if err != nil {
-		log.Fatalf("Error initialising P2P: %v", err)
-	}
+	// Init of actor requires P2P to be initialized
+	a := actor.Init(p2pOpts)
 
 	go web.Start(web.NewEntityHandler(p, a.Entity))
 	go p.StartDiscoveryLoop(ctx)

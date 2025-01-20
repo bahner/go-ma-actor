@@ -8,6 +8,7 @@ import (
 	"github.com/bahner/go-ma-actor/entity"
 	"github.com/bahner/go-ma-actor/entity/actor"
 	"github.com/bahner/go-ma-actor/msg"
+	"github.com/bahner/go-ma-actor/p2p"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 )
@@ -28,7 +29,7 @@ func NewRobot() (i *RobotStruct, err error) {
 	i = &RobotStruct{}
 
 	// Init of actor requires P2P to be initialized
-	i.Robot = actor.Init()
+	i.Robot = actor.Init(p2p.DefaultP2POptions())
 	if i.Robot == nil {
 		return nil, fmt.Errorf("failed to initialize actor")
 	}

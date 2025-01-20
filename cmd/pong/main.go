@@ -26,17 +26,10 @@ func main() {
 	initConfig(defaultProfileName)
 
 	// Init of actor requires P2P to be initialized
-	a := actor.Init()
-
-	// THese are the relay specific parts.
-	p, err := p2p.Init(a.Keyset.Identity, p2p.DefaultOptions())
-	if err != nil {
-		fmt.Printf("Failed to initialize p2p: %v\n", err)
-		return
-	}
+	a := actor.Init(p2p.DefaultP2POptions())
 
 	fmt.Printf("Starting pong mode as %s\n", a.Entity.DID.Id)
-	go p.StartDiscoveryLoop(ctx)
+	go a.P2P.StartDiscoveryLoop(ctx)
 	fmt.Println("Discovery loop started.")
 	go a.Subscribe(ctx, a.Entity)
 	fmt.Println("Subscribed to self.")
@@ -50,10 +43,10 @@ func main() {
 
 	// WEB
 	fmt.Println("Initialising web UI...")
-	wh := web.NewEntityHandler(p, a.Entity)
+	wh := web.NewEntityHandler(a.P2P, a.Entity)
 	go web.Start(wh)
 
-	fmt.Printf("Running in pong mode as %s@%s\n", a.Entity.DID.Id, p.Host.ID())
+	fmt.Printf("Running in pong mode as %s@%s\n", a.Entity.DID.Id, a.P2P.Host.ID())
 	fmt.Println("Press Ctrl-C to stop.")
 
 	for {
