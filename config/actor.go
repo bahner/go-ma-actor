@@ -60,7 +60,7 @@ func actorFlags() {
 }
 
 type ActorConfig struct {
-	Identity string `yaml:"identity"`
+	Keyset   string `yaml:"keyset"`
 	Nick     string `yaml:"nick"`
 	Location string `yaml:"location"`
 }
@@ -69,14 +69,14 @@ type ActorConfig struct {
 // Eg. ActorFlags()
 func Actor() ActorConfig {
 
-	// Fetch the identity from the config or generate one
-	identity, err := actorIdentity()
+	// Fetch the keyset from the config or generate one
+	keyset, err := actorKeysetString()
 	if err != nil {
 		panic(err)
 	}
 
 	// Unpack the keyset from the identity
-	initActorKeyset(identity)
+	initActorKeyset(keyset)
 
 	// If we are generating a new identity we should publish it
 	if GenerateFlag() {
@@ -84,7 +84,7 @@ func Actor() ActorConfig {
 	}
 
 	return ActorConfig{
-		Identity: identity,
+		Keyset:   keyset,
 		Nick:     ActorNick(),
 		Location: ActorLocation(),
 	}
@@ -111,13 +111,13 @@ func ActorKeyset() set.Keyset {
 	return actorKeyset
 }
 
-func actorIdentity() (string, error) {
+func actorKeysetString() (string, error) {
 
 	if GenerateFlag() {
 		return generateKeysetString(ActorNick())
 	}
 
-	return viper.GetString("actor.identity"), nil
+	return viper.GetString("actor.keyset"), nil
 }
 
 // Set the default nick to the user's username, unless a profile is set.
