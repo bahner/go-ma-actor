@@ -32,7 +32,7 @@ type P2P struct {
 // Initialise everything needed for p2p communication. The function forces use of a specific IPNS key.
 // Taken from the config package. It would be an error to initialise the node with a different key.
 // The input is derived from Config() in the config package.
-func Init(identity crypto.PrivKey, opts Options) (*P2P, error) {
+func Init(identity crypto.PrivKey, opts *Options) (*P2P, error) {
 
 	ctx := context.Background()
 

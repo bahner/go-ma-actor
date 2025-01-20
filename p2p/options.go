@@ -12,8 +12,8 @@ type Options struct {
 	Connmgr []connmgr.Option
 }
 
-func DefaultOptions() Options {
-	return Options{
+func DefaultOptions() *Options {
+	return &Options{
 		DHT: []p2pDHT.Option{
 			p2pDHT.Mode(p2pDHT.ModeAutoServer),
 		},

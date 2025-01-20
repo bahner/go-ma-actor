@@ -5,6 +5,7 @@ import (
 
 	"github.com/bahner/go-ma-actor/db"
 	"github.com/bahner/go-ma-actor/entity"
+	"github.com/bahner/go-ma-actor/p2p"
 	"github.com/bahner/go-ma/did"
 	"github.com/bahner/go-ma/did/doc"
 	"github.com/bahner/go-ma/key/set"
@@ -20,6 +21,9 @@ type Actor struct {
 
 	// The keyset is used to sign messages.
 	Keyset set.Keyset
+
+	// P2P The actors libp2p host.
+	P2P *p2p.P2P
 
 	// Envelopes are here. Messages comes to the entity.
 	// So Entity.Messages
