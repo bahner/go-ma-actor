@@ -1,7 +1,6 @@
 package ui
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/bahner/go-ma-actor/entity"
@@ -56,9 +55,6 @@ func (ui *ChatUI) displaySentPrivateMessage(cm *msg.Message) {
 func (ui *ChatUI) handleChatMessage(input string) error {
 	// Wrapping the string message into the msg.Message structure
 
-	// This could be a timeout for topic publishing
-	ctx := context.Background()
-
 	if ui.a == nil {
 		ui.displaySystemMessage(errYouDontExist.Error())
 		return errYouDontExist
@@ -81,12 +77,12 @@ func (ui *ChatUI) handleChatMessage(input string) error {
 		return fmt.Errorf("failed to create chat message: %w", err)
 	}
 
-	err = msg.Send(ctx, ui.e.Topic)
+	err = ui.e.Publish(msg)
 	if err != nil {
 		log.Debugf("message publishing error: %s", err)
 		return fmt.Errorf("message publishing error: %w", err)
 	}
-	log.Debugf("Message published to topic: %s", ui.e.Topic.String())
+	log.Debugf("Message published to topic: %s", ui.e.Doc.Topic.ID)
 
 	return nil
 }

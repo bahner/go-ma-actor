@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/bahner/go-ma-actor/entity"
+	"github.com/bahner/go-ma-actor/p2p/pubsub"
 	"github.com/bahner/go-ma/msg"
 	p2ppubsub "github.com/libp2p/go-libp2p-pubsub"
 	log "github.com/sirupsen/logrus"
@@ -25,16 +26,18 @@ func (a *Actor) Subscribe(ctx context.Context, e *entity.Entity) {
 
 	log.Infof("Subscribing to %s as %s: ", them, me)
 
-	// ctx, cancel := context.WithCancel(ctx)
-	// defer cancel()
-
-	sub, err := e.Topic.Subscribe()
+	topic, err := pubsub.GetOrCreateTopic(e.Doc.Topic.ID)
+	if err != nil {
+		log.Errorf("actor.Subscribe: failed to get or create topic: %v", err)
+		return
+	}
+	sub, err := topic.Subscribe()
 	if err != nil {
 		log.Errorf("Failed to subscribe to topic: %v", err)
 		return
 	}
 	// Enable relay
-	cancelRelay, err := e.Topic.Relay()
+	cancelRelay, err := topic.Relay()
 	if err != nil {
 		log.Errorf("actorSubscribe: failed to relay to topic: %v", err)
 	}
@@ -77,7 +80,7 @@ func (a *Actor) Subscribe(ctx context.Context, e *entity.Entity) {
 			}
 
 			// Firstly check if this is a public message. Its quicker.
-			m, err := msg.UnmarshalAndVerifyMessageFromCBOR(message.Data)
+			m, err := msg.UnmarshalAndVerifyMessage(message.Data)
 			if err == nil && m != nil {
 				log.Debugf("actor.Subscribe: Received message %s to %s\n", m.Id, m.To)
 				log.Debugf("actor.Subscribe: Delivering message %s to entity: %s\n", m.Id, them)
@@ -98,7 +101,7 @@ func (a *Actor) Subscribe(ctx context.Context, e *entity.Entity) {
 			}
 
 			// If it's not a public message, it might be an envelope.
-			env, err := msg.UnmarshalAndVerifyEnvelopeFromCBOR(message.Data)
+			env, err := msg.UnmarshalAndVerifyEnvelope(message.Data)
 			if err == nil {
 				log.Debugf("actor.Subscribe: Received envelope: %v\n", env)
 				log.Debugf("actor.Subscribe: Delivering envelope to actor: %s\n", me)

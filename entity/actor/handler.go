@@ -44,8 +44,6 @@ func (a *Actor) handleAtMessage(m *msg.Message) error {
 	cmd = elements[0]
 
 	switch cmd {
-	case "location":
-		return a.HandleLocationMessage(m)
 	default:
 		return fmt.Errorf("actor: unknown dot command: %s", cmd)
 	}

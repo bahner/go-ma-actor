@@ -1,15 +1,10 @@
 package actor
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/bahner/go-ma-actor/entity"
-	actormsg "github.com/bahner/go-ma-actor/msg"
 	"github.com/bahner/go-ma/did"
-	"github.com/bahner/go-ma/msg"
-	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
 )
 
 const defaultLocationReply = "Location unknown"
@@ -47,30 +42,30 @@ func (a *Actor) GetLocation() (string, error) {
 	return a.Location.DID.Id, nil
 }
 
-func (a *Actor) HandleLocationMessage(m *msg.Message) error {
+// func (a *Actor) HandleLocationMessage(m *msg.Message) error {
 
-	ctx := context.Background()
-	replyBytes := []byte(defaultLocationReply)
+// 	ctx := context.Background()
+// 	replyBytes := []byte(defaultLocationReply)
 
-	// Set the reply to the currentLocation, if it is set.
-	loc, err := a.GetLocation()
-	if err == nil {
-		replyBytes = []byte(loc)
-	}
+// 	// Set the reply to the currentLocation, if it is set.
+// 	loc, err := a.GetLocation()
+// 	if err == nil {
+// 		replyBytes = []byte(loc)
+// 	}
 
-	e, err := entity.GetOrCreate(m.From)
-	if err != nil {
-		return fmt.Errorf("failed to get or create entity: %w", errors.Cause(err))
-	}
+// 	e, err := entity.GetOrCreate(m.From)
+// 	if err != nil {
+// 		return fmt.Errorf("failed to get or create entity: %w", errors.Cause(err))
+// 	}
 
-	log.Debugf("Sending location to %s over %s", m.From, a.Entity.Topic.String())
+// 	log.Debugf("Sending location to %s over %s", m.From, a.Entity.Topic.String())
 
-	return actormsg.Reply(
-		ctx,
-		*m,
-		replyBytes,
-		a.Keyset.SigningKey.PrivKey,
-		e.Topic,
-	)
+// 	return actormsg.Reply(
+// 		ctx,
+// 		*m,
+// 		replyBytes,
+// 		a.Keyset.SigningKey.PrivKey,
+// 		e.Topic,
+// 	)
 
-}
+// }

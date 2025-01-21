@@ -1,13 +1,12 @@
 package msg
 
 import (
-	"context"
 	"crypto/ed25519"
 	"mime"
 
+	"github.com/bahner/go-ma-actor/entity"
 	"github.com/bahner/go-ma/msg"
 	"github.com/fxamacker/cbor/v2"
-	pubsub "github.com/libp2p/go-libp2p-pubsub"
 )
 
 const REPLY_SERIALIZATION = "cbor"
@@ -33,7 +32,7 @@ func NewReply(m msg.Message, reply []byte) ([]byte, error) {
 
 // Reply to a message. requires the message to create a reply containing the id of the requesting message
 // The message is not a pointer, as we only need the ID and then throw it away.
-func Reply(ctx context.Context, m msg.Message, replyBytes []byte, privKey ed25519.PrivateKey, topic *pubsub.Topic) error {
+func Reply(m msg.Message, replyBytes []byte, privKey ed25519.PrivateKey) error {
 
 	replyContent, err := NewReply(m, replyBytes)
 	if err != nil {
@@ -58,5 +57,10 @@ func Reply(ctx context.Context, m msg.Message, replyBytes []byte, privKey ed2551
 		return err
 	}
 
-	return envelope.Send(ctx, topic)
+	recipient, err := entity.GetOrCreate(m.From)
+	if err != nil {
+		return err
+	}
+
+	return recipient.Publish(envelope)
 }

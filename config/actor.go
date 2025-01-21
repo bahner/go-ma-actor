@@ -5,9 +5,11 @@ package config
 // This is because it's so low level and the identity is needed for the keyset.
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"sync"
+	"time"
 
 	"github.com/libp2p/go-libp2p/core/crypto"
 	"github.com/spf13/pflag"
@@ -20,8 +22,9 @@ import (
 )
 
 const (
-	defaultLocation   string = "did:ma:k2k4r8p5sxlnznc9ral4fueapazs36hqoj3go1g0o7662gnk9skhfrik#pong"
-	fakeActorIdentity string = "NO_DEFAULT_ACTOR_IDENITY"
+	defaultLocation        string = "did:ma:k2k4r8p5sxlnznc9ral4fueapazs36hqoj3go1g0o7662gnk9skhfrik#pong"
+	fakeActorIdentity      string = "NO_DEFAULT_ACTOR_IDENITY"
+	configActorIPFSTimeout        = 10 * time.Second
 )
 
 var (
@@ -116,7 +119,10 @@ func ActorMnemonic() string {
 func ActorKeyset() set.Keyset {
 	configActorKeysetLoad.Do(func() {
 
-		actorKeyset, err = set.LoadFromIPFS(getActorKeysetPath(), ActorMnemonic())
+		ctx, cancel := context.WithTimeout(context.Background(), configActorIPFSTimeout)
+		defer cancel()
+
+		actorKeyset, err = set.LoadFromIPFS(ctx, getActorKeysetPath(), ActorMnemonic())
 		if err != nil {
 			log.Fatalf("config.Actor: %v", err)
 		}
@@ -150,6 +156,9 @@ func defaultNick() string {
 // Generates a new keyset and returns the keyset as a string
 func generateKeysetPath(nick string) (string, error) {
 
+	ctx, cancel := context.WithTimeout(context.Background(), configActorIPFSTimeout)
+	defer cancel()
+
 	privKey, err := getOrCreateIdentity(nick)
 	if err != nil {
 		return "", fmt.Errorf("failed to generate identity: %w", err)
@@ -160,7 +169,7 @@ func generateKeysetPath(nick string) (string, error) {
 	}
 	log.Debugf("Created new keyset: %v", keyset)
 
-	cid, err := keyset.SaveToIPFS(ActorMnemonic())
+	cid, err := keyset.SaveToIPFS(ctx, ActorMnemonic())
 	if err != nil {
 		return "", fmt.Errorf("failed to save keyset to IPFS: %w", err)
 	}

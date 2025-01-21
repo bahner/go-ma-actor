@@ -1,7 +1,6 @@
 package ui
 
 import (
-	"context"
 	"fmt"
 	"strings"
 
@@ -57,24 +56,24 @@ func (ui *ChatUI) handleMsgCommand(input string) {
 			return
 		}
 
-		// Connect to the entity's node, so we establish contact for the future.
-		// A web of nodes, like. A web of trust innit.
-		_, err = recp.ConnectPeer()
-		if err != nil {
-			ui.displaySystemMessage(fmt.Sprintf("peer connection error: %s", err))
-			ui.displaySystemMessage(fmt.Sprintf("sending message through the clouds %s", recipient))
-		}
+		// // Connect to the entity's node, so we establish contact for the future.
+		// // A web of nodes, like. A web of trust innit.
+		// _, err = recp.ConnectPeer()
+		// if err != nil {
+		// 	ui.displaySystemMessage(fmt.Sprintf("peer connection error: %s", err))
+		// 	ui.displaySystemMessage(fmt.Sprintf("sending message through the clouds %s", recipient))
+		// }
 
 		// FIXME: get direct messaging to work.
 		// err = msg.Send(context.Background(), recp.Topic)
 		// Send private message in the entity's context. It's a whisper.
 		// But should've been sent to the actor, not the entity. A loveletter, like.
-		medium := ui.e.Topic
-		err = envelope.Send(context.Background(), medium)
+
+		err = recp.Publish(envelope)
 		if err != nil {
 			ui.displaySystemMessage(fmt.Sprintf("message publishing error: %s", err))
 		}
-		log.Debugf("Message published to topic: %s", medium.String())
+		log.Debugf("Message published to topic: %s", recp.Doc.Topic.ID)
 	} else {
 		ui.handleHelpCommand(msgUsage, msgHelp)
 	}

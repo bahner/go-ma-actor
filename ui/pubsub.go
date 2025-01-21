@@ -41,13 +41,6 @@ func (ui *ChatUI) addPeerToPubsub(pai p2peer.AddrInfo) error {
 		return peer.ErrAddrInfoAddrsEmpty
 	}
 
-	// Don't add already connected peers
-	for _, p := range ui.e.Topic.ListPeers() {
-		if p == pai.ID {
-			return peer.ErrAlreadyConnected
-		}
-	}
-
 	pubsub.AddPeer(pai.ID)
 
 	return nil

@@ -24,7 +24,7 @@ func Init(opts *p2p.Options) *Actor {
 		panic(fmt.Sprintf("%s is not a valid actor: %v", a.Entity.DID.Id, err))
 	}
 
-	_, err = entity.Fetch(a.Entity.DID)
+	_, err = entity.Init(a.Entity.DID)
 	if err != nil {
 		panic(fmt.Sprintf("error getting or creating entity: %s", err))
 	}

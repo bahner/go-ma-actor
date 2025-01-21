@@ -2,6 +2,8 @@ package ui
 
 import (
 	"fmt"
+
+	"github.com/bahner/go-ma-actor/p2p/pubsub"
 )
 
 const (
@@ -50,12 +52,14 @@ func (ui *ChatUI) statusTopics() string {
 	// Return whatever status you'd like about the topic.
 	// Fetching peers as an example below:
 	// peers := ui.keyAgreement.ListPeers()
-	aConnected := ui.a.Entity.Topic.ListPeers()
-	eConnected := ui.e.Topic.ListPeers()
+	aTopic := ui.a.Entity.Doc.Topic.ID
+	eTopic := ui.e.Doc.Topic.ID
+	aConnected := pubsub.ListPeers(aTopic)
+	eConnected := pubsub.ListPeers(eTopic)
 	bConnected := ui.b.ListPeers()
 	return fmt.Sprintf("\nEntity: %s\n%s\nActor: %s\n%s\nBroadcast: %s\n%s",
-		ui.e.Topic.String(), eConnected[:],
-		ui.a.Entity.Topic.String(), aConnected[:],
+		eTopic, eConnected[:],
+		aTopic, aConnected[:],
 		ui.b.String(), bConnected[:],
 	)
 }
