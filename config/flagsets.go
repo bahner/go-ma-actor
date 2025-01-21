@@ -11,7 +11,7 @@ func ActorFlagset() *pflag.FlagSet {
 
 	mergeActorFlagset()
 
-	return actorFlagset
+	return configActorFlagset
 }
 
 func ActorFlagsetParse(exitOnHelp bool) {
@@ -22,7 +22,7 @@ func ActorFlagsetParse(exitOnHelp bool) {
 		os.Exit(0)
 	}
 
-	err = actorFlagset.Parse(os.Args[1:])
+	err = configActorFlagset.Parse(os.Args[1:])
 	if err != nil {
 		fmt.Printf("Error parsing actor flags: %s", err)
 		os.Exit(64) // EX_USAGE
@@ -39,7 +39,7 @@ func CommonFlagset() *pflag.FlagSet {
 func CommonFlagsetParse(exitOnHelp bool) {
 
 	mergeCommonFlagset()
-	mergeFromFlagsetInto(commonFlagset, actorFlagset)
+	mergeFromFlagsetInto(commonFlagset, configActorFlagset)
 
 	if HelpNeeded() && exitOnHelp {
 		os.Exit(0)
@@ -56,7 +56,7 @@ func mergeActorFlagset() {
 	mergeCommonFlagset()
 	actorFlags()
 
-	mergeFromFlagsetInto(commonFlagset, actorFlagset)
+	mergeFromFlagsetInto(commonFlagset, configActorFlagset)
 
 }
 

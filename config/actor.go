@@ -12,6 +12,7 @@ import (
 	"github.com/libp2p/go-libp2p/core/crypto"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
+	"github.com/tyler-smith/go-bip39"
 
 	"github.com/bahner/go-ma/did/doc"
 	"github.com/bahner/go-ma/key/set"
@@ -24,14 +25,14 @@ const (
 )
 
 var (
-	actorFlagset     = pflag.NewFlagSet("actor", pflag.ExitOnError)
-	actorKeyset      set.Keyset
-	actorFlagsOnce   sync.Once
-	ErrEmptyIdentity = fmt.Errorf("identity is empty")
-	ErrEmptyNick     = fmt.Errorf("nick is empty")
-	ErrFakeIdentity  = fmt.Errorf("your identity is fake. You need to define actorKeyset or generate a new one")
-	nick             string
-	location         string
+	configActorFlagset    = pflag.NewFlagSet("actor", pflag.ExitOnError)
+	actorKeyset           set.Keyset
+	configActorFlagsOnce  sync.Once
+	configActorKeysetLoad sync.Once
+	actorNick             string
+	actorLocation         string
+	actorMnemonic         string
+	actorKeysetPath       string
 )
 
 // Initialise command line flags for the actor package
@@ -40,53 +41,50 @@ var (
 // and the program should exit.
 func actorFlags() {
 
-	actorFlagsOnce.Do(func() {
+	configActorFlagsOnce.Do(func() {
 
-		actorFlagset.StringVarP(&nick, "nick", "n", "", "Nickname to use in character creation")
-		actorFlagset.StringVarP(&location, "location", "l", defaultLocation, "DID of the location to visit")
+		configActorFlagset.StringVarP(&actorNick, "nick", "n", "", "Nickname to use in character creation")
+		configActorFlagset.StringVarP(&actorLocation, "location", "l", defaultLocation, "DID of the location to visit")
+		configActorFlagset.StringVarP(&actorKeysetPath, "keyset-path", "k", "", "IPFS path for keyset to use for the actor")
+		configActorFlagset.StringVarP(&actorMnemonic, "mnemonic", "m", "", "BIP-39 Mnemonic to use keyset encryption")
 
-		viper.BindPFlag("actor.nick", actorFlagset.Lookup("nick"))
-		viper.BindPFlag("actor.location", actorFlagset.Lookup("location"))
+		viper.BindPFlag("actor.nick", configActorFlagset.Lookup("nick"))
+		viper.BindPFlag("actor.location", configActorFlagset.Lookup("location"))
+		viper.BindPFlag("actor.keyset-path", configActorFlagset.Lookup("keyset-path"))
+		viper.BindPFlag("actor.mnemonic", configActorFlagset.Lookup("mnemonic"))
 
-		viper.SetDefault("actor.location", defaultLocation)
 		viper.SetDefault("actor.nick", defaultNick())
+		viper.SetDefault("actor.location", defaultLocation)
 
 		if HelpNeeded() {
 			fmt.Println("Actor Flags:")
-			actorFlagset.PrintDefaults()
+			configActorFlagset.PrintDefaults()
 
 		}
 	})
 }
 
 type ActorConfig struct {
-	Keyset   string `yaml:"keyset"`
-	Nick     string `yaml:"nick"`
+	Keyset   string `yaml:"keyset-path"`
 	Location string `yaml:"location"`
+	Mnemonic string `yaml:"mnemonic"`
+	Nick     string `yaml:"nick"`
 }
 
 // Config for actor. Remember to parse the flags first.
 // Eg. ActorFlags()
 func Actor() ActorConfig {
 
-	// Fetch the keyset from the config or generate one
-	keyset, err := actorKeysetString()
-	if err != nil {
-		panic(err)
-	}
-
-	// Unpack the keyset from the identity
-	initActorKeyset(keyset)
-
 	// If we are generating a new identity we should publish it
 	if GenerateFlag() {
-		publishIdentityFromKeyset(actorKeyset)
+		publishDIDDocumentFromKeyset(actorKeyset)
 	}
 
 	return ActorConfig{
-		Keyset:   keyset,
-		Nick:     ActorNick(),
+		Keyset:   getActorKeysetPath(),
 		Location: ActorLocation(),
+		Mnemonic: ActorMnemonic(),
+		Nick:     ActorNick(),
 	}
 }
 
@@ -97,8 +95,8 @@ func Actor() ActorConfig {
 func ActorNick() string {
 
 	// This is used early, so command line takes precedence
-	if actorFlagset.Lookup("nick").Changed {
-		return actorFlagset.Lookup("nick").Value.String()
+	if configActorFlagset.Lookup("nick").Changed {
+		return configActorFlagset.Lookup("nick").Value.String()
 	}
 	return viper.GetString("actor.nick")
 }
@@ -107,17 +105,36 @@ func ActorLocation() string {
 	return viper.GetString("actor.location")
 }
 
+func ActorMnemonic() string {
+	if GenerateFlag() && actorMnemonic == "" {
+		return generateAndSetMnemonic()
+	}
+
+	return viper.GetString("actor.mnemonic")
+}
+
 func ActorKeyset() set.Keyset {
+	configActorKeysetLoad.Do(func() {
+
+		actorKeyset, err = set.LoadFromIPFS(getActorKeysetPath(), ActorMnemonic())
+		if err != nil {
+			log.Fatalf("config.Actor: %v", err)
+		}
+	})
+
 	return actorKeyset
 }
 
-func actorKeysetString() (string, error) {
+func getActorKeysetPath() string {
 
-	if GenerateFlag() {
-		return generateKeysetString(ActorNick())
+	if GenerateFlag() && actorKeysetPath == "" {
+		actorKeysetPath, err = generateKeysetPath(ActorNick())
+		if err != nil {
+			log.Fatalf("config.ActorKeysetPath: %v", err)
+		}
 	}
 
-	return viper.GetString("actor.keyset"), nil
+	return viper.GetString("actor.keyset-path")
 }
 
 // Set the default nick to the user's username, unless a profile is set.
@@ -130,26 +147,8 @@ func defaultNick() string {
 	return Profile()
 }
 
-func initActorKeyset(keyset_string string) {
-
-	var err error
-
-	log.Debugf("config.initActor: %s", keyset_string)
-	// Create the actor keyset
-	if keyset_string == "" {
-		log.Errorf("config.initActor: You need to define actorKeyset or generate a new one.")
-		os.Exit(64) // EX_USAGE
-	}
-
-	actorKeyset, err = set.Unpack(keyset_string)
-	if err != nil {
-		log.Errorf("config.initActor: %v", err)
-		os.Exit(70) // EX_SOFTWARE
-	}
-}
-
 // Generates a new keyset and returns the keyset as a string
-func generateKeysetString(nick string) (string, error) {
+func generateKeysetPath(nick string) (string, error) {
 
 	privKey, err := getOrCreateIdentity(nick)
 	if err != nil {
@@ -161,25 +160,25 @@ func generateKeysetString(nick string) (string, error) {
 	}
 	log.Debugf("Created new keyset: %v", keyset)
 
-	pks, err := keyset.Pack()
+	cid, err := keyset.SaveToIPFS(ActorMnemonic())
 	if err != nil {
-		return "", fmt.Errorf("failed to pack keyset: %w", err)
+		return "", fmt.Errorf("failed to save keyset to IPFS: %w", err)
 	}
-	log.Debugf("Packed keyset: %v", pks)
 
-	return pks, nil
+	log.Debugf("Keyset saved to IPFS: %s\n", cid.String())
+	return cid.String(), nil
 }
 
-func publishIdentityFromKeyset(k set.Keyset) error {
+func publishDIDDocumentFromKeyset(k set.Keyset) error {
 
 	d, err := doc.NewFromKeyset(k)
 	if err != nil {
-		return fmt.Errorf("config.publishIdentityFromKeyset: failed to create DOC: %w", err)
+		return fmt.Errorf("config.publishDIDDocumentFromKeyset: failed to create DOC: %w", err)
 	}
 
 	_, err = d.Publish()
 	if err != nil {
-		return fmt.Errorf("config.publishIdentityFromKeyset: %w", err)
+		return fmt.Errorf("config.publishDIDDocumentFromKeyset: %w", err)
 
 	}
 	log.Debugf("Published identity: %s", d.ID)
@@ -212,4 +211,22 @@ func getOrCreateIdentity(name string) (crypto.PrivKey, error) {
 
 	return privKey, nil
 
+}
+
+func generateAndSetMnemonic() string {
+	entropy, err := bip39.NewEntropy(256)
+	if err != nil {
+		errStr := fmt.Errorf("config.generateMnemonic: %w", err)
+		panic(errStr)
+	}
+
+	actorMnemonic, err = bip39.NewMnemonic(entropy)
+	if err != nil {
+		errStr := fmt.Errorf("config.generateMnemonic: %w", err)
+		panic(errStr)
+	}
+
+	fmt.Printf("Generated new mnemonic: %s\n", actorMnemonic)
+
+	return actorMnemonic
 }

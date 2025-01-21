@@ -81,7 +81,7 @@ func PrintAll() (int, error) {
 		log.Fatal(err)
 	}
 
-	fmt.Println("# " + ActorKeyset().DID.Id)
+	fmt.Println("# " + ActorMnemonic())
 
 	return fmt.Println(string(configYAML))
 }
