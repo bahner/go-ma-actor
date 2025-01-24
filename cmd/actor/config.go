@@ -3,9 +3,9 @@ package main
 import (
 	"os"
 
+	"github.com/bahner/go-ma-actor/actor"
 	"github.com/bahner/go-ma-actor/config"
 	"github.com/bahner/go-ma-actor/entity"
-	"github.com/bahner/go-ma-actor/entity/actor"
 	"github.com/bahner/go-ma-actor/p2p/peer"
 
 	log "github.com/sirupsen/logrus"

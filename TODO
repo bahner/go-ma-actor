@@ -1,8 +1,6 @@
 # TODO
 
-Save keyset in IPFS not from config. So actor must set the cid on creation and then read it.
-
-Just reminders here
+IPFS IPLD generated is empty
 
 ## Features
 

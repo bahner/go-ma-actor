@@ -37,12 +37,8 @@ github.com/alecthomas/units v0.0.0-20240927000941-0f3dac36c52b/go.mod h1:fvzegU4
 github.com/alexbrainman/goissue34681 v0.0.0-20191006012335-3fc7a47baff5 h1:iW0a5ljuFxkLGPNem5Ui+KBjFJzKg4Fv2fnxe4dvzpM=
 github.com/alexbrainman/goissue34681 v0.0.0-20191006012335-3fc7a47baff5/go.mod h1:Y2QMoi1vgtOIfc+6DhrMOGkLoGzqSV2rKp4Sm+opsyA=
 github.com/anmitsu/go-shlex v0.0.0-20161002113705-648efa622239/go.mod h1:2FmKhYUyUczH0OGQWaF5ceTx0UBShxjsH6f8oGKYe2c=
-github.com/bahner/go-ma v0.7.7-rc1.0.20250123015320-e5ce79cfeba4 h1:GYjMSBKiMD7epGKBO7sZKisujjhgOxT6kLZ4r4e4sRg=
-github.com/bahner/go-ma v0.7.7-rc1.0.20250123015320-e5ce79cfeba4/go.mod h1:1DhEsltSSfVJi5ktDcNfC98zp5XMc7kBf6KO7ljGHqM=
-github.com/bahner/go-ma v0.7.7-rc1.0.20250123032729-bb47047c7c89 h1:7V1kx0g2vx798LvPS2xgHyAST6hSTbkCVi2s2faxmbM=
-github.com/bahner/go-ma v0.7.7-rc1.0.20250123032729-bb47047c7c89/go.mod h1:1DhEsltSSfVJi5ktDcNfC98zp5XMc7kBf6KO7ljGHqM=
-github.com/bahner/go-ma v0.7.7-rc1.0.20250123032827-0edfe72685db h1:waakRC+ZZIpXlIjDR+nBagotdYq4mAhMvjoH59+bBmE=
-github.com/bahner/go-ma v0.7.7-rc1.0.20250123032827-0edfe72685db/go.mod h1:1DhEsltSSfVJi5ktDcNfC98zp5XMc7kBf6KO7ljGHqM=
+github.com/bahner/go-ma v0.7.7-rc1.0.20250124023022-56c7172a775b h1:HTN3wYIQJcTnTv/K5k1StjV0ZlYV6BB3N7RJyl9lqC0=
+github.com/bahner/go-ma v0.7.7-rc1.0.20250124023022-56c7172a775b/go.mod h1:nel+ivfQX3vQlM3OeVLleaHwrwpnvlwgD7a8DxpMXYU=
 github.com/benbjohnson/clock v1.1.0/go.mod h1:J11/hYXuz8f4ySSvYwY0FKfm+ezbsZBKZxNJlLklBHA=
 github.com/benbjohnson/clock v1.3.0/go.mod h1:J11/hYXuz8f4ySSvYwY0FKfm+ezbsZBKZxNJlLklBHA=
 github.com/benbjohnson/clock v1.3.5 h1:VvXlSJBzZpA/zum6Sj74hxwYI2DIxRWuNIoXAzHZz5o=

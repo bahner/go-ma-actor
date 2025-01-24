@@ -3,7 +3,7 @@ package ui
 import (
 	"fmt"
 
-	"github.com/bahner/go-ma-actor/entity/actor"
+	"github.com/bahner/go-ma-actor/actor"
 )
 
 // Creates a UI, but panics if it fails.

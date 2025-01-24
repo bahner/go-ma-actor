@@ -28,14 +28,15 @@ const (
 )
 
 var (
-	configActorFlagset    = pflag.NewFlagSet("actor", pflag.ExitOnError)
+	actorDID              string
 	actorKeyset           set.Keyset
-	configActorFlagsOnce  sync.Once
-	configActorKeysetLoad sync.Once
-	actorNick             string
+	actorKeysetPath       string
 	actorLocation         string
 	actorMnemonic         string
-	actorKeysetPath       string
+	actorNick             string
+	configActorFlagset    = pflag.NewFlagSet("actor", pflag.ExitOnError)
+	configActorFlagsOnce  sync.Once
+	configActorKeysetLoad sync.Once
 )
 
 // Initialise command line flags for the actor package
@@ -68,6 +69,7 @@ func actorFlags() {
 }
 
 type ActorConfig struct {
+	DID      string `yaml:"did"`
 	Keyset   string `yaml:"keyset-path"`
 	Location string `yaml:"location"`
 	Mnemonic string `yaml:"mnemonic"`
@@ -78,17 +80,35 @@ type ActorConfig struct {
 // Eg. ActorFlags()
 func Actor() ActorConfig {
 
+	var d *doc.Document
+
 	// If we are generating a new identity we should publish it
 	if GenerateFlag() {
-		publishDIDDocumentFromKeyset(actorKeyset)
+
+		actorKeyset, actorKeysetPath, err = generateActorKeyset(ActorNick())
+		if err != nil {
+			log.Fatalf("config.ActorKeysetPath: %v", err)
+		}
+
+		d, err = publishDIDDocumentFromKeyset(ActorKeyset())
+		if err != nil {
+			panic(err)
+		}
+		actorDID = d.ID
+
 	}
 
 	return ActorConfig{
-		Keyset:   getActorKeysetPath(),
+		DID:      ActorDID(),
+		Keyset:   ActorKeysetPath(),
 		Location: ActorLocation(),
 		Mnemonic: ActorMnemonic(),
 		Nick:     ActorNick(),
 	}
+}
+
+func ActorDID() string {
+	return viper.GetString("actor.did")
 }
 
 // Fetches the actor nick from the config or the command line
@@ -116,25 +136,17 @@ func ActorMnemonic() string {
 	return viper.GetString("actor.mnemonic")
 }
 
+// Returns the keyset for the actor after initialisation.
 func ActorKeyset() set.Keyset {
-	configActorKeysetLoad.Do(func() {
-
-		ctx, cancel := context.WithTimeout(context.Background(), configActorIPFSTimeout)
-		defer cancel()
-
-		actorKeyset, err = set.LoadFromIPFS(ctx, getActorKeysetPath(), ActorMnemonic())
-		if err != nil {
-			log.Fatalf("config.Actor: %v", err)
-		}
-	})
-
 	return actorKeyset
 }
 
-func getActorKeysetPath() string {
+// Generates and sets the actorKeyset and returns the path to the keyset.
+func ActorKeysetPath() string {
 
+	// Not sure if this is too much sugar.
 	if GenerateFlag() && actorKeysetPath == "" {
-		actorKeysetPath, err = generateKeysetPath(ActorNick())
+		actorKeyset, actorKeysetPath, err = generateActorKeyset(ActorNick())
 		if err != nil {
 			log.Fatalf("config.ActorKeysetPath: %v", err)
 		}
@@ -153,46 +165,62 @@ func defaultNick() string {
 	return Profile()
 }
 
-// Generates a new keyset and returns the keyset as a string
-func generateKeysetPath(nick string) (string, error) {
+// Generates and initialises a new keyset for the actor.
+// Returns the keyset and the IPFS path to the keyset.
+// Also sets the global variables for the helper functions to use.
+func generateActorKeyset(nick string) (set.Keyset, string, error) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), configActorIPFSTimeout)
 	defer cancel()
 
 	privKey, err := getOrCreateIdentity(nick)
 	if err != nil {
-		return "", fmt.Errorf("failed to generate identity: %w", err)
+		return set.Keyset{}, "", fmt.Errorf("failed to generate identity: %w", err)
 	}
-	keyset, err := set.New(privKey, nick)
+	actorKeyset, err = set.New(privKey, nick)
 	if err != nil {
-		return "", fmt.Errorf("failed to generate new keyset: %w", err)
+		return set.Keyset{}, "", fmt.Errorf("failed to generate new keyset: %w", err)
 	}
-	log.Debugf("Created new keyset: %v", keyset)
+	log.Debugf("Created new keyset: %v", actorKeyset)
 
-	cid, err := keyset.SaveToIPFS(ctx, ActorMnemonic())
+	cid, err := actorKeyset.SaveToIPFS(ctx, ActorMnemonic())
 	if err != nil {
-		return "", fmt.Errorf("failed to save keyset to IPFS: %w", err)
+		return set.Keyset{}, "", fmt.Errorf("failed to save keyset to IPFS: %w", err)
 	}
+
+	// Set the global _actorKeysetPath
+	actorKeysetPath = cid.String()
 
 	log.Debugf("Keyset saved to IPFS: %s\n", cid.String())
-	return cid.String(), nil
+	return actorKeyset, actorKeysetPath, nil
 }
 
-func publishDIDDocumentFromKeyset(k set.Keyset) error {
+// Publishes the DID document to the IPFS network and returns the document.
+func publishDIDDocumentFromKeyset(k set.Keyset) (*doc.Document, error) {
 
 	d, err := doc.NewFromKeyset(k)
 	if err != nil {
-		return fmt.Errorf("config.publishDIDDocumentFromKeyset: failed to create DOC: %w", err)
+		return nil, fmt.Errorf("config.publishDIDDocumentFromKeyset: failed to create DOC: %w", err)
+	}
+
+	d.Identity = actorKeysetPath
+	err = d.SetTopic(d.ID, doc.DEFAULT_TOPIC_TYPE)
+	if err != nil {
+		return nil, fmt.Errorf("config.publishDIDDocumentFromKeyset: %w", err)
+	}
+	err = d.SetP2PHostFromPrivateKey(k.Identity, doc.DEFAULT_HOST_TYPE)
+	if err != nil {
+		return nil, fmt.Errorf("config.publishDIDDocumentFromKeyset: %w", err)
 	}
 
 	_, err = d.Publish()
 	if err != nil {
-		return fmt.Errorf("config.publishDIDDocumentFromKeyset: %w", err)
+		return nil, fmt.Errorf("config.publishDIDDocumentFromKeyset: %w", err)
 
 	}
 	log.Debugf("Published identity: %s", d.ID)
 
-	return nil
+	return d, nil
 }
 
 func getOrCreateIdentity(name string) (crypto.PrivKey, error) {

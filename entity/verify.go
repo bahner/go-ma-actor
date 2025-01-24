@@ -26,7 +26,7 @@ func (e *Entity) Verify() error {
 		return fmt.Errorf("entity/verify: Cancel is not a context.CancelFunc")
 	}
 
-	if reflect.TypeOf(e.Doc.Context) != reflect.TypeOf((context.Context)(nil)) {
+	if reflect.TypeOf(e.Ctx) != reflect.TypeOf((context.Context)(nil)) {
 		return fmt.Errorf("entity/verify: Context is not a context")
 	}
 

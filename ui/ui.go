@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/bahner/go-ma-actor/actor"
 	"github.com/bahner/go-ma-actor/config"
 	"github.com/bahner/go-ma-actor/entity"
-	"github.com/bahner/go-ma-actor/entity/actor"
 	"github.com/bahner/go-ma-actor/p2p"
-	p2ppubsub "github.com/libp2p/go-libp2p-pubsub"
+	pubsub "github.com/libp2p/go-libp2p-pubsub"
 	"github.com/rivo/tview"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
@@ -58,7 +58,7 @@ type ChatUI struct {
 	currentEntityCancel context.CancelFunc
 
 	// Broadcasts
-	b               *p2ppubsub.Topic
+	b               *pubsub.Topic
 	broadcastCtx    context.Context
 	broadcastCancel context.CancelFunc
 

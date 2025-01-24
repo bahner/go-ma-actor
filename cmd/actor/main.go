@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/bahner/go-ma-actor/entity/actor"
+	"github.com/bahner/go-ma-actor/actor"
 	"github.com/bahner/go-ma-actor/p2p"
 	"github.com/bahner/go-ma-actor/ui"
 	"github.com/bahner/go-ma-actor/ui/web"

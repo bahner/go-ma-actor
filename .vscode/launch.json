@@ -5,29 +5,15 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Launch pong",
-            "type": "go",
-            "request": "launch",
-            "mode": "auto",
-            "program": "${workspaceFolder}/cmd/pong/",
-        },
-        {
-            "name": "Launch node",
-            "type": "go",
-            "request": "launch",
-            "mode": "auto",
-            "program": "${workspaceFolder}/cmd/node",
-        },
-        {
-            "name": "Launch actor as bahner",
+            "name": "Launch actor forced generation",
             "type": "go",
             "request": "launch",
             "mode": "auto",
             "program": "${workspaceFolder}/cmd/actor/",
             "console": "integratedTerminal",
             "args": [
-                "--nick",
-                "bahner"
+                "--generate",
+                "--force"
             ],
             "env": {
                 "GOLOG_FILE": "debug.log",
