@@ -23,7 +23,6 @@ require (
 	github.com/spf13/viper v1.19.0
 	github.com/tyler-smith/go-bip39 v1.1.0
 	gopkg.in/yaml.v2 v2.4.0
-	lukechampine.com/blake3 v1.3.0
 )
 
 require (
@@ -197,4 +196,5 @@ require (
 	google.golang.org/protobuf v1.36.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
+	lukechampine.com/blake3 v1.3.0 // indirect
 )

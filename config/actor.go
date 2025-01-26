@@ -183,7 +183,13 @@ func generateActorKeyset(nick string) (set.Keyset, string, error) {
 	}
 	log.Debugf("Created new keyset: %v", actorKeyset)
 
-	cid, err := actorKeyset.SaveToIPFS(ctx, ActorMnemonic())
+	a, err := actor.New(actorKeyset)
+	if err != nil {
+		return set.Keyset{}, "", fmt.Errorf("failed to create new actor: %w", err)
+	}
+
+	// cid, err := actorKeyset.SaveToIPFS(ctx, ActorMnemonic())
+	cid, err := actor.SaveToIPFS(ctx, a)
 	if err != nil {
 		return set.Keyset{}, "", fmt.Errorf("failed to save keyset to IPFS: %w", err)
 	}
